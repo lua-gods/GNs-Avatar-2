@@ -7,10 +7,9 @@ local core = require("libraries.panelLib.panelCore")
 ---@field rebuild function
 ---@field update function
 ---@field pos Vector2
----@field Hovering boolean
----@field Pressed boolean
 ---@field Labels table<any,Label>
 ---@field TRANSFORM_CHANGED KattEvent
+---@field PARENT_CHANGED KattEvent
 local element = {}
 element.__index = element
 
@@ -22,6 +21,7 @@ function element.new(obj)
    new.Labels = {}
    new.TRANSFORM_CHANGED = core.event.newEvent()
    new.STATE_CHANGED = core.event.newEvent()
+   new.PARENT_CHANGED = core.event.newEvent()
    new.id = next_free
    setmetatable(new,element)
 

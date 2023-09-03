@@ -32,11 +32,13 @@ Label.__index = Label
 Label.__type = "label"
 
 local labelID = 1
-function lib.newLabel()
+---@param parent ModelPart?
+---@return Label
+function lib.newLabel(parent)
    ---@type Label
    local compose = {
       id = labelID,
-      parent = config.defualt_parent,
+      parent = parent or config.defualt_parent,
       text = "",
       color=nil,
       text_align = 0,
@@ -167,10 +169,10 @@ function Label:delete()
 end
 
 ---sets the modelPart thats gonna contain the rendering
----@param model ModelPart
-function Label:setParent(model)
+---@param part ModelPart
+function Label:setParent(part)
    self:clearTasks()
-   self.parent = model
+   self.parent = part
    self:buildTasks()
    return self
 end

@@ -41,16 +41,18 @@ function button:setText(text)
 end
 
 ---@param btn GNpanel.Element.TextButton
-function private.text_rebuild(btn,x,y)
+function private.text_rebuild(btn)
    for key, value in pairs(btn.Labels) do value:delete() end
    btn.Labels = {}
 
    
    local components = raw_helper(btn.text)
-   for key, component in pairs(components) do -- build labels json manually
-      btn.Labels[#btn.Labels+1] = core.labelLib.newLabel()
+   if btn.Parent then
+      for key, component in pairs(components) do -- build labels json manually
+         btn.Labels[#btn.Labels+1] = core.labelLib.newLabel(btn.Parent.Part)
+      end
+      private.text_write(btn)
    end
-   private.text_write(btn)
 end
 
 function private.text_write(btn)
@@ -73,14 +75,16 @@ function private.text_reposition(btn)
    local components = raw_helper(btn.text)
    local glow = btn.Hovering
    local cursor = 0
-   for key, component in pairs(components) do -- reposition labels
-      local label = btn.Labels[key]
-      label:setText(component.text):setOffset(btn.pos.x + cursor,btn.pos.y):setColorHEX(component.color)
-      cursor = cursor + client.getTextWidth(component.text)
-      if glow then
-         label:setOutlineColorRGB(1,1,1)
-      else
-         label:setOutlineColorRGB((vectors.hexToRGB(component.color) * 0.2):unpack())
+   if btn.Parent then    
+      for key, component in pairs(components) do -- reposition labels
+         local label = btn.Labels[key]
+         label:setText(component.text):setOffset(btn.pos.x + cursor,btn.pos.y):setColorHEX(component.color)
+         cursor = cursor + client.getTextWidth(component.text)
+         if glow then
+            label:setOutlineColorRGB(1,1,1)
+         else
+            label:setOutlineColorRGB((vectors.hexToRGB(component.color) * 0.2):unpack())
+         end
       end
    end
 end
