@@ -5,6 +5,7 @@ local pages = {}
 
 local next_free = 0
 ---@class GNpanel.book
+---@field Position Vector2 # tells where the book is at
 ---@field Origin Vector2 # tells where the placements start
 ---@field Anchor Vector2 # tells what corner of the screen the origin anchors to
 ---@field DefaultPlacement function # tells how each page is displayed
@@ -23,6 +24,7 @@ Book.__index = Book
 function Book.new(obj)
    next_free = next_free + 1
    local new = obj or {}
+   new.Position = vectors.vec2(0,0)
    new.Origin = vectors.vec2(0,0)
    new.Anchor = vectors.vec2()
    new.DefaultPlacement = function (x,y,sx,sy) return vectors.vec2(x,y + sy) end
@@ -42,11 +44,11 @@ end
 ---@param y number
 function Book:setPos(posx,y)
    if type(posx) == "Vector2" then
-      self.Origin = posx:copy()
+      self.Position = posx:copy()
    else
-      self.Origin = vectors.vec2(posx,y)
+      self.Position = vectors.vec2(posx,y)
    end
-   self.Part:setPos(self.Origin.x,self.Origin.y,0)
+   self.Part:setPos(self.Position.x,self.Position.y,0)
 end
 
 ---@return GNpanel.book
