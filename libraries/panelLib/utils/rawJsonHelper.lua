@@ -1,24 +1,23 @@
----@diagnostic disable: assign-type-mismatch
 local json_parser = require("libraries.panelLib.utils.json")
 
 local color_override = {
-   dark_red = vectors.vec3(0.6666666865, 0, 0),--#000000
-   dark_purple = vectors.vec3(0.6666666865, 0, 0.6666666865),--#0000AA
-   blue = vectors.vec3(0.3333333432, 0.3333333432, 1),--#00AA00
-   dark_aqua = vectors.vec3(0, 0.6666666865, 0.6666666865),--#00AAAA
-   dark_gray = vectors.vec3(0.3333333432, 0.3333333432, 0.3333333432),--#AA0000
-   light_purple = vectors.vec3(1, 0.3333333432, 1),--#AA00AA
-   black = vectors.vec3(0, 0, 0),--#FFAA00
-   gold = vectors.vec3(1, 0.6666666865, 0),--#AAAAAA
-   green = vectors.vec3(0.3333333432, 1, 0.3333333432),--#555555
-   aqua = vectors.vec3(0.3333333432, 1, 1),--#5555FF
-   dark_blue = vectors.vec3(0, 0, 0.6666666865),--#55FF55
-   yellow = vectors.vec3(1, 1, 0.3333333432),--#55FFFF
-   dark_green = vectors.vec3(0, 0.6666666865, 0),--#FF5555
-   gray = vectors.vec3(0.6666666865, 0.6666666865, 0.6666666865),--#FF55FF
-   red = vectors.vec3(1, 0.3333333432, 0.3333333432),--#FFFF55
-   white = vectors.vec3(1, 1, 1),--#fffff
-   }
+   black = "#000000",
+   dark_blue = "#0000AA",
+   dark_green = "#00AA00",
+   dark_aqua = "#00AAAA",
+   dark_red = "#AA0000",
+   dark_purple = "#AA00AA",
+   gold = "#FFAA00",
+   gray = "#AAAAAA",
+   dark_gray = "#555555",
+   blue = "#5555FF",
+   green = "#55FF55",
+   aqua = "#55FFFF",
+   red = "#FF5555",
+   light_purple = "#FF55FF",
+   yellow = "#FFFF55",
+   white = "#ffffff"
+}
 
 
 ---Parses any string/rawjson(string) into a multi component raw json for ease of gettng data out of it
@@ -37,9 +36,9 @@ return function (json,overrides)
       end
    end
    for I, component in pairs(parsed) do
-      for name, clr in pairs(color_override) do
+      for name, hex in pairs(color_override) do
          if component.color == name then
-            parsed[I].color = clr
+            parsed[I].color = hex
             break
          end
       end

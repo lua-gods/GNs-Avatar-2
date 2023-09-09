@@ -64,11 +64,11 @@ function private.text_write(btn,components)
    for key, component in pairs(components) do -- reposition labels
       local label = btn.Labels[key]
       if glow then
-         label:setText(component.text):setColorRGB(component.color:unpack())
-         label:setOutlineColorRGB((component.color * 0.5):unpack())
+         label:setText(component.text):setColorRGB(vectors.hexToRGB(component.color):unpack())
+         label:setOutlineColorRGB((vectors.hexToRGB(component.color) * 0.5):unpack())
       else
-         label:setText(component.text):setColorRGB(component.color:unpack())
-         label:setOutlineColorRGB((component.color * 0.2):unpack())
+         label:setText(component.text):setColorRGB(vectors.hexToRGB(component.color):unpack())
+         label:setOutlineColorRGB((vectors.hexToRGB(component.color) * 0.2):unpack())
       end
    end
    private.text_reposition(btn,components)
