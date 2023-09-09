@@ -24,4 +24,8 @@ book.REBUILD:register(function ()
    print("UPDATE")
 end)
 
+events.MOUSE_SCROLL:register(function (dir)
+   book:setSelected((book.SelectedIndex + dir - 1) % #book.Page.Elements + 1)
+end)
+
 book:setPage(page)

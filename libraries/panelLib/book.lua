@@ -12,6 +12,8 @@ local next_free = 0
 ---@field Page GNpanel.page
 ---@field Part ModelPart
 ---@field Active boolean
+---@field SelectedIndex integer
+---@field Selected GNpanel.Element
 ---@field Visible boolean
 ---@field REBUILD KattEvent #delete all render tasks and make new ones
 ---@field TRANSFORM KattEvent #reposition, translates, rotates or scales
@@ -32,6 +34,8 @@ function Book.new(obj)
    new.Part = core.HUD:newPart("panelInstance"..next_free)
    new.Active = false
    new.Visible = true
+   new.SelectedIndex = 1
+   new.Selected = nil
    new.REBUILD = core.event.newEvent()
    new.TRANSFORM = core.event.newEvent()
    setmetatable(new,Book)
@@ -98,6 +102,21 @@ function Book:setVisible(visible)
    return self
 end
 
+function Book:setSelected(id)
+   if self.Page then
+      if self.Selected then
+         self.Selected.Hovering = false
+      end
+      self.SelectedIndex = id
+      self.Selected = self.Page.Elements[id]
+      if self.Selected then
+         self.Selected.Hovering = true
+      end
+      self:update()
+   end
+   return id
+end
+
 ---Inserts the element into the page.  
 ---* of no index is given, element will be appended at the top
 ---@param page GNpanel.page
@@ -107,6 +126,7 @@ function Book:setPage(page,index)
    if not page.Parent then
       self.Page = page
       page.Parent = self
+      self:setSelected(1)
       self:rebuild()
    else
       error("Tried to parent an already parented element!",2)

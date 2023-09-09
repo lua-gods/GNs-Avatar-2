@@ -7,6 +7,8 @@ local core = require("libraries.panelLib.panelCore")
 ---@field rebuild function
 ---@field update function
 ---@field pos Vector2
+---@field Pressed boolean
+---@field Hovering boolean
 ---@field Labels table<any,Label>
 ---@field TRANSFORM_CHANGED KattEvent
 ---@field PARENT_CHANGED KattEvent
