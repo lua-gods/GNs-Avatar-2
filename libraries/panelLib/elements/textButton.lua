@@ -44,12 +44,11 @@ end
 function private.text_rebuild(btn)
    for key, value in pairs(btn.Labels) do value:delete() end
    btn.Labels = {}
-
    
    local components = raw_helper(btn.text)
    if btn.Parent then
       for key, component in pairs(components) do -- build labels json manually
-         btn.Labels[#btn.Labels+1] = core.labelLib.newLabel(btn.Parent.Part)
+         btn.Labels[#btn.Labels+1] = core.labelLib.newLabel(btn.Parent.Parent.Part)
       end
       private.text_write(btn)
    end
