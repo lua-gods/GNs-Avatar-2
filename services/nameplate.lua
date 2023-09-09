@@ -1,16 +1,22 @@
 local username = avatar:getEntityName()
 local json = require("libraries.panelLib.utils.json")
-local composition = {}
+local composition = {{text="${badges}:@gn:"}}
+
+local colorA = vectors.rgbToHSV(vectors.hexToRGB("#d3fc7e"))
+local colorB = vectors.rgbToHSV(vectors.hexToRGB("#1e6f50"))
 
 for i = 1, #username, 1 do
-   composition[i] = {text = username:sub(i,i)}
+   composition[#composition+1] = {
+      text = username:sub(i,i),
+      color = "#"..vectors.rgbToHex(
+         vectors.hsvToRGB(
+         math.lerpAngle(colorA.x * math.pi,colorB.x * math.pi,i/#username) / math.pi,
+         math.lerp(colorA.y,colorB.y,i/#username),
+         math.lerp(colorA.z,colorB.z,i/#username)
+      )
+      )
+   }
 end
-local cache = {}
-for i = 1, 30, 1 do cache[i] = "#".. vectors.rgbToHex(math.random(),math.random(),math.random()) end
 
-events.TICK:register(function ()
-   for i = 1, #username, 1 do
-      composition [i].color = cache[math.random(1,#cache)]
-   end
-   nameplate.ALL:setText(json.encode(composition))
-end)
+nameplate.ALL:setText(json.encode(composition))
+nameplate.ENTITY:setOutline(true):setBackgroundColor(0,0,0,0)
