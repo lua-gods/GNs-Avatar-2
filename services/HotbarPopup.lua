@@ -10,11 +10,10 @@ events.WORLD_RENDER:register(function ()
    book:setPos(math.sin(time/10)*20,math.cos(time/10)*20)
 end)
 
-page:insertElement(panel.newButton():setText('[{"text":"hello","color":"green"},{"text":"world","color":"yellow"}]'))
-page:insertElement(panel.newButton():setText('[{"text":"I ","color":"dark_purple"},{"text":"am","color":"light_purple"}]'))
-page:insertElement(panel.newButton():setText('[{"text":"GN","color":"green"},{"text":"amimates","color":"dark_green"}]'))
-page:insertElement(panel.newButton():setText('[{"text":"with","color":"red"},{"text":"awesome","color":"gold"}]'))
-page:insertElement(panel.newButton():setText('[{"text":"with","color":"red"},{"text":"awesome","color":"gold"},{"text":"awesome","color":"gold"},{"text":"awesome","color":"gold"},{"text":"awesome","color":"gold"}]'))
+page:insertElement(panel.newButton():setText('[{"text":"|","color":"red"},{"text":"[]","color":"default"},{"text":"]","color":"red"},{"text":" Sample Text","color":"default"}]'))
+page:insertElement(panel.newButton():setText('[{"text":"|","color":"red"},{"text":"[]","color":"default"},{"text":"]","color":"red"},{"text":" Sample Text","color":"default"}]'))
+page:insertElement(panel.newButton():setText('[{"text":"|","color":"red"},{"text":"[]","color":"default"},{"text":"]","color":"red"},{"text":" Sample Text","color":"default"}]'))
+page:insertElement(panel.newButton():setText('[{"text":"|","color":"red"},{"text":"[]","color":"default"},{"text":"]","color":"red"},{"text":" Sample Text","color":"default"}]'))
 
 keybinds:newKeybind("any","key.mouse.left"):onPress(function (modifiers, self)
    page:insertElement(panel.newButton():setText('[{"text":"with","color":"red"},{"text":"awesome","color":"gold"}]'))
@@ -27,5 +26,9 @@ end)
 events.MOUSE_SCROLL:register(function (dir)
    book:setSelected((book.SelectedIndex + dir - 1) % #book.Page.Elements + 1)
 end)
+
+local press = keybinds:fromVanilla("figura.config.action_wheel_button")
+press.press = function (modifiers, self) book:press(true) return true end
+press.release = function (modifiers, self) book:press(false) end
 
 book:setPage(page)

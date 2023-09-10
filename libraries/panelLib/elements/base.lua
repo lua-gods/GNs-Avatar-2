@@ -12,18 +12,31 @@ local core = require("libraries.panelLib.panelCore")
 ---@field Labels table<any,Label>
 ---@field TRANSFORM_CHANGED KattEvent
 ---@field PARENT_CHANGED KattEvent
+---@field STATE_CHANGED KattEvent
 local element = {}
 element.__index = element
 
 function element.new(obj)
+   ---@type GNpanel.Element.TextButton
    local new = obj or {}
    new.pos = vectors.vec2()
    new.Pressed = false
    new.Hovering = false
    new.Labels = {}
    new.TRANSFORM_CHANGED = core.event.newEvent()
-   new.STATE_CHANGED = core.event.newEvent()
    new.PARENT_CHANGED = core.event.newEvent()
+   new.STATE_CHANGED = core.event.newEvent()
+   new.STATE_CHANGED:register(function (state)
+      if state == "HOVERING" then
+         core.uiSound("minecraft:entity.item_frame.rotate_item",new.id / #new.Parent.Elements + 0.75,0.5)
+      end
+      if state == "PRESSED" then
+         core.uiSound("minecraft:block.stone_button.click_on",0.6,0.5)
+      end
+      if state == "RELEASED" then
+         core.uiSound("minecraft:block.stone_button.click_off",0.5,0.5)
+      end
+   end)
    new.id = next_free
    setmetatable(new,element)
 

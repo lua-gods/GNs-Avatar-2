@@ -22,9 +22,6 @@ function button.new(obj)
    new.TRANSFORM_CHANGED:register(function ()
       private.text_reposition(new)
    end)
-   new.STATE_CHANGED:register(function ()
-      private.text_write(new)
-   end)
    setmetatable(new,button)
    return new
 end
@@ -40,12 +37,19 @@ function button:setText(text)
    return self
 end
 
+function private.text_parse(btn)
+   local components
+   if btn.Pressed then components = raw_helper(btn.text,core.color_overrides.pressed) else
+      if btn.Hovering then components = raw_helper(btn.text,core.color_overrides.hovering)
+      else components = raw_helper(btn.text,core.color_overrides.none) end end
+   return components
+end
+
 ---@param btn GNpanel.Element.TextButton
 function private.text_rebuild(btn)
    for key, value in pairs(btn.Labels) do value:delete() end
    btn.Labels = {}
-
-   local components = raw_helper(btn.text)
+   local components = private.text_parse(btn)
    if btn.Parent then
       for key, component in pairs(components) do -- build labels json manually
          btn.Labels[#btn.Labels+1] = core.labelLib.newLabel(btn.Parent.Parent.Part)
@@ -58,14 +62,14 @@ end
 ---@param components table?
 function private.text_write(btn,components)
    if not components then
-      components = raw_helper(btn.text)
+      components = private.text_parse(btn)
    end
    local glow = btn.Hovering
    for key, component in pairs(components) do -- reposition labels
       local label = btn.Labels[key]
       if glow then
          label:setText(component.text):setColorRGB(vectors.hexToRGB(component.color):unpack())
-         label:setOutlineColorRGB((vectors.hexToRGB(component.color) * 0.5):unpack())
+         label:setOutlineColorRGB((vectors.hexToRGB(component.color) * 0.4):unpack())
       else
          label:setText(component.text):setColorRGB(vectors.hexToRGB(component.color):unpack())
          label:setOutlineColorRGB((vectors.hexToRGB(component.color) * 0.2):unpack())
@@ -78,7 +82,7 @@ end
 ---@param components table?
 function private.text_reposition(btn,components)
    if not components then
-      components = raw_helper(btn.text)
+      components = private.text_parse(btn)
    end
    local cursor = 0
    if btn.Parent then    

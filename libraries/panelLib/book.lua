@@ -3,6 +3,11 @@ local core = require("libraries.panelLib.panelCore")
 ---@type table<any,GNpanel.book>
 local pages = {}
 
+---@alias GNpanel.Element.State string
+---| "PRESSED"
+---| "RELEASED"
+---| "HOVERED"
+
 local next_free = 0
 ---@class GNpanel.book
 ---@field Position Vector2 # tells where the book is at
@@ -104,17 +109,40 @@ end
 
 function Book:setSelected(id)
    if self.Page then
+      local was_pressed = false
       if self.Selected then
          self.Selected.Hovering = false
+         if self.Selected.Pressed then
+            was_pressed = true
+            self.Selected.STATE_CHANGED:invoke("RELEASED")
+            self.Selected.Pressed = false
+         end
       end
       self.SelectedIndex = id
       self.Selected = self.Page.Elements[id]
       if self.Selected then
          self.Selected.Hovering = true
+         self.Selected.STATE_CHANGED:invoke("HOVERING")
+         self.Selected.Pressed = was_pressed
+         if was_pressed then
+            self.Selected.STATE_CHANGED:invoke("PRESSED")
+         end
+         
       end
       self:update()
    end
    return id
+end
+
+function Book:press(toggle)
+   self.Selected.Pressed = toggle
+   if toggle then
+      self.Selected.STATE_CHANGED:invoke("PRESSED")
+   else
+      self.Selected.STATE_CHANGED:invoke("RELEASED")
+   end
+   self.Selected:update()
+   return self
 end
 
 ---Inserts the element into the page.  

@@ -36,18 +36,18 @@ return function (json,overrides)
       end
    end
    for I, component in pairs(parsed) do
+      if overrides then
+         for name, clr in pairs(overrides) do
+            if component.color == name then
+               parsed[I].color = clr
+               break
+            end
+         end
+      end
       for name, hex in pairs(color_override) do
          if component.color == name then
             parsed[I].color = hex
             break
-         end
-      end
-      if overrides then
-         for name, hex in pairs(overrides) do
-            if component.color == name then
-               parsed[I].color = hex
-               break
-            end
          end
       end
    end
