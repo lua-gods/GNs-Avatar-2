@@ -31,10 +31,10 @@ function element.new(obj)
          core.uiSound("minecraft:entity.item_frame.rotate_item",new.id / #new.Parent.Elements + 0.75,0.5)
       end
       if state == "PRESSED" then
-         core.uiSound("minecraft:block.stone_button.click_on",0.6,0.5)
+         core.uiSound("minecraft:block.wooden_button.click_on",1,0.5)
       end
       if state == "RELEASED" then
-         core.uiSound("minecraft:block.stone_button.click_off",0.5,0.5)
+         core.uiSound("minecraft:block.wooden_button.click_off",0.7,0.5)
       end
    end)
    new.id = next_free

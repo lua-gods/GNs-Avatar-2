@@ -10,17 +10,16 @@ events.WORLD_RENDER:register(function ()
    book:setPos(math.sin(time/10)*20,math.cos(time/10)*20)
 end)
 
-page:insertElement(panel.newButton():setText('[{"text":"|","color":"red"},{"text":"[]","color":"default"},{"text":"]","color":"red"},{"text":" Sample Text","color":"default"}]'))
-page:insertElement(panel.newButton():setText('[{"text":"|","color":"red"},{"text":"[]","color":"default"},{"text":"]","color":"red"},{"text":" Sample Text","color":"default"}]'))
-page:insertElement(panel.newButton():setText('[{"text":"|","color":"red"},{"text":"[]","color":"default"},{"text":"]","color":"red"},{"text":" Sample Text","color":"default"}]'))
-page:insertElement(panel.newButton():setText('[{"text":"|","color":"red"},{"text":"[]","color":"default"},{"text":"]","color":"red"},{"text":" Sample Text","color":"default"}]'))
+page:insertElement(panel.newToggleButton():setText('{"text":"64 bitches"}'))
+page:insertElement(panel.newButton():setText('[{"text":"|","color":"red"},{"text":"[]","color":"default"},{"text":"]","color":"red"},{"text":" Fake Toggle Button","color":"default"}]'))
+page:insertElement(panel.newButton():setText('[{"text":"|","color":"red"},{"text":"[]","color":"default"},{"text":"]","color":"red"},{"text":" Extra Fake","color":"default"}]'))
 
 keybinds:newKeybind("any","key.mouse.left"):onPress(function (modifiers, self)
    page:insertElement(panel.newButton():setText('[{"text":"with","color":"red"},{"text":"awesome","color":"gold"}]'))
 end)
 
 book.REBUILD:register(function ()
-   print("UPDATE")
+
 end)
 
 events.MOUSE_SCROLL:register(function (dir)
