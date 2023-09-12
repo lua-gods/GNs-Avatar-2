@@ -1,5 +1,7 @@
 local json_parser = require("libraries.panelLib.utils.json")
 
+local default_color = "default"
+
 local color_override = {
    black = "#000000",
    dark_blue = "#0000AA",
@@ -36,23 +38,22 @@ return function (json,overrides)
       end
    end
    for I, component in pairs(parsed) do
-      if component.color then
-         if overrides then
-            for name, clr in pairs(overrides) do
-               if component.color == name then
-                  parsed[I].color = clr
-                  break
-               end
-            end
-         end
-         for name, hex in pairs(color_override) do
+      if not component.color then
+         parsed[I].color = "default"
+      end
+      if overrides then
+         for name, clr in pairs(overrides) do
             if component.color == name then
-               parsed[I].color = hex
+               parsed[I].color = clr
                break
             end
          end
-      else
-         parsed[I].color = "#ffffff"
+      end
+      for name, hex in pairs(color_override) do
+         if component.color == name then
+            parsed[I].color = hex
+            break
+         end
       end
    end
    return parsed

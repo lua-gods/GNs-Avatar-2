@@ -13,8 +13,8 @@ end
 ---@return GNpanel.Element.ToggleButton
 function toggle.new(obj)
    local new = obj or base.new()
-   new.toggle = false
-   new.ON_TOGGLE = core.event.newEvent()
+   --new.toggle = false
+   --new.ON_TOGGLE = core.event.newEvent()
    setmetatable(new,toggle)
    return new
 end
