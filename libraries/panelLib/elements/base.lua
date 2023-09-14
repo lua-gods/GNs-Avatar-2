@@ -62,7 +62,7 @@ function element:getSize()
 end
 function element:update() return self end
 function element:rebuild() return self end
-
+function element:delete() return self end
 function element:setHovering(is_hovering)
    self.Hovering = is_hovering
    return self

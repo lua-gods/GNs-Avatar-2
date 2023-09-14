@@ -1,5 +1,8 @@
 local core = require("libraries.panelLib.panelCore")
 local base = require("libraries.panelLib.elements.textButton")
+local raw_helper = require("libraries.panelLib.utils.rawJsonHelper")
+
+local private = {}
 
 ---@class GNpanel.Element.ToggleButton : GNpanel.Element.TextButton
 ---@field toggle boolean
@@ -13,10 +16,12 @@ end
 ---@return GNpanel.Element.ToggleButton
 function toggle.new(obj)
    local new = obj or base.new()
-   --new.toggle = false
-   --new.ON_TOGGLE = core.event.newEvent()
+   new.toggle = false
+   new.ON_TOGGLE = core.event.newEvent()
+   
    setmetatable(new,toggle)
    return new
 end
+
 
 return toggle
