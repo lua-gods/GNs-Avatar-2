@@ -9,10 +9,10 @@ local core = require("libraries.panelLib.panelCore")
 ---@field pos Vector2
 ---@field Pressed boolean
 ---@field Hovering boolean
----@field Labels table<any,Label>
----@field TRANSFORM_CHANGED KattEvent
----@field PARENT_CHANGED KattEvent
----@field STATE_CHANGED KattEvent
+---@field Labels table
+---@field TRANSFORM_CHANGED AuriaEvent
+---@field PARENT_CHANGED AuriaEvent
+---@field STATE_CHANGED AuriaEvent
 local element = {}
 element.__index = element
 

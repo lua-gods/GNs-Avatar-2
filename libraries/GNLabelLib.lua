@@ -4,7 +4,7 @@
  / / __/  |/ / __ `/ __ `__ \/ / __ `__ \/ __ `/ __/ _ \/ ___/
 / /_/ / /|  / /_/ / / / / / / / / / / / / /_/ / /_/  __(__  )
 \____/_/ |_/\__,_/_/ /_/ /_/_/_/ /_/ /_/\__,_/\__/\___/____]]
-local katt = require("libraries.KattEventsAPI")
+local katt = require("libraries.eventLib")
 local lib = {SCREEN_RESIZED = katt.newEvent()}
 local labels = {}
 

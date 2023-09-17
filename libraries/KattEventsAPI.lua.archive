@@ -61,7 +61,11 @@ function KattEvent:flush()
     table.remove(self.removeQueue)
   end
   for _, func in ipairs(self.addQueue) do
-    table.insert(self.subscribers, func)
+    if not func.name then
+      table.insert(self.subscribers, func)
+    else
+      self.subscribers[func.name] = func
+    end
   end
   while #self.addQueue > 0 do
     table.remove(self.addQueue)
@@ -76,6 +80,7 @@ function KattEvent:invoke(...)
   self:flush()
   local args = table.pack(...)
   local vargs = table.pack(...)
+  print(self.subscribers)
   for _, subscription in ipairs(self.subscribers) do
     vargs = table.pack(subscription.func(table.unpack(self.piped and vargs or args, 1, args.n)))
   end
