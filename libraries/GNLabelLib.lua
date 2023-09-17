@@ -26,6 +26,7 @@ local config = {
 ---@field anchor Vector2
 ---@field origin Vector2
 ---@field offset Vector2
+---@field depth number
 ---@field tasks table
 local Label = {}
 Label.__index = Label
@@ -47,6 +48,7 @@ function lib.newLabel(parent)
       anchor = vectors.vec2(),
       origin = vectors.vec2(),
       offset = vectors.vec2(),
+      depth = 0,
       tasks = {},
    }
    setmetatable(compose,Label)
@@ -117,6 +119,12 @@ function Label:setOffset(x,y)
    else 
       self.offset = vectors.vec2(-x,y)
    end
+   self:updateTransform()
+   return self
+end
+
+function Label:offsetDepth(depth)
+   self.depth = depth
    self:updateTransform()
    return self
 end
@@ -195,7 +203,7 @@ function Label:updateTransform()
    local i = 0
    for task_name, task in pairs(self.tasks) do
       local pos = lib.pos2UI(self.offset.x,self.offset.y,self.anchor.x,self.anchor.y)
-      task:pos(pos.x,pos.y,0):scale(self.scale.x,self.scale.y,1)
+      task:pos(pos.x,pos.y,-self.depth):scale(self.scale.x,self.scale.y,1)
    end
    return self
 end

@@ -1,9 +1,8 @@
 local gn = {}
-local eventsLib = require("libraries.KattEventsAPI")
+local eventsLib = require("libraries.eventLib")
 local hud = models:newPart("UI"):setParentType("HUD")
 local defaultTexture = textures:newTexture("GNUI.SpriteTask.default", 16, 16):fill(0, 0, 16, 16,
-                                                                                   vectors.vec3(1,
-                                                                                                1, 1))
+vectors.vec3(1,1,1))
 
 local i = 0
 ---@class GNUI.SpriteTask
@@ -15,10 +14,10 @@ local i = 0
 ---@field BottomRight Vector2
 ---@field Texture {source:Texture,dimensions:Vector2}
 ---@field Sprite any
----@field TEXTURE_CHANGED KattEvent
----@field TINT_CHANGED KattEvent
----@field TRANSFORMED KattEvent
----@field VISIBILITY_CHANGED KattEvent
+---@field TEXTURE_CHANGED AuriaEvent
+---@field TINT_CHANGED AuriaEvent
+---@field TRANSFORMED AuriaEvent
+---@field VISIBILITY_CHANGED AuriaEvent
 local GNST = {}
 GNST.__index = GNST
 

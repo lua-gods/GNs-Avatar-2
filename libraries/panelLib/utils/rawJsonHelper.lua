@@ -1,7 +1,5 @@
 local json_parser = require("libraries.panelLib.utils.json")
 
-local default_color = "default"
-
 local color_override = {
    black = "#000000",
    dark_blue = "#0000AA",

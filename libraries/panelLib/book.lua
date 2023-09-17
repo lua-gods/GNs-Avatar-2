@@ -20,8 +20,8 @@ local next_free = 0
 ---@field SelectedIndex integer
 ---@field Selected GNpanel.Element
 ---@field Visible boolean
----@field REBUILD KattEvent #delete all render tasks and make new ones
----@field TRANSFORM KattEvent #reposition, translates, rotates or scales
+---@field REBUILD AuriaEvent #delete all render tasks and make new ones
+---@field TRANSFORM AuriaEvent #reposition, translates, rotates or scales
 local Book = {}
 Book.__index = Book
 

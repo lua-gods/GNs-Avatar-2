@@ -11,6 +11,7 @@ local core = require("libraries.panelLib.panelCore")
 ---@field TEXT_WRITE AuriaEvent
 ---@field TEXT_REPOSITION AuriaEvent
 ---@field TEXT_PARSE function
+---@field TEXT_COLOR_OVERRIDE function
 local button = {}
 button.__index = function (t,i)
    return button[i] or base[i]
@@ -31,6 +32,7 @@ function button.new(obj)
    new.TEXT_WRITE = core.event.newEvent()
    new.TEXT_REPOSITION = core.event.newEvent()
    new.TEXT_PARSE = private.text_parse
+   new.TEXT_COLOR_OVERRIDE = private.get_color_overrides
 
    new.TEXT_REBUILD:register(private.text_rebuild,"text")
    new.TEXT_WRITE:register(private.text_write,"text")
@@ -54,12 +56,19 @@ function button:setText(text)
    return self
 end
 
+function private.get_color_overrides(pressed,hovering)
+   if pressed then return core.color_overrides.pressed else
+      if hovering then return core.color_overrides.hovering
+      else return core.color_overrides.none end
+   end
+end
+
 function private.text_parse(text,btn)
    local components
    if btn.Pressed then components = raw_helper(text,core.color_overrides.pressed) else
       if btn.Hovering then components = raw_helper(text,core.color_overrides.hovering)
       else components = raw_helper(text,core.color_overrides.none) end end
-   return  
+   return components
 end
 
 ---@param btn GNpanel.Element.TextButton
