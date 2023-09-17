@@ -29,11 +29,11 @@ function toggle.new(obj)
          private.switch_write(new)
          new.ON_TOGGLE:invoke(new.Toggle)
          if new.Toggle then
-            core.tween.tweenFunction(0,1,0.2,"outElastic",function (x)
+            core.tween.tweenFunction(0,1,0.5,"outElastic",function (x)
                private.switch_reposition(new,x)
             end,"toggle")
          else
-            core.tween.tweenFunction(1,0,0.2,"outElastic",function (x)
+            core.tween.tweenFunction(1,0,0.5,"outElastic",function (x)
                private.switch_reposition(new,x)
             end,"toggle")
          end
