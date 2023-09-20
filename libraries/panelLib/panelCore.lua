@@ -27,7 +27,7 @@ local config = {
       red = "#FF5555",
       light_purple = "#FF55FF",
       yellow = "#FFFF55",
-   },   
+   },
 }
 
 return config

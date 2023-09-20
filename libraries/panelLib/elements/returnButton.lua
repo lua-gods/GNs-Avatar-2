@@ -9,7 +9,7 @@ end
 
 function element.new(obj)
    ---@type GNpanel.Element.Return
-   local new = obj or base
+   local new = obj or base.new()
    setmetatable(new,element)
    return new
 end
