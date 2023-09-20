@@ -15,6 +15,7 @@ for i = 1, 5, 1 do
 end
 page:insertElement(panel.newButton():setText('[{"text":"|","color":"red"},{"text":"[]","color":"default"},{"text":"]","color":"red"},{"text":" Fake Toggle Button","color":"default"}]'))
 page:insertElement(panel.newButton():setText('[{"text":"|","color":"red"},{"text":"[]","color":"default"},{"text":"]","color":"red"},{"text":" Extra Fake","color":"default"}]'))
+page:insertElement(panel.newReturnButton())
 
 --keybinds:newKeybind("any","key.mouse.left"):onPress(function (modifiers, self)
 --   page:insertElement(panel.newButton():setText('[{"text":"with","color":"red"},{"text":"awesome","color":"gold"}]'))
