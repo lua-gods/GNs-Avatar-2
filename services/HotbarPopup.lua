@@ -25,8 +25,10 @@ book.REBUILD:register(function ()
 
 end)
 
+local scroll = 0
 events.MOUSE_SCROLL:register(function (dir)
-   book:setSelected((book.SelectedIndex + dir - 1) % #book.Page.Elements + 1)
+   scroll = (scroll + dir - 1) % #book.Page.Elements + 1
+   book:setSelected(math.floor(scroll))
 end)
 
 local press = keybinds:fromVanilla("figura.config.action_wheel_button")
