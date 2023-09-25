@@ -77,7 +77,7 @@ function Label:setPos(x,y)
    elseif t == "number" then
       self.Position = vectors.vec3(x,y,self.Position.z)
    end
-   self.RenderTask:pos(self.Position.x,self.Position.y,0)
+   self.RenderTask:pos(self.Position.x,self.Position.y,self.Position.z)
    return self
 end
 

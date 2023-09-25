@@ -38,7 +38,7 @@ function toggle.new(obj)
       new.Labels.switch =  {
       case_left = core.labelLib.new(new.PageParent.BookParent.Part):setText("["):setEffect("OUTLINE"),
       case_right = core.labelLib.new(new.PageParent.BookParent.Part):setText("]"):setEffect("OUTLINE"),
-      handle = core.labelLib.new(new.PageParent.BookParent.Part):setText("[]"):setEffect("OUTLINE"):setDepth(1),
+      handle = core.labelLib.new(new.PageParent.BookParent.Part):setText("[]"):setEffect("OUTLINE"):setDepth(-1),
    }
    end,"switch")
    
