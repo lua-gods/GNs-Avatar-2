@@ -4,236 +4,87 @@
  / / __/  |/ / __ `/ __ `__ \/ / __ `__ \/ __ `/ __/ _ \/ ___/
 / /_/ / /|  / /_/ / / / / / / / / / / / / /_/ / /_/  __(__  )
 \____/_/ |_/\__,_/_/ /_/ /_/_/_/ /_/ /_/\__,_/\__/\___/____]]
-local katt = require("libraries.eventLib")
-local lib = {SCREEN_RESIZED = katt.newEvent()}
+local event = require("libraries.eventLib")
+local SCREEN_RESIZED = event.newEvent()
 local labels = {}
 
 local config = {
    defualt_parent = models:newPart("LabelHUD","HUD")
 }
 
----@alias LabelOverflowType string
----| "IGNORE"
----| "CUTOFF"
----| "WARP"
+---@alias Label.Effect string
+---| "NONE"
+---| "SHADOW"
+---| "OUTLINE"
 
+local next_free = 0
 ---@class Label
 ---@field id integer
----@field text string
----@field parent ModelPart
----@field scale Vector2
----@field color Vector3
----@field anchor Vector2
----@field origin Vector2
----@field offset Vector2
----@field depth number
----@field tasks table
+---@field Text string
+---@field TextOverride table?
+---@field RenderTask TextTask
+---@field Parent ModelPart
+---@field Position Vector3
 local Label = {}
 Label.__index = Label
 Label.__type = "label"
 
-local labelID = 1
 ---@param parent ModelPart?
 ---@return Label
-function lib.newLabel(parent)
-   ---@type Label
-   local compose = {
-      id = labelID,
-      parent = parent or config.defualt_parent,
-      text = "",
-      color=nil,
-      text_align = 0,
-      outline_color = vectors.vec3(0,0,0),
-      scale = vectors.vec2(1,1),
-      anchor = vectors.vec2(),
-      origin = vectors.vec2(),
-      offset = vectors.vec2(),
-      depth = 0,
-      tasks = {},
-   }
-   setmetatable(compose,Label)
-   compose:buildTasks()
-   labels[labelID] = compose
-   labelID = labelID + 1
-   return compose
+function Label.new(parent)
+   local new = {}
+   new.Text = "Untitled"
+   new.Position = vectors.vec3()
+   new.Parent = parent or config.defualt_parent
+   new.RenderTask = new.Parent:newText(tostring(next_free)):setText(new.Text)
+   setmetatable(new,Label)
+   next_free = next_free + 1
+   return new
 end
 
----Sets the display text of the given label.
+function Label:setTextOverrides(overrides)
+   self.TextOverride = overrides
+   self:setText(self.Text)
+   return self
+end
+
 ---@param text string
----@return Label
 function Label:setText(text)
-   self.text = text
-   self:updateTextDisplay()
-   self:updateTransform()
-   return self
-end
-
----Sets the color of the label in RGB
----@param R number
----@param G number
----@param B number
-function Label:setColorRGB(R,G,B)
-   self.color = vectors.vec3(R,G,B)
-   self:updateTextDisplay()
-   return self
-end
-
----Sets the color of the label in HEX
----@param hex string
-function Label:setColorHEX(hex)
-   self.color = vectors.hexToRGB(hex)
-   self:updateTextDisplay()
-   return self
-end
-
----Sets the outline color of the label in RGB
----@param R number
----@param G number
----@param B number
-function Label:setOutlineColorRGB(R,G,B)
-   self.outline_color = vectors.vec3(R,G,B)
-   self:updateTextDisplay()
-   return self
-end
-
----Sets the outline color of the label in HEX
----@param hex string
-function Label:setOutlineColorHex(hex)
-   self.outline_color = vectors.hexToRGB(hex)
-   self:updateTextDisplay()
-   return self
-end
-
-function Label:resetColor()
-   self.color = nil
-   self:updateTextDisplay()
-   return self
-end
-
----sets the offset from the origin of the anchor
----@param x number|Vector2
----@param y number|nil
-function Label:setOffset(x,y)
-   if type(x) == "Vector2" then
-      self.offset = x:copy():mul(-1,1)
-   else 
-      self.offset = vectors.vec2(-x,y)
-   end
-   self:updateTransform()
-   return self
-end
-
-function Label:offsetDepth(depth)
-   self.depth = depth
-   self:updateTransform()
-   return self
-end
-
----sets the offset from the origin of the anchor
----@param x number|Vector2
----@param y number|nil
-function Label:setScale(x,y)
-   if type(x) == "Vector2" then
-      self.scale = x:copy()
-   else 
-      self.scale = vectors.vec2(x,y)
-   end
-   self:updateTransform()
-   return self
-end
-
----sets the anchor position  
----the range is from -1 to 1, top to bottom, left to right
----@param x number|Vector2
----@param y number|nil
-function Label:setAnchor(x,y)
-   if type(x) == "Vector2" then
-      self.anchor = x:copy():mul(-0.5,0.5)
-   else
-      self.anchor = vectors.vec2(x * -0.5,y * 0.5)
-   end
-   self:updateTransform()
-   return self
-end
-
----sets the anchor origin position  
----the range is from -1 to 1, top to bottom, left to right
----@param x number|Vector2
----@param y number|nil
-function Label:setAnchorOrigin(x,y)
-   if type(x) == "Vector2" then
-      self.origin = x 
-   else 
-      self.origin = vectors.vec2(x,y)
-   end
-   self:updateTransform()
-   return self
-end
-
----queues itself for deletion on the next frame
-function Label:delete()
-   self:clearTasks()
-   labels[self.id] = nil
-end
-
----sets the modelPart thats gonna contain the rendering
----@param part ModelPart
-function Label:setParent(part)
-   self:clearTasks()
-   self.parent = part
-   self:buildTasks()
-   return self
-end
-
-function Label:clearTasks()
-   for id, task in pairs(self.tasks) do
-      self.parent:removeTask(id)
-   end
-end
-
-
-function Label:buildTasks()
-   local taskName = "gnlabellib."..self.id..".label"
-   self.tasks[taskName] =  self.parent:newText(taskName):outline(true)
-   self:updateTextDisplay()
-   self:updateTransform()
-end
-
-function Label:updateTransform()
-   local i = 0
-   for task_name, task in pairs(self.tasks) do
-      local pos = lib.pos2UI(self.offset.x,self.offset.y,self.anchor.x,self.anchor.y)
-      task:pos(pos.x,pos.y,-self.depth):scale(self.scale.x,self.scale.y,1)
-   end
-   return self
-end
-
-function lib.pos2UI(ox,oy,ax,ay)
-   return vectors.vec2(ax-0.5,ay-0.5)*client:getScaledWindowSize() + vectors.vec2(ox,oy)
-end
-
-function Label:updateTextDisplay()
-   local i = 0
-   local final_color = vectors.vec3(1,1,1)
-   if self.color then
-      final_color = self.color
-   end
-   for task_name, task in pairs(self.tasks) do
-      task:text('{"text":"'..self.text..'","color":"#'..vectors.rgbToHex(final_color)..'"}'):outlineColor(self.outline_color)
-   end
-   return self
-end
-
-local last_window_size = vectors.vec2()
-events.POST_WORLD_RENDER:register(function (delta)
-   local window_size = client:getWindowSize()
-   if last_window_size ~= window_size then
-      last_window_size = window_size
-      lib.SCREEN_RESIZED:invoke(window_size)
-      for _, label in pairs(labels) do
-         label:updateTransform()
+   if self.TextOverride then
+      for what, with in pairs(self.TextOverride) do
+         text = text:gsub(what,with)
       end
    end
-end)
+   self.Text = text
+   self.RenderTask:setText(text)
+   return self
+end
 
-return lib
+
+---@param type Label.Effect
+function Label:setEffect(type)
+   self.RenderTask:setShadow(type == "SHADOW")
+   self.RenderTask:setOutline(type == "OUTLINE")
+   return self
+end
+
+---@param x number|Vector2
+---@param y number?
+function Label:setPos(x,y)
+   local t = type(x)
+   if t == "Vector2" then
+      self.Position = vectors.vec3(x.x,x.y,self.Position.z)
+   elseif t == "number" then
+      self.Position = vectors.vec3(x,y,self.Position.z)
+   end
+   self.RenderTask:pos(self.Position.x,self.Position.y,0)
+   return self
+end
+
+function Label:setDepth(z)
+   self.Position.z = z
+   self:setPos(self.Position.x,self.Position.y)
+   return self
+end
+
+return Label

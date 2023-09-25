@@ -7,7 +7,7 @@ local next_free = 0
 ---@class GNpanel.page
 ---@field Placement function # tells how each page is displayed
 ---@field id integer # tells how each page is displayed
----@field Parent GNpanel.book
+---@field BookParent GNpanel.book
 ---@field Elements table<any,GNpanel.Element>
 local Page = {}
 Page.__index = Page
@@ -32,15 +32,15 @@ end
 ---@param index any
 ---@return GNpanel.page
 function Page:insertElement(element,index)
-   if not element.Parent then
+   if not element.PageParent then
       if not index then
          index = #self.Elements+1
       end
       table.insert(self.Elements,index,element)
-      element.Parent = self
-      if self.Parent then
+      element.PageParent = self
+      if self.BookParent then
          element:rebuild()
-         self.Parent:update()
+         self.BookParent:update()
       end
    else
       error("Tried to parent an already parented element!",2)

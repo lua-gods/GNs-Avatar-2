@@ -8,11 +8,11 @@ eventMetatable.__index = eventMetatable
 
 ---@return AuriaEvent
 function lib.new()
-   return setmetatable({_registered = {}}, eventMetatable)
+   return setmetatable({subscribers = {}}, eventMetatable)
 end
 ---@return AuriaEvent
 function lib.newEvent()
-   return setmetatable({_registered = {}}, eventMetatable)
+   return setmetatable({subscribers = {}}, eventMetatable)
 end
 
 function lib.table(tbl)
@@ -23,45 +23,33 @@ end
 ---@param func function
 ---@param name string?
 function eventMetatable:register(func, name)
-   table.insert(self._registered, {func = func, name = name})
+   if name then
+      self.subscribers[name] = {func = func}
+   else
+      table.insert(self.subscribers, {func = func})
+   end
 end
 
 ---Clears all event
 function eventMetatable:clear()
-   self._registered = {}
+   self.subscribers = {}
 end
 
 ---Removes an event with the given name.
 ---@param match string
----@return integer
 function eventMetatable:remove(match)
-   local count = 0
-   for i = #self._registered, 1, -1 do
-      local tbl = self._registered[i]
-      if tbl.func == match or tbl.name == match then
-         table.remove(self._registered, i)
-         count = count + 1
-      end
-   end
-   return count
+   self.subscribers[match] = nil
 end
 
 ---Returns how much listerners there are.
----@param name string
 ---@return integer
-function eventMetatable:getRegisteredCount(name)
-   local count = 0
-   for _, data in pairs(self._registered) do
-      if data.name == name then
-         count = count + 1
-      end
-   end
-   return count
+function eventMetatable:getRegisteredCount()
+   return #self.subscribers
 end
 
 function eventMetatable:__call(...)
    local returnValue = {}
-   for _, data in pairs(self._registered) do
+   for _, data in pairs(self.subscribers) do
       table.insert(returnValue, {data.func(...)})
    end
    return returnValue
@@ -69,14 +57,14 @@ end
 
 function eventMetatable:invoke(...)
    local returnValue = {}
-   for _, data in pairs(self._registered) do
+   for _, data in pairs(self.subscribers) do
       table.insert(returnValue, {data.func(...)})
    end
    return returnValue
 end
 
 function eventMetatable:__len()
-   return #self._registered
+   return #self.subscribers
 end
 
 -- events table

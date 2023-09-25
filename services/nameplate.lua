@@ -1,5 +1,4 @@
 local username = avatar:getEntityName()
-local json = require("libraries.panelLib.utils.json")
 local composition = {{text="${badges}:@gn:"}}
 
 local colorA = vectors.rgbToHSV(vectors.hexToRGB("#d3fc7e"))
@@ -18,5 +17,5 @@ for i = 1, #username, 1 do
    }
 end
 
-nameplate.ALL:setText(json.encode(composition))
+nameplate.ALL:setText(toJson(composition))
 nameplate.ENTITY:setOutline(true):setBackgroundColor(0,0,0,0)

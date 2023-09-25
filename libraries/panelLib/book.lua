@@ -2,11 +2,7 @@ local core = require("libraries.panelLib.panelCore")
 
 ---@type table<any,GNpanel.book>
 local pages = {}
-
----@alias GNpanel.Element.State string
----| "PRESSED"
----| "RELEASED"
----| "HOVERED"
+local WINDOW_RESIZED = core.event.newEvent()
 
 local next_free = 0
 ---@class GNpanel.book
@@ -33,7 +29,7 @@ function Book.new(obj)
    local new = obj or {}
    new.Position = vectors.vec2(0,0)
    new.Origin = vectors.vec2(0,0)
-   new.Anchor = vectors.vec2()
+   new.Anchor = vectors.vec2(-1,-1)
    new.DefaultPlacement = function (x,y,sx,sy) return vectors.vec2(x,y + sy) end
    new.CurrentPage = 1
    new.Part = core.HUD:newPart("panelInstance"..next_free)
@@ -44,20 +40,41 @@ function Book.new(obj)
    new.REBUILD = core.event.newEvent()
    new.TRANSFORM = core.event.newEvent()
    setmetatable(new,Book)
+   WINDOW_RESIZED:register(function ()Book._positionUpdate(new)end)
    
    pages[next_free] = new
    return new
 end
 
----@param posx Vector2|number
----@param y number
-function Book:setPos(posx,y)
-   if type(posx) == "Vector2" then
-      self.Position = posx:copy()
-   else
-      self.Position = vectors.vec2(posx,y)
+function Book:_positionUpdate()
+   if self.Part then
+      local sws = client:getScaledWindowSize()
+      self.Part:setPos(
+         self.Position.x - sws.x * (self.Anchor.x * 0.5 + 0.5),
+         self.Position.y - sws.y * (self.Anchor.y * 0.5 + 0.5),0)
    end
-   self.Part:setPos(self.Position.x,self.Position.y,0)
+end
+
+---@param x Vector2|number
+---@param y number
+function Book:setPos(x,y)
+   if type(x) == "Vector2" then
+      self.Position = x:copy()
+   else
+      self.Position = vectors.vec2(x,y)
+   end
+   self:_positionUpdate()
+end
+
+---@param x Vector2|number
+---@param y number
+function Book:setAnchor(x,y)
+   if type(x) == "Vector2" then
+      self.Anchor = x:copy()
+   else
+      self.Anchor = vectors.vec2(x,y)
+   end
+   self:_positionUpdate()
 end
 
 ---@return GNpanel.book
@@ -151,9 +168,9 @@ end
 ---@param index any
 ---@return GNpanel.book
 function Book:setPage(page,index)
-   if not page.Parent then
+   if not page.BookParent then
       self.Page = page
-      page.Parent = self
+      page.BookParent = self
       self:setSelected(1)
       self:rebuild()
    else
@@ -162,7 +179,14 @@ function Book:setPage(page,index)
    return self
 end
 
+local last_window_size = vectors.vec2()
+
 events.WORLD_RENDER:register(function (delta)
+   local window_size = client:getWindowSize()
+   if last_window_size.x - window_size.x + last_window_size.y - window_size.y ~= 0 then
+      WINDOW_RESIZED:invoke(window_size)
+   end
+   last_window_size = window_size
    for I, page in pairs(pages) do
       if page.rebuild_queue then
          page:forceRebuild()
