@@ -24,6 +24,11 @@ function button.new(obj)
    new.UPDATE:register(function ()
       new.Label.TextOverride = button.get_color_overrides(new.Pressed,new.Hovering)
       new.Label:setText(new.text):setPos(new.pos):setEffect("OUTLINE")
+      if new.Hovering then
+         new.Label:setGlowColor(0.3,0.3,0.3)
+      else
+         new.Label:setGlowColor(0,0,0)
+      end
    end,"label")
    return new
 end

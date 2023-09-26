@@ -30,7 +30,7 @@ function Book.new(obj)
    new.Position = vectors.vec2(0,0)
    new.Origin = vectors.vec2(0,0)
    new.Anchor = vectors.vec2(-1,-1)
-   new.DefaultPlacement = function (x,y,sx,sy) return vectors.vec2(x,y + sy) end
+   new.DefaultPlacement = function (x,y,sx,sy) return vectors.vec2(x,y - sy) end
    new.CurrentPage = 1
    new.Part = core.HUD:newPart("panelInstance"..next_free)
    new.Active = false
@@ -131,16 +131,16 @@ function Book:setSelected(id)
          self.Selected.Hovering = false
          if self.Selected.Pressed then
             was_pressed = true
-            self.Selected.STATE_CHANGED:invoke("RELEASED")
             self.Selected.Pressed = false
+            self.Selected.STATE_CHANGED:invoke("RELEASED")
          end
       end
       self.SelectedIndex = id
       self.Selected = self.Page.Elements[id]
       if self.Selected then
          self.Selected.Hovering = true
-         self.Selected.STATE_CHANGED:invoke("HOVERING")
          self.Selected.Pressed = was_pressed
+         self.Selected.STATE_CHANGED:invoke("HOVERING")
          if was_pressed then
             self.Selected.STATE_CHANGED:invoke("PRESSED")
          end

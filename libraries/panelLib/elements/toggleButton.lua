@@ -44,9 +44,14 @@ function toggle.new(obj)
    
    new.UPDATE:register(function ()
       if new.Labels.switch then
-         new.Labels.switch.handle:setPos(new.pos.x - math.lerp(2,4,new.Pressed and 1 or 0),new.pos.y)
+         new.Labels.switch.handle:setPos(new.pos.x - (new.Toggle and 4 or 2),new.pos.y)
          new.Labels.switch.case_left:setPos(new.pos):setText(new.Toggle and '{"text":"[","color":"green"}' or '{"text":"[","color":"red"}')
          new.Labels.switch.case_right:setPos(new.pos:copy():add(-10,0)):setText(new.Toggle and '{"text":"]","color":"green"}' or '{"text":"]","color":"red"}')
+         if new.Hovering then
+            new.Label:setGlowColor(0.3,0.3,0.3)
+         else
+            new.Label:setGlowColor(0,0,0)
+         end
       end
    end,"switch")
 
@@ -54,6 +59,24 @@ function toggle.new(obj)
       new.Label.TextOverride = new.get_color_overrides(new.Pressed,new.Hovering)
       new.Label:setText(new.text):setPos(new.pos:copy():add(-18,0)):setEffect("OUTLINE")
    end,"label")
+
+   new.STATE_CHANGED:register(function (state)
+      if state == "HOVERING" then
+         core.uiSound("minecraft:entity.item_frame.rotate_item",new.id / #new.PageParent.Elements + 0.75,0.5)
+      end
+
+      if state == "PRESSED" then
+         core.uiSound("minecraft:block.note_block.hat",1,0.1)
+      end
+      if state == "RELEASED" then
+         if new.Toggle then
+            core.uiSound("minecraft:block.note_block.hat",2,0.5)
+         else
+            core.uiSound("minecraft:block.note_block.hat",1.2,0.5)
+         end
+      end
+   end,"sounds")
+
    setmetatable(new,toggle)
    return new
 end

@@ -34,7 +34,7 @@ function element.new(obj)
       if state == "RELEASED" then
          core.uiSound("minecraft:block.wooden_button.click_off",0.7,0.5)
       end
-   end)
+   end,"sounds")
    new.id = next_free
    setmetatable(new,element)
 

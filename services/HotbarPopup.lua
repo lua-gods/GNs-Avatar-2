@@ -18,7 +18,7 @@ book:setAnchor(0,0)
 
 page:insertElement(panel.newButton():setText('[{"text":"|","color":"red"},{"text":"[]","color":"default"},{"text":"]","color":"red"},{"text":" Fake Toggle Button","color":"default"}]'))
 page:insertElement(panel.newButton():setText('[{"text":"|","color":"red"},{"text":"[]","color":"default"},{"text":"]","color":"red"},{"text":" Extra Fake","color":"default"}]'))
---page:insertElement(panel.newReturnButton())
+page:insertElement(panel.newReturnButton())
 
 --keybinds:newKeybind("any","key.mouse.left"):onPress(function (modifiers, self)
 --   page:insertElement(panel.newButton():setText('[{"text":"with","color":"red"},{"text":"awesome","color":"gold"}]'))
@@ -30,7 +30,7 @@ end)
 
 local scroll = 0
 events.MOUSE_SCROLL:register(function (dir)
-   scroll = (scroll + dir - 1) % #book.Page.Elements + 1
+   scroll = (scroll - dir - 1) % #book.Page.Elements + 1
    book:setSelected(math.floor(scroll))
 end)
 

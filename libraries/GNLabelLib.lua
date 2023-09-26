@@ -49,6 +49,7 @@ function Label:setTextOverrides(overrides)
 end
 
 ---@param text string
+---@return Label
 function Label:setText(text)
    if self.TextOverride then
       for what, with in pairs(self.TextOverride) do
@@ -57,6 +58,20 @@ function Label:setText(text)
    end
    self.Text = text
    self.RenderTask:setText(text)
+   return self
+end
+
+---@param rclr number|Vector3
+---@param g number
+---@param b number
+---@return Label
+function Label:setGlowColor(rclr,g,b)
+   local t = type(rclr)
+   if t == "Vector3" then
+      self.RenderTask:setOutlineColor(rclr)
+   else
+      self.RenderTask:setOutlineColor(rclr,g,b)
+   end
    return self
 end
 
@@ -70,6 +85,7 @@ end
 
 ---@param x number|Vector2
 ---@param y number?
+---@return Label
 function Label:setPos(x,y)
    local t = type(x)
    if t == "Vector2" then
@@ -81,6 +97,9 @@ function Label:setPos(x,y)
    return self
 end
 
+
+---@param z number
+---@return Label
 function Label:setDepth(z)
    self.Position.z = z
    self:setPos(self.Position.x,self.Position.y)
