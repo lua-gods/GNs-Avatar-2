@@ -16,8 +16,9 @@ end
 
 book:setAnchor(0,0)
 
-page:insertElement(panel.newButton():setText('[{"text":"|","color":"red"},{"text":"[]","color":"default"},{"text":"]","color":"red"},{"text":" Fake Toggle Button","color":"default"}]'))
-page:insertElement(panel.newButton():setText('[{"text":"|","color":"red"},{"text":"[]","color":"default"},{"text":"]","color":"red"},{"text":" Extra Fake","color":"default"}]'))
+page:insertElement(panel.newButton():setText('[{"text":"Example Button","color":"default"}]'))
+page:insertElement(panel.newButton():setText('[{"text":"Another Button","color":"default"}]'))
+page:insertElement(panel.newTextInputButton())
 page:insertElement(panel.newReturnButton())
 
 --keybinds:newKeybind("any","key.mouse.left"):onPress(function (modifiers, self)
