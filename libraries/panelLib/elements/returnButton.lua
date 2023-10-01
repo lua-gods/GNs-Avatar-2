@@ -1,7 +1,7 @@
 local base = require("libraries.panelLib.elements.base")
 local core = require("libraries.panelLib.panelCore")
 
----@class GNpanel.Element.ReturnButton : GNpanel.Element
+---@class GNpanel.Element.Button.Return : GNpanel.Element
 ---@field Label Label
 ---@field pressed boolean
 local button = {}
@@ -10,7 +10,7 @@ button.__index = function (t,i)
 end
 
 ---@param obj table?
----@return GNpanel.Element.ReturnButton
+---@return GNpanel.Element.Button.Return
 function button.new(obj)
    local new = obj or base.new()
    new.text = '[{"text":"Empty Button","color":"default"}]'

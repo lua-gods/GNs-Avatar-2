@@ -1,8 +1,12 @@
 local username = avatar:getEntityName()
-local composition = {{text="${badges}:@gn:"}}
+local composition = {{text="${badges}:@scarlet:"}}
 
-local colorA = vectors.rgbToHSV(vectors.hexToRGB("#d3fc7e"))
-local colorB = vectors.rgbToHSV(vectors.hexToRGB("#1e6f50"))
+avatar:color(vectors.hexToRGB("#edab5"))
+local colorA = vectors.rgbToHSV(vectors.hexToRGB("#edab50"))
+local colorB = vectors.rgbToHSV(vectors.hexToRGB("#8e251d"))
+
+--local colorA = vectors.rgbToHSV(vectors.hexToRGB("#d3fc7e"))
+--local colorB = vectors.rgbToHSV(vectors.hexToRGB("#1e6f50"))
 
 for i = 1, #username, 1 do
    composition[#composition+1] = {
