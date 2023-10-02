@@ -9,8 +9,8 @@ local colorB = vectors.rgbToHSV(vectors.hexToRGB("#8e251d"))
 --local colorA = vectors.rgbToHSV(vectors.hexToRGB("#d3fc7e"))
 --local colorB = vectors.rgbToHSV(vectors.hexToRGB("#1e6f50"))
 
-composition[#composition+1] = {text="[AFK : 15s]",color="gray"}
-composition[#composition+1] = {text="\n"}
+--composition[#composition+1] = {text="[AFK : 15s]",color="gray"}
+--composition[#composition+1] = {text="\n"}
 
 composition[#composition+1] = {text="${badges}:@scarlet:"}
 for i = 1, #username, 1 do

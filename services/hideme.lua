@@ -2,6 +2,7 @@ vanilla_model.PLAYER:setVisible(false)
 vanilla_model.ARMOR:setVisible(false)
 vanilla_model.HELMET_ITEM:setVisible(true)
 models.plushie:setParentType("SKULL")
+models.hat:setParentType("SKULL")
 
 local time = 0
 
@@ -10,12 +11,37 @@ events.WORLD_RENDER:register(function (delta)
 end)
 
 events.SKULL_RENDER:register(function (delta, block, item,entity,context)
+   if entity then
+      ---@type Vector3
+      local clr = entity:getVariable("color")
+      --clr = vectors.hsvToRGB((client:getSystemTime()* 0.0003)% 1,1,1)
+      if type(clr) == "Vector3" then
+         for i = 1, 4, 1 do
+            local w = (i-1)/4
+            local a = vectors.rgbToHSV(clr)
+            a.g = a.g; a.b = 1
+            a.g = math.min(a.g * 1.1,1)
+            local b = vectors.rgbToHSV(clr)
+            b.b = 0.67; b.g = 1
+            b = vectors.hsvToRGB(b)
+            b = math.lerp(b,vectors.vec3(0.1,0.2,0.4),0.4)
+            b = vectors.rgbToHSV(b)
+            models.hat.Tophat.ribbon["color"..i]:setColor(vectors.hsvToRGB(
+               vectors.vec3(
+                  math.lerpAngle(b.x,a.x,w),
+                  math.lerp(b.y,a.y,w),
+                  math.lerp(b.z,a.z,w)
+               )
+            ))
+         end
+      end
+   end
    if context == "HEAD" then
-      models.plushie.Plushie:setVisible(false)
-      models.plushie.Extension:setVisible(false)
-      models.plushie.Tophat:setVisible(true)
+      models.plushie:setVisible(false)
+      models.hat:setVisible(true)
    else
-      models.plushie.Tophat:setVisible(false)
+      models.plushie:setVisible(true)
+      models.hat:setVisible(false)
       if block then
          local under = world.getBlockState(block:getPos():sub(0,1,0))
          local stack = under.id == "minecraft:player_head" and under:getEntityData() and under:getEntityData().SkullOwner.Name == "GNamimates"
