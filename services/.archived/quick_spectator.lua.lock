@@ -1,0 +1,14 @@
+local q = keybinds:newKeybind("Quick Spectator","key.keyboard.z")
+local last_gamemode = "CREATIVE"
+
+q.press = function (modifiers, self)
+   host:sendChatCommand("gamemode spectator")
+   local gamemode = player:getGamemode()
+   if gamemode ~= "SPECTATOR" then
+      last_gamemode = player:getGamemode()
+   end
+end
+
+q.release = function (modifiers, self)
+   host:sendChatCommand("gamemode "..last_gamemode:lower())
+end

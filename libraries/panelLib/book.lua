@@ -11,6 +11,7 @@ local next_free = 0
 ---@field Anchor Vector2 # tells what corner of the screen the origin anchors to
 ---@field DefaultPlacement function # tells how each page is displayed
 ---@field Page GNpanel.page
+---@field PageHistory table<any,GNpanel.page>
 ---@field Part ModelPart
 ---@field Active boolean
 ---@field SelectedIndex integer
@@ -33,6 +34,7 @@ function Book.new(obj)
    new.DefaultPlacement = function (x,y,sx,sy) return vectors.vec2(x,y - sy) end
    new.CurrentPage = 1
    new.Part = core.HUD:newPart("panelInstance"..next_free)
+   new.PageHistory = {}
    new.Active = false
    new.Visible = true
    new.SelectedIndex = 1
@@ -121,6 +123,7 @@ end
 ---@return GNpanel.book
 function Book:setVisible(visible)
    self.Visible = visible
+   self.Part:setVisible(visible)
    return self
 end
 
@@ -170,11 +173,20 @@ end
 function Book:setPage(page,index)
    if not page.BookParent then
       self.Page = page
+      self.PageHistory[#self.PageHistory+1] = page
       page.BookParent = self
       self:setSelected(1)
       self:rebuild()
    else
       error("Tried to parent an already parented element!",2)
+   end
+   return self
+end
+
+function Book:returnPage()
+   if #self.PageHistory > 1 then
+      self.PageHistory[#self.PageHistory] = nil
+      self.Page = self.PageHistory[#self.PageHistory]
    end
    return self
 end

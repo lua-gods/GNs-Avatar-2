@@ -4,38 +4,27 @@ vanilla_model.HELMET_ITEM:setVisible(true)
 models.plushie:setParentType("SKULL")
 models.hat:setParentType("SKULL")
 
-local time = 0
-
-events.WORLD_RENDER:register(function (delta)
-   time = client:getSystemTime()
-end)
-
 events.SKULL_RENDER:register(function (delta, block, item,entity,context)
    if entity then
       ---@type Vector3
-      local clr = entity:getVariable("color")
-      --clr = vectors.hsvToRGB((client:getSystemTime()* 0.0003)% 1,1,1)
+      local clr = entity:getVariable("color") or vectors.vec3(0.9294117689, 0.6705882549, 0.3137255012)
       if type(clr) == "Vector3" then
          for i = 1, 4, 1 do
             local w = (i-1)/4
             local a = vectors.rgbToHSV(clr)
             a.g = a.g; a.b = 1
             a.g = math.min(a.g * 1.1,1)
+            a = vectors.hsvToRGB(a)
             local b = vectors.rgbToHSV(clr)
             b.b = 0.67; b.g = 1
             b = vectors.hsvToRGB(b)
             b = math.lerp(b,vectors.vec3(0.1,0.2,0.4),0.4)
-            b = vectors.rgbToHSV(b)
-            models.hat.Tophat.ribbon["color"..i]:setColor(vectors.hsvToRGB(
-               vectors.vec3(
-                  math.lerpAngle(b.x,a.x,w),
-                  math.lerp(b.y,a.y,w),
-                  math.lerp(b.z,a.z,w)
-               )
-            ))
+            models.hat.Tophat.ribbon["color"..i]:setColor(math.lerp(b,a,w))
          end
       end
+      models.hat.Tophat:setVisible(true)
    end
+   models.hat:setVisible(false)
    if context == "HEAD" then
       models.plushie:setVisible(false)
       models.hat:setVisible(true)
@@ -44,16 +33,12 @@ events.SKULL_RENDER:register(function (delta, block, item,entity,context)
       models.hat:setVisible(false)
       if block then
          local under = world.getBlockState(block:getPos():sub(0,1,0))
-         local stack = under.id == "minecraft:player_head" and under:getEntityData() and under:getEntityData().SkullOwner.Name == "GNamimates"
+         local stack = under.id == "minecraft:player_head"
          models.plushie.Plushie:setVisible(not stack):setRot(0,0,0)
          models.plushie.Extension:setVisible(stack)
       else
          models.plushie.Plushie:setVisible(true)
          models.plushie.Extension:setVisible(false)
-         if item then
-            models.plushie.Plushie:setRot(0,time * -0.055)
-         else
-         end
       end
    end
 end)

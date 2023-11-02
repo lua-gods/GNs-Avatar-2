@@ -1,3 +1,5 @@
+if not host:isHost() or true then return end
+
 local panel = require("libraries.panelLib.main")
 
 local page = panel.newPage()
@@ -31,12 +33,25 @@ end)
 
 local scroll = 0
 events.MOUSE_SCROLL:register(function (dir)
-   scroll = (scroll - dir - 1) % #book.Page.Elements + 1
-   book:setSelected(math.floor(scroll))
+   if book.Visible then
+      scroll = (scroll - dir - 1) % #book.Page.Elements + 1
+      book:setSelected(math.floor(scroll))
+      return true
+   end
 end)
 
+local pressing = false
+book:setVisible(false)
 local press = keybinds:fromVanilla("figura.config.action_wheel_button")
-press.press = function (modifiers, self) book:press(true) return true end
-press.release = function (modifiers, self) book:press(false) end
+press.press = function (modifiers, self)
+   if book.Visible then
+      book:press(true)
+      pressing = true
+   else
+      book:setVisible(true)
+   end
+   return true
+end
+press.release = function (modifiers, self)  if book.Visible and pressing then book:press(false) pressing = false end end
 
 book:setPage(page)
