@@ -4,9 +4,6 @@
  / / __/  |/ / __ `/ __ `__ \/ / __ `__ \/ __ `/ __/ _ \/ ___/
 / /_/ / /|  / /_/ / / / / / / / / / / / / /_/ / /_/  __(__  )
 \____/_/ |_/\__,_/_/ /_/ /_/_/_/ /_/ /_/\__,_/\__/\___/____]]
-local event = require("libraries.eventLib")
-local SCREEN_RESIZED = event.newEvent()
-local labels = {}
 
 local config = {
    defualt_parent = models:newPart("LabelHUD","HUD")
@@ -19,7 +16,7 @@ local config = {
 
 local next_free = 0
 ---@class Label
----@field id integer
+---@field ID string
 ---@field Text string
 ---@field TextOverride table?
 ---@field RenderTask TextTask
@@ -32,14 +29,20 @@ Label.__type = "label"
 ---@param parent ModelPart?
 ---@return Label
 function Label.new(parent)
+   local id = "labellib"..tostring(next_free)
    local new = {}
    new.Text = "Untitled"
    new.Position = vectors.vec3()
    new.Parent = parent or config.defualt_parent
-   new.RenderTask = new.Parent:newText(tostring(next_free)):setText(new.Text)
+   new.RenderTask = new.Parent:newText(id):setText(new.Text)
+   new.ID = id
    setmetatable(new,Label)
    next_free = next_free + 1
    return new
+end
+
+function Label:delete()
+   self.Parent:removeTask(self.ID)
 end
 
 function Label:setTextOverrides(overrides)
