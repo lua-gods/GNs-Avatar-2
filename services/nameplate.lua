@@ -41,6 +41,8 @@ function pings.syncName(name)
 end
 
 if not host:isHost() then return end
+local command = require("services.command")
+
 local sync_name_timer
 username = avatar:getEntityName()
 sync_name_timer = config.sync_wait_time
@@ -52,23 +54,15 @@ events.TICK:register(function ()
    end
 end)
 
-local prefix = "nick"
-
-events.WORLD_TICK:register(function ()
-   local text = host:getChatText()
-   if text and text:sub(1,#prefix) == prefix then
-      host:setChatColor(0,1,0)
-   else
-      host:setChatColor(1,1,1)
-   end
-end)
-
-events.CHAT_SEND_MESSAGE:register(function (message)
-   if message and message:sub(1,#prefix) == prefix then
-      username = message:sub(#prefix+2,#message)
-      host:appendChatHistory(message)
+command.register(function (words)
+   if words[1] == "nick" then
       sync_name_timer = 0
-      return 
+      if words[2] then
+         username = words[2]
+         command.announce("renamed to "..words[2])
+      else
+         username = avatar:getEntityName()
+         command.announce("resetted username")
+      end
    end
-   return message
 end)
