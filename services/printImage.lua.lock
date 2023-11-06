@@ -1,6 +1,6 @@
 local img = textures.cute
 local dim = img:getDimensions():sub(1,1)
-local resolution = 9 + 9 + 9 + 9
+local resolution = 9 + 9
 local lines = 9
 
 local chars = {"","","","","","","","","",
