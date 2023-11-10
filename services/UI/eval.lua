@@ -15,7 +15,7 @@ command.register(function (words)
       if words[3] == "in"  and #words == 4 then
          command.announce((words[2] / words[4]) * 100 .. "% chance")
       elseif words[2]:sub(-1,-1) == "%" and #words == 2 then
-         command.announce(" 1 in " .. 100 / tonumber(words[2]:sub(1,-1)) .. " chance")
+         command.announce(" 1 in " .. 100 / tonumber(words[2]:sub(1,-2)) .. " chance")
       end
    end
 end)
