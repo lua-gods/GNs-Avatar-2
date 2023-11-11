@@ -3,7 +3,7 @@ local config = {
    event = require("libraries.eventLib"),
    labelLib = require("libraries.GNLabelLib"),
    uiSound = require("libraries.panelLib.utils.uiSound"),
-   tween = require("libraries.panelLib.utils.GNTweenLib"),
+   tween = require("libraries.GNTweenLib"),
    color_overrides = {
       hovering = {default = "white"},
       pressed = {default = "dark_gray"},
