@@ -1,7 +1,7 @@
 local core = require("libraries.panelLib.panelCore")
 
 ---@type table<any,GNpanel.book>
-local pages = {}
+local books = {}
 local WINDOW_RESIZED = core.event.newEvent()
 
 local next_free = 0
@@ -10,17 +10,20 @@ local next_free = 0
 ---@field Origin Vector2 # tells where the placements start
 ---@field Anchor Vector2 # tells what corner of the screen the origin anchors to
 ---@field DefaultPlacement function # tells how each page is displayed
+---@field EscapeOverride function # tells how each page is displayed
 ---@field Page GNpanel.page
 ---@field PageHistory table<any,GNpanel.page>
 ---@field BoundingBox Vector4
 ---@field Part ModelPart
 ---@field Active boolean
+---@field LockCursor boolean
 ---@field SelectedIndex integer
 ---@field Selected GNpanel.Element
 ---@field Visible boolean
 ---@field REBUILD AuriaEvent #delete all render tasks and make new ones
 ---@field TRANSFORM AuriaEvent #reposition, translates, rotates or scales
----@field CHILDREN_REPOSITIONED AuriaEvent #reposition, translates, rotates or scales
+---@field CHILDREN_REPOSITIONED AuriaEvent #triggers when all childrens are repositioned
+---@field KEY_PRESSED AuriaEvent #returns a character of the button pressed
 local Book = {}
 Book.__index = Book
 
@@ -43,13 +46,15 @@ function Book.new(obj)
    new.Visible = true
    new.SelectedIndex = 1
    new.Selected = nil
+   new.LockCursor = false
    new.REBUILD = core.event.newEvent()
    new.TRANSFORM = core.event.newEvent()
    new.CHILDREN_REPOSITIONED = core.event.newEvent()
+   new.KEY_PRESSED = core.event.newEvent()
    setmetatable(new,Book)
    WINDOW_RESIZED:register(function ()Book._positionUpdate(new)end)
    
-   pages[next_free] = new
+   books[next_free] = new
    return new
 end
 
@@ -140,8 +145,15 @@ function Book:setVisible(visible)
    return self
 end
 
+---@param active boolean
+---@return GNpanel.book
+function Book:setActive(active)
+   self.Active = active
+   return self
+end
+
 function Book:setSelected(id)
-   if self.Page then
+   if self.Page and not self.LockCursor and self.Active and self.Visible then
       local was_pressed = false
       if self.Selected then
          self.Selected.Hovering = false
@@ -168,15 +180,17 @@ function Book:setSelected(id)
 end
 
 function Book:press(toggle)
-   self.Selected.down = toggle
-   if toggle then
-      self.Selected.PRESSED:invoke()
-      self.Selected.STATE_CHANGED:invoke("PRESSED")
-   else
-      self.Selected.RELEASED:invoke()
-      self.Selected.STATE_CHANGED:invoke("RELEASED")
+   if self.Active and self.Visible then
+      self.Selected.down = toggle
+      if toggle then
+         self.Selected.PRESSED:invoke()
+         self.Selected.STATE_CHANGED:invoke("PRESSED")
+      else
+         self.Selected.RELEASED:invoke()
+         self.Selected.STATE_CHANGED:invoke("RELEASED")
+      end
+      self.Selected:update()
    end
-   self.Selected:update()
    return self
 end
 
@@ -187,9 +201,17 @@ end
 ---@return GNpanel.book
 function Book:setPage(page,index)
    if not page.BookParent then
+      if self.Page then
+         local last = page.BookParent
+         page.BookParent = nil
+         page.BOOK_PARENT_CHANGED:invoke(last,page.BookParent)
+      end
       self.Page = page
-      self.PageHistory[#self.PageHistory+1] = page
+      local last = page.BookParent
       page.BookParent = self
+      page.BOOK_PARENT_CHANGED:invoke(last,page.BookParent)
+      self.PageHistory[#self.PageHistory+1] = page
+         
       self:setSelected(1)
       self:rebuild()
    else
@@ -206,6 +228,26 @@ function Book:returnPage()
    return self
 end
 
+events.KEY_PRESS:register(function (key,status,modifier)
+   if status == 1 or status == 2 then
+      local char = core.key2string(key,modifier)
+      local cancel = false
+      for _, book in pairs(books) do
+         if book.Visible and book.Active then
+            local returned = book.KEY_PRESSED:invoke(char,key)
+            for _, subscribers in pairs(returned) do
+               for _, req in pairs(returned) do
+                  if req[1] then
+                     cancel = true
+                  end
+               end
+            end
+         end
+      end
+      return cancel
+   end
+end)
+
 local last_window_size = vectors.vec2()
 
 events.WORLD_RENDER:register(function (delta)
@@ -214,7 +256,7 @@ events.WORLD_RENDER:register(function (delta)
       WINDOW_RESIZED:invoke(window_size)
    end
    last_window_size = window_size
-   for I, page in pairs(pages) do
+   for I, page in pairs(books) do
       if page.rebuild_queue then
          page:forceRebuild()
       end

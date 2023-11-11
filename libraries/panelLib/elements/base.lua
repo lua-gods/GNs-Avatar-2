@@ -11,6 +11,8 @@ local core = require("libraries.panelLib.panelCore")
 ---@field Hovering boolean
 ---@field UPDATE AuriaEvent
 ---@field REBUILD AuriaEvent
+---@field ENTERED_PAGE AuriaEvent
+---@field ENTERED_BOOK AuriaEvent
 ---@field STATE_CHANGED AuriaEvent
 ---@field PRESSED AuriaEvent
 ---@field RELEASED AuriaEvent
@@ -25,6 +27,8 @@ function element.new(obj)
    new.Hovering = false
    new.UPDATE = core.event.newEvent()
    new.REBUILD = core.event.newEvent()
+   new.ENTERED_PAGE = core.event.newEvent()
+   new.ENTERED_BOOK = core.event.newEvent()
    new.STATE_CHANGED = core.event.newEvent()
    new.PRESSED = core.event.newEvent()
    new.RELEASED = core.event.newEvent()

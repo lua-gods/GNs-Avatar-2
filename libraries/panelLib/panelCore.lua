@@ -2,6 +2,7 @@ local config = {
    HUD = models:newPart("PanelHUD","HUD"),
    event = require("libraries.eventLib"),
    labelLib = require("libraries.GNLabelLib"),
+   key2string = require("libraries.key2string"),
    uiSound = require("libraries.panelLib.utils.uiSound"),
    tween = require("libraries.GNTweenLib"),
    color_overrides = {

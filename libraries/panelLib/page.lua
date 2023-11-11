@@ -9,6 +9,7 @@ local next_free = 0
 ---@field id integer # tells how each page is displayed
 ---@field BookParent GNpanel.book
 ---@field Elements table<any,GNpanel.Element>
+---@field BOOK_PARENT_CHANGED AuriaEvent
 local Page = {}
 Page.__index = Page
 
@@ -20,6 +21,12 @@ function Page.new(obj)
    local new = obj or {}
    new.id = next_free
    new.Elements = {}
+   new.BOOK_PARENT_CHANGED = core.event.new()
+   new.BOOK_PARENT_CHANGED:register(function (_,current)
+      for _, element in pairs(new.Elements) do
+         element.ENTERED_BOOK:invoke(current)
+      end
+   end)
    setmetatable(new,Page)
    
    pages[next_free] = new
@@ -36,8 +43,9 @@ function Page:insertElement(element,index)
       if not index then
          index = #self.Elements+1
       end
-      table.insert(self.Elements,index,element)
       element.PageParent = self
+      table.insert(self.Elements,index,element)
+      element.ENTERED_PAGE:invoke()
       if self.BookParent then
          element:rebuild()
          self.BookParent:update()
