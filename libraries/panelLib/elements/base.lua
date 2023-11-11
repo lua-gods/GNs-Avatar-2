@@ -7,11 +7,13 @@ local core = require("libraries.panelLib.panelCore")
 ---@field rebuild function
 ---@field update function
 ---@field pos Vector2
----@field Pressed boolean
+---@field down boolean
 ---@field Hovering boolean
 ---@field UPDATE AuriaEvent
 ---@field REBUILD AuriaEvent
 ---@field STATE_CHANGED AuriaEvent
+---@field PRESSED AuriaEvent
+---@field RELEASED AuriaEvent
 local element = {}
 element.__index = element
 
@@ -19,11 +21,13 @@ function element.new(obj)
    ---@type GNpanel.Element.TextButton
    local new = obj or {}
    new.pos = vectors.vec2()
-   new.Pressed = false
+   new.down = false
    new.Hovering = false
    new.UPDATE = core.event.newEvent()
    new.REBUILD = core.event.newEvent()
    new.STATE_CHANGED = core.event.newEvent()
+   new.PRESSED = core.event.newEvent()
+   new.RELEASED = core.event.newEvent()
    new.STATE_CHANGED:register(function (state)
       if state == "HOVERING" then
          core.uiSound("minecraft:entity.item_frame.rotate_item",new.id / #new.PageParent.Elements + 0.75,0.5)

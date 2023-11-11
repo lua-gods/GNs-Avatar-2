@@ -7,5 +7,6 @@ API.newButton = require("libraries.panelLib.elements.textButton").new
 API.newToggleButton = require("libraries.panelLib.elements.toggleButton").new
 API.newReturnButton = require("libraries.panelLib.elements.returnButton").new
 API.newTextInputButton = require("libraries.panelLib.elements.textInputButton").new
+API.newPageButton = require("libraries.panelLib.elements.pageButton").new
 
 return API

@@ -12,6 +12,7 @@ local next_free = 0
 ---@field DefaultPlacement function # tells how each page is displayed
 ---@field Page GNpanel.page
 ---@field PageHistory table<any,GNpanel.page>
+---@field BoundingBox Vector4
 ---@field Part ModelPart
 ---@field Active boolean
 ---@field SelectedIndex integer
@@ -19,6 +20,7 @@ local next_free = 0
 ---@field Visible boolean
 ---@field REBUILD AuriaEvent #delete all render tasks and make new ones
 ---@field TRANSFORM AuriaEvent #reposition, translates, rotates or scales
+---@field CHILDREN_REPOSITIONED AuriaEvent #reposition, translates, rotates or scales
 local Book = {}
 Book.__index = Book
 
@@ -31,8 +33,10 @@ function Book.new(obj)
    new.Position = vectors.vec2(0,0)
    new.Origin = vectors.vec2(0,0)
    new.Anchor = vectors.vec2(-1,-1)
-   new.DefaultPlacement = function (x,y,sx,sy) return vectors.vec2(x,y - sy) end
-   new.CurrentPage = 1
+   new.BoundingBox = vectors.vec4(0,0,0,0)
+   new.DefaultPlacement = function (x,y,sx,sy)
+      return vectors.vec2(x, y - sy)
+   end
    new.Part = core.HUD:newPart("panelInstance"..next_free)
    new.PageHistory = {}
    new.Active = false
@@ -41,6 +45,7 @@ function Book.new(obj)
    new.Selected = nil
    new.REBUILD = core.event.newEvent()
    new.TRANSFORM = core.event.newEvent()
+   new.CHILDREN_REPOSITIONED = core.event.newEvent()
    setmetatable(new,Book)
    WINDOW_RESIZED:register(function ()Book._positionUpdate(new)end)
    
@@ -70,6 +75,7 @@ end
 
 ---@param x Vector2|number
 ---@param y number
+---@return GNpanel.book
 function Book:setAnchor(x,y)
    if type(x) == "Vector2" then
       self.Anchor = x:copy()
@@ -77,6 +83,7 @@ function Book:setAnchor(x,y)
       self.Anchor = vectors.vec2(x,y)
    end
    self:_positionUpdate()
+   return self
 end
 
 ---@return GNpanel.book
@@ -96,11 +103,17 @@ end
 function Book:updatePlacement()
    local cursor = self.Origin:copy()
    if self.Page then
+      self.BoundingBox = vectors.vec4(0,0,0,0)
       for key, child in pairs(self.Page.Elements) do
          local dim = child:getSize()
          cursor = self.DefaultPlacement(cursor.x,cursor.y,dim.x,dim.y)
          child:setPos(cursor)
+         self.BoundingBox.x = math.min(cursor.x + dim.x, cursor.x, self.BoundingBox.x)
+         self.BoundingBox.y = math.min(cursor.y + dim.y, cursor.y, self.BoundingBox.y)
+         self.BoundingBox.z = math.max(cursor.x + dim.x, cursor.x, self.BoundingBox.z)
+         self.BoundingBox.w = math.max(cursor.y + dim.y, cursor.y, self.BoundingBox.w)
       end
+      self.CHILDREN_REPOSITIONED:invoke(self.BoundingBox)
    end
 end
 
@@ -132,9 +145,9 @@ function Book:setSelected(id)
       local was_pressed = false
       if self.Selected then
          self.Selected.Hovering = false
-         if self.Selected.Pressed then
+         if self.Selected.down then
             was_pressed = true
-            self.Selected.Pressed = false
+            self.Selected.down = false
             self.Selected.STATE_CHANGED:invoke("RELEASED")
          end
       end
@@ -142,7 +155,7 @@ function Book:setSelected(id)
       self.Selected = self.Page.Elements[id]
       if self.Selected then
          self.Selected.Hovering = true
-         self.Selected.Pressed = was_pressed
+         self.Selected.down = was_pressed
          self.Selected.STATE_CHANGED:invoke("HOVERING")
          if was_pressed then
             self.Selected.STATE_CHANGED:invoke("PRESSED")
@@ -155,10 +168,12 @@ function Book:setSelected(id)
 end
 
 function Book:press(toggle)
-   self.Selected.Pressed = toggle
+   self.Selected.down = toggle
    if toggle then
+      self.Selected.PRESSED:invoke()
       self.Selected.STATE_CHANGED:invoke("PRESSED")
    else
+      self.Selected.RELEASED:invoke()
       self.Selected.STATE_CHANGED:invoke("RELEASED")
    end
    self.Selected:update()
