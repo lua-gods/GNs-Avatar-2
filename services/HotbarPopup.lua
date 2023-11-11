@@ -23,7 +23,7 @@ end
 book.CHILDREN_REPOSITIONED:register(function ()
    repositionBook(0)
 end)
-1/8*100
+
 page:insertElement(panel.newPageButton())
 page:insertElement(panel.newButton():setText('[{"text":"Example Button","color":"default"}]'))
 page:insertElement(panel.newButton():setText('[{"text":"Another Button","color":"default"}]'))
