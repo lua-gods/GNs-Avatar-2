@@ -15,14 +15,14 @@ end
 function button.new(obj)
    local new = obj or base.new()
    new.text = '[{"text":"Empty Button","color":"default"}]'
-   new.Pressed = false
+   new.down = false
    setmetatable(new,button)
 
    new.REBUILD:register(function ()
       new.Label = core.labelLib.new(new.PageParent.BookParent.Part)
    end,"label")
    new.UPDATE:register(function ()
-      new.Label.TextOverride = button.get_color_overrides(new.Pressed,new.Hovering)
+      new.Label.TextOverride = button.get_color_overrides(new.down,new.Hovering)
       new.Label:setText(new.text):setPos(new.pos):setEffect("OUTLINE")
       if new.Hovering then
          new.Label:setGlowColor(0.3,0.3,0.3)
@@ -51,6 +51,10 @@ function button.get_color_overrides(pressed,hovering)
       if hovering then return core.color_overrides.hovering
       else return core.color_overrides.none end
    end
+end
+
+function button:getSize()
+   return vectors.vec2(client.getTextWidth(self.text),10)
 end
 
 return button

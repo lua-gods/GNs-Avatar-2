@@ -4,6 +4,7 @@ local core = require("libraries.panelLib.panelCore")
 
 ---@class GNpanel.Element.TextInput : GNpanel.Element.TextButton
 ---@field Input string
+---@field Placeholder string
 ---@field History table
 local text = {}
 text.__index = function (t,i)
@@ -42,6 +43,17 @@ function text.new(obj)
    end,"label")
    setmetatable(new,text)
    return new
+end
+
+---@param text string
+---@return GNpanel.Element.TextInput
+function text:setPlaceholder(text)
+   self.text = text
+   return self
+end
+
+function text:getSize()
+   return vectors.vec2(math.max(client.getTextWidth(self.Input),client.getTextWidth("___________________"),client.getTextWidth(self.text)),10)
 end
 
 return text

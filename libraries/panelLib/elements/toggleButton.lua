@@ -81,4 +81,8 @@ function toggle.new(obj)
    return new
 end
 
+function toggle:getSize()
+   return vectors.vec2(client.getTextWidth(self.text) + 10,10)
+end
+
 return toggle

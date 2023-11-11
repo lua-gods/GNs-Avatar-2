@@ -6,7 +6,7 @@ local core = require("libraries.panelLib.panelCore")
 ---@field pressed boolean
 local button = {}
 button.__index = function (t,i)
-   return button[i] or base[i]
+   return button[i] or base.__index[i]
 end
 
 ---@param obj table?
@@ -39,8 +39,11 @@ function button.new(obj)
          end
       end
    end,"feature")
-   
    return new
+end
+
+function button:getSize()
+   return vectors.vec2(client.getTextWidth("Return") + 10,10)
 end
 
 return button
