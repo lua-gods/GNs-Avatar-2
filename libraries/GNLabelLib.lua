@@ -22,6 +22,7 @@ local next_free = 0
 ---@field RenderTask TextTask
 ---@field Parent ModelPart
 ---@field Position Vector3
+---@field Align Vector2
 local Label = {}
 Label.__index = Label
 Label.__type = "label"
@@ -31,12 +32,15 @@ Label.__type = "label"
 function Label.new(parent)
    local id = "labellib"..tostring(next_free)
    local new = {}
-   new.Text = "Untitled"
+   new.Text = ""
    new.Position = vectors.vec3()
+   new.Align = vectors.vec2(-1,1)
+   new.Dimensions = vectors.vec2(0,0)
    new.Parent = parent or config.defualt_parent
-   new.RenderTask = new.Parent:newText(id):setText(new.Text)
+   new.RenderTask = new.Parent:newText(id)
    new.ID = id
    setmetatable(new,Label)
+   new:setText("Untitled")
    next_free = next_free + 1
    return new
 end
@@ -60,7 +64,34 @@ function Label:setText(text)
       end
    end
    self.Text = text
+   self.Dimensions = vectors.vec2(
+      client.getTextWidth(text),
+      client.getTextHeight(text)
+   )
+   self:setPos(self.Position.xy)
    self.RenderTask:setText(text)
+   return self
+end
+
+---@param visible boolean
+---@return Label
+function Label:setVisible(visible)
+   self.Visible = visible
+   self.RenderTask:setVisible(visible)
+   return self
+end
+
+--- -1 = left, 0 = center, 1 = right
+---@param x number|Vector2
+---@param y number?
+---@return Label
+function Label:setAlign(x,y)
+   if type(x) == "Vector2" then
+      self.Align = x
+   else
+      self.Align = vectors.vec2(x,y)
+   end
+   self:setPos(self.Position.xy)
    return self
 end
 
@@ -96,10 +127,12 @@ function Label:setPos(x,y)
    elseif t == "number" then
       self.Position = vectors.vec3(x,y,self.Position.z)
    end
-   self.RenderTask:pos(self.Position.x,self.Position.y,self.Position.z)
+   self.RenderTask:pos(
+      self.Position.x + self.Dimensions.x * ((self.Align.x + 1) * 0.5),
+      self.Position.y + self.Dimensions.y * ((self.Align.y + 1) * 0.5),
+      self.Position.z)
    return self
 end
-
 
 ---@param z number
 ---@return Label

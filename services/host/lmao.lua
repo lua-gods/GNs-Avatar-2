@@ -1,4 +1,4 @@
-local anchor = require("services.UI.anchors")
+local anchor = require("services.host.anchors")
 local overlay = anchor.TopLeft:newSprite("NOW"):texture(textures.cute):setRenderType("BLURRY")
 
 anchor.SCREEN_RESIZED:register(function (size)

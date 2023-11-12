@@ -1,5 +1,5 @@
 if host:isHost() then
-   local files = listFiles("services.UI",false)
+   local files = listFiles("services.host",false)
    for _, script in pairs(files) do
       local success, result = pcall(require,script)
       if not success then
