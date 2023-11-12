@@ -117,15 +117,18 @@ function Label:setEffect(type)
    return self
 end
 
----@param x number|Vector2
+---@param x number|Vector2|Vector3
 ---@param y number?
+---@param z number?
 ---@return Label
-function Label:setPos(x,y)
+function Label:setPos(x,y,z)
    local t = type(x)
    if t == "Vector2" then
-      self.Position = vectors.vec3(x.x,x.y,self.Position.z)
+      self.Position = vectors.vec3(x.x or 0,x.y or 0,self.Position.z)
+   elseif t == "Vector3" then
+      self.Position = x:copy()
    elseif t == "number" then
-      self.Position = vectors.vec3(x,y,self.Position.z)
+      self.Position = vectors.vec3(x or 0,y or 0,z or self.Position.z)
    end
    self.RenderTask:pos(
       self.Position.x + self.Dimensions.x * ((self.Align.x + 1) * 0.5),

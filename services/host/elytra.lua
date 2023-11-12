@@ -24,14 +24,14 @@ local function toggleElytra(toggle)
          value:setVisible(true)
       end
       tween.tweenFunction(blend,1,0.5,"inOutQuad",function (x)
-         spread = x * .05
+         spread = x * 1
          blend = x
       end,function ()
          
       end,"elytraUI")
    else
       tween.tweenFunction(blend,0,0.5,"inOutQuad",function (x)
-         spread = x * .05
+         spread = x * 1
          blend = x
       end,function ()
          active = false
@@ -68,29 +68,23 @@ events.TICK:register(function ()
    end
 end)
 
+local mat = matrices.mat4()
+
 local function compass(x,y,z)
-   return vectors.worldToScreenSpace(client:getCameraPos() + client:getCameraDir():add(x,y,z)).xy * (client:getWindowSize() * 0.5)
+   return mat:apply(-x,y,z):mul(1,1,-1) * 32
 end
 
 events.WORLD_RENDER:register(function (delta)
+   local crot = client:getCameraRot()
+   mat = matrices.mat4():rotateY(-crot.y):rotateX(crot.x)
    if active then
       local dir
       local cdir = client:getCameraDir():mul(1,0,1):normalized()
-      local dim
-      dir = compass(-spread,0,0)
-      elements.east:setPos(dir)
-      
-      dir = compass(spread,0,0)
-      elements.west:setPos(dir)
-      
-      dir = compass(0,0,-spread)
-      elements.south:setPos(dir)
-      
-      dir = compass(0,0,spread)
-      elements.north:setPos(dir)
-   
-      dir = compass(cdir.x * -spread,0,cdir.z * -spread)
-      elements.forward:setPos(dir)
+      elements.east:setPos(compass(-spread,0,0))
+      elements.west:setPos(compass(spread,0,0))
+      elements.south:setPos(compass(0,0,-spread))
+      elements.north:setPos(compass(0,0,spread))
+      elements.forward:setPos(compass(cdir.x * -spread,0,cdir.z * -spread):add(0,0,-1))
    
       if safe then
          elements.center:setText('{"text":"'..height..'m","color":"#'..vectors.rgbToHex(math.lerp(vectors.vec3(0,0,1),vectors.vec3(1,1,1),math.clamp(height/100,0,1)))..'"}')
