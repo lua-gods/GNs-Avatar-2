@@ -181,15 +181,17 @@ end
 
 function Book:press(toggle)
    if self.Active and self.Visible then
-      self.Selected.down = toggle
-      if toggle then
-         self.Selected.PRESSED:invoke()
-         self.Selected.STATE_CHANGED:invoke("PRESSED")
-      else
-         self.Selected.RELEASED:invoke()
-         self.Selected.STATE_CHANGED:invoke("RELEASED")
+      if self.Selected then
+         self.Selected.down = toggle
+         if toggle then
+            self.Selected.PRESSED:invoke()
+            self.Selected.STATE_CHANGED:invoke("PRESSED")
+         else
+            self.Selected.RELEASED:invoke()
+            self.Selected.STATE_CHANGED:invoke("RELEASED")
+         end
+         self.Selected:update()
       end
-      self.Selected:update()
    end
    return self
 end
