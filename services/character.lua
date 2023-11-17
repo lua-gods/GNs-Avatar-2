@@ -1,6 +1,6 @@
 
 local config = {
-   update_interval = 2
+   update_interval = 4
 }
 local update_timer = 0
 
@@ -18,9 +18,9 @@ events.RENDER:register(function (delta, context)
          models.player.base.LeftLeg:setPos(0,0,trot.x * 0.01 + trot.y * 0.02):setRot(trot.x * -0.05 + trot.y * 0.1,trot.y * 0.25,0)
          models.player.base.RightLeg:setPos(0,0,trot.x * 0.01 - trot.y * 0.02):setRot(trot.x * -0.05 - trot.y * 0.1,trot.y * 0.25,0)
          models.player.base.Torso:setRot(trot.x * 0.2,trot.y * 0.5,0):pos(0,(math.sin(breath)+1) * 0.1,0)
-         models.player.base.Torso.Head:setRot(trot.x * -0.4,trot.y * -0.75,trot.y * (1-math.abs(math.rad(math.min(trot.x,0)))) * -0.25)
-         models.player.base.Torso.LeftArm:setRot(trot.x * -0.1 + trot.y * -0.2,0,math.abs(trot.y)*-0.1)
-         models.player.base.Torso.RightArm:setRot(trot.x * -0.1 - trot.y * -0.2,0,math.abs(trot.y)*0.1)
+         models.player.base.Torso.Head:setRot(trot.x * -0.4,trot.y * -0.75,trot.y * (math.abs(math.rad(math.min(trot.x,0)))) * -0.25)
+         models.player.base.Torso.LeftArm:setRot(trot.x * -0.1 + trot.y * -0.2,0,math.abs(trot.y)*-0.05)
+         models.player.base.Torso.RightArm:setRot(trot.x * -0.1 - trot.y * -0.2,0,math.abs(trot.y)*0.05)
          models.player.base.Torso.Head.HClothing.eyes:setPos(trot.y * -0.01,0,0)
          models.player.base.Torso.Head.HClothing.Mouth:setRot(0,0,trot.y * 0.1)
       end
