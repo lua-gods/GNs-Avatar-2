@@ -1,0 +1,1 @@
+renderer:setShadowRadius(0)

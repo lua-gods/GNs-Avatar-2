@@ -7,13 +7,12 @@ local input = {
 }
 local panel = require("libraries.panelLib.main")
 
-local page = panel.newPage()
 local book = panel.newBook()
 local core = require("libraries.panelLib.panelCore")
 
-for i = 1, 5, 1 do
-   page:insertElement(panel.newToggleButton():setText('{"text":"Real Toggle Button '..i..' ","color":"default"}'))
-end
+--for i = 1, 5, 1 do
+--   page:insertElement(panel.newToggleButton():setText('{"text":"Real Toggle Button '..i..' ","color":"default"}'))
+--end
 
 book:setAnchor(0,1):setActive(true)
 
@@ -25,16 +24,17 @@ book.CHILDREN_REPOSITIONED:register(function ()
    repositionBook(0)
 end)
 
-page:insertElement(panel.newPageButton())
-page:insertElement(panel.newButton():setText('[{"text":"Example Button","color":"default"}]'))
-page:insertElement(panel.newButton():setText('[{"text":"Another Button","color":"default"}]'))
-page:insertElement(panel.newTextInputButton())
-page:insertElement(panel.newReturnButton())
+--page:insertElement(panel.newPageButton())
+--page:insertElement(panel.newButton():setText('[{"text":"Example Button","color":"default"}]'))
+--page:insertElement(panel.newButton():setText('[{"text":"Another Button","color":"default"}]'))
+--page:insertElement(panel.newTextInputButton())
+--page:insertElement(panel.newReturnButton())
 
 local scroll = 0
 events.MOUSE_SCROLL:register(function (dir)
    if book.Visible and not book.LockCursor then
-      scroll = (scroll - dir - 1) % #book.Page.Elements + 1
+      scroll = math.clamp(scroll - dir,1,#book.Page.Elements)
+      --scroll = (scroll - dir - 1) % #book.Page.Elements + 1 -- modulo scroll
       book:setSelected(math.floor(scroll))
       return true
    end
@@ -74,4 +74,4 @@ input.escape.press = function ()
    end
 end
 
-book:setPage(page)
+book:setPage(require("pages.main"))

@@ -7,7 +7,7 @@ local next_free = 0
 ---@class GNpanel.page
 ---@field Placement function # tells how each page is displayed
 ---@field id integer # tells how each page is displayed
----@field BookParent GNpanel.book
+---@field BookParent GNpanel.book?
 ---@field Elements table<any,GNpanel.Element>
 ---@field BOOK_PARENT_CHANGED AuriaEvent
 local Page = {}

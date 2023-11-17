@@ -17,7 +17,6 @@ function button.new(obj)
    new.text = '[{"text":"Empty Button","color":"default"}]'
    new.down = false
    setmetatable(new,button)
-
    new.REBUILD:register(function ()
       new.Label = core.labelLib.new(new.PageParent.BookParent.Part)
    end,"label")

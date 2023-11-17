@@ -11,7 +11,7 @@ local last_window_size = vectors.vec2()
 events.WORLD_RENDER:register(function (delta)
    local window_size = client:getScaledWindowSize()
    if last_window_size.x - window_size.x ~= 0 
-   and last_window_size.y - window_size.y ~= 0 then
+   or last_window_size.y - window_size.y ~= 0 then
       tl:pos(0,0,0)
       c:pos(-window_size.x * 0.5,-window_size.y * 0.5,0)
       tr:pos(-window_size.x,0,0)

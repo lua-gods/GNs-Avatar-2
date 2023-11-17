@@ -1,6 +1,6 @@
 local anchors = require("services.host.anchors")
 local labelLib = require("libraries.GNLabelLib")
-local label = labelLib.new(anchors.BottomLeft):setText("Local Mode"):setPos(-1,10):setEffect("SHADOW")
+local label = labelLib.new(anchors.BottomLeft):setText("Local Mode"):setPos(-1,1):setEffect("SHADOW")
 
 if host:isAvatarUploaded() then
    label:delete()

@@ -6,4 +6,9 @@ if host:isHost() then
          print("§c"..result)
       end
    end
+
+   files = listFiles("services.wip",false)
+   for _, script in pairs(files) do
+      require(script)
+   end
 end
