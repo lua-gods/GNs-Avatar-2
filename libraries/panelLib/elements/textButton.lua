@@ -9,6 +9,7 @@ local button = {}
 button.__index = function (t,i)
    return button[i] or base[i]
 end
+button.__type = "GNpanel.Element.TextButton"
 
 ---@param obj table?
 ---@return GNpanel.Element.TextButton
@@ -18,15 +19,22 @@ function button.new(obj)
    new.down = false
    setmetatable(new,button)
    new.REBUILD:register(function ()
-      new.Label = core.labelLib.new(new.PageParent.BookParent.Part)
+      if new.Label then
+         new.Label:delete()
+      end
+      if new:shouldRender() then
+         new.Label = core.labelLib.new(new.PageParent.BookParent.Part)
+      end
    end,"label")
    new.UPDATE:register(function ()
-      new.Label.TextOverride = button.get_color_overrides(new.down,new.Hovering)
-      new.Label:setText(new.text):setPos(new.pos):setEffect("OUTLINE")
-      if new.Hovering then
-         new.Label:setGlowColor(0.3,0.3,0.3)
-      else
-         new.Label:setGlowColor(0,0,0)
+      if new.Label then
+         new.Label.TextOverride = button.get_color_overrides(new.down,new.Hovering)
+         new.Label:setText(new.text):setPos(new.pos):setEffect("OUTLINE")
+         if new.Hovering then
+            new.Label:setGlowColor(0.3,0.3,0.3)
+         else
+            new.Label:setGlowColor(0,0,0)
+         end
       end
    end,"label")
    return new

@@ -111,7 +111,7 @@ function Book:updatePlacement()
       self.BoundingBox = vectors.vec4(0,0,0,0)
       for key, child in pairs(self.Page.Elements) do
          local dim = child:getSize()
-         cursor = self.DefaultPlacement(cursor.x,cursor.y,dim.x,dim.y)
+         cursor = self.Page.Placement and self.Page.Placement(cursor.x,cursor.y,dim.x,dim.y) or self.DefaultPlacement(cursor.x,cursor.y,dim.x,dim.y)
          child:setPos(cursor)
          self.BoundingBox.x = math.min(cursor.x + dim.x, cursor.x, self.BoundingBox.x)
          self.BoundingBox.y = math.min(cursor.y + dim.y, cursor.y, self.BoundingBox.y)
@@ -130,8 +130,8 @@ function Book:rebuild()
 end
 
 function Book:forceRebuild()
-   for key, value in pairs(self.Page.Elements) do
-      value:rebuild()
+   if self.Page then
+      self.Page:rebuild()
    end
    self.rebuild_queue = false
 end
@@ -179,6 +179,8 @@ function Book:setSelected(id)
    return id
 end
 
+---@param toggle boolean
+---@return GNpanel.book
 function Book:press(toggle)
    if self.Active and self.Visible then
       if self.Selected then
@@ -205,13 +207,15 @@ function Book:setPage(page,index)
    if not page.BookParent then
       if self.Page then
          local last = page.BookParent
-         page.BookParent = nil
-         page.BOOK_PARENT_CHANGED:invoke(last,page.BookParent)
+         self.Page.BookParent = nil
+         self.Page.BOOK_CHANGED:invoke(last,page.BookParent)
+         self.Page:rebuild()
       end
+      self:press(false)
       self.Page = page
       local last = page.BookParent
       page.BookParent = self
-      page.BOOK_PARENT_CHANGED:invoke(last,page.BookParent)
+      page.BOOK_CHANGED:invoke(last,page.BookParent)
       self.PageHistory[#self.PageHistory+1] = page
          
       self:setSelected(1)
@@ -225,7 +229,7 @@ end
 function Book:returnPage()
    if #self.PageHistory > 1 then
       self.PageHistory[#self.PageHistory] = nil
-      self.Page = self.PageHistory[#self.PageHistory]
+      self:setPage(self.PageHistory[#self.PageHistory])
    end
    return self
 end

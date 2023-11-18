@@ -11,11 +11,12 @@ local toggle = {}
 toggle.__index = function (t,i)
    return toggle[i] or base.__index(t,i)
 end
-
+toggle.__type = "GNpanel.Element.ToggleButton"
 
 ---@return GNpanel.Element.ToggleButton
 function toggle.new(obj)
    local new = obj or base.new()
+   setmetatable(new,toggle)
    new.Toggle = false
    new.ON_TOGGLE = core.event.newEvent()
    new.Labels = {}
@@ -26,20 +27,27 @@ function toggle.new(obj)
          if new.Toggle then
             core.tween.tweenFunction(0,1,0.5,"outElastic",function (x)
                new.Labels.switch.handle:setPos(new.pos.x - math.lerp(2,4,x),new.pos.y)
-            end,"toggle")
+            end,nil,"toggle")
          else
             core.tween.tweenFunction(1,0,0.5,"outElastic",function (x)
                new.Labels.switch.handle:setPos(new.pos.x - math.lerp(2,4,x),new.pos.y)
-            end,"toggle")
+            end,nil,"toggle")
          end
       end
    end)
    new.REBUILD:register(function ()
-      new.Labels.switch =  {
-      case_left = core.labelLib.new(new.PageParent.BookParent.Part):setText("["):setEffect("OUTLINE"),
-      case_right = core.labelLib.new(new.PageParent.BookParent.Part):setText("]"):setEffect("OUTLINE"),
-      handle = core.labelLib.new(new.PageParent.BookParent.Part):setText("[]"):setEffect("OUTLINE"):setDepth(-1),
-   }
+      if new.Labels.switch then
+         for key, value in pairs(new.Labels.switch) do
+            value:delete()
+         end
+      end
+      if new:shouldRender() then
+         new.Labels.switch =  {
+         case_left = core.labelLib.new(new.PageParent.BookParent.Part):setText("["):setEffect("OUTLINE"),
+         case_right = core.labelLib.new(new.PageParent.BookParent.Part):setText("]"):setEffect("OUTLINE"),
+         handle = core.labelLib.new(new.PageParent.BookParent.Part):setText("[]"):setEffect("OUTLINE"):setDepth(-1),
+      }
+      end
    end,"switch")
    
    new.UPDATE:register(function ()
@@ -76,8 +84,6 @@ function toggle.new(obj)
          end
       end
    end,"sounds")
-
-   setmetatable(new,toggle)
    return new
 end
 

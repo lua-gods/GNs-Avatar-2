@@ -8,6 +8,7 @@ local button = {}
 button.__index = function (t,i)
    return button[i] or base.__index[i]
 end
+button.__type = "GNpanel.Element.Button.Return"
 
 ---@param obj table?
 ---@return GNpanel.Element.Button.Return
@@ -17,14 +18,19 @@ function button.new(obj)
    setmetatable(new,button)
 
    new.REBUILD:register(function ()
-      new.Label = core.labelLib.new(new.PageParent.BookParent.Part)
+      if new.Label then new.Label:delete() end
+      if new:shouldRender() then
+         new.Label = core.labelLib.new(new.PageParent.BookParent.Part)
+      end
    end,"label")
    new.UPDATE:register(function ()
-      new.Label:setText('{"text":"Return","color":"red"}'):setPos(new.pos):setEffect("OUTLINE")
-      if new.Hovering then
-         new.Label:setGlowColor(0.3,0.3,0.3)
-      else
-         new.Label:setGlowColor(0,0,0)
+      if new.Label then
+         new.Label:setText('{"text":"Return","color":"red"}'):setPos(new.pos):setEffect("OUTLINE")
+         if new.Hovering then
+            new.Label:setGlowColor(0.3,0.3,0.3)
+         else
+            new.Label:setGlowColor(0,0,0)
+         end
       end
    end,"label")
    

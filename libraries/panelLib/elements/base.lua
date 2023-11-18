@@ -11,13 +11,14 @@ local core = require("libraries.panelLib.panelCore")
 ---@field Hovering boolean
 ---@field UPDATE AuriaEvent
 ---@field REBUILD AuriaEvent
----@field ENTERED_PAGE AuriaEvent
----@field ENTERED_BOOK AuriaEvent
+---@field PAGE_CHANGED AuriaEvent
+---@field BOOK_CHANGED AuriaEvent
 ---@field STATE_CHANGED AuriaEvent
 ---@field PRESSED AuriaEvent
 ---@field RELEASED AuriaEvent
 local element = {}
 element.__index = element
+element.__type = "GNpanel.Element"
 
 function element.new(obj)
    ---@type GNpanel.Element.TextButton
@@ -27,8 +28,8 @@ function element.new(obj)
    new.Hovering = false
    new.UPDATE = core.event.newEvent()
    new.REBUILD = core.event.newEvent()
-   new.ENTERED_PAGE = core.event.newEvent()
-   new.ENTERED_BOOK = core.event.newEvent()
+   new.PAGE_CHANGED = core.event.newEvent()
+   new.BOOK_CHANGED = core.event.newEvent()
    new.STATE_CHANGED = core.event.newEvent()
    new.PRESSED = core.event.newEvent()
    new.RELEASED = core.event.newEvent()
@@ -71,6 +72,9 @@ function element:delete() return self end
 function element:setHovering(is_hovering)
    self.Hovering = is_hovering
    return self
+end
+function element:shouldRender()
+   return self.PageParent and self.PageParent.BookParent
 end
 
 return element

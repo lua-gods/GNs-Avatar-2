@@ -7,7 +7,7 @@ models.hat:setParentType("SKULL")
 events.SKULL_RENDER:register(function (delta, block, item,entity,context)
    if entity then
       ---@type Vector3
-      local clr = entity:getVariable("color") or vectors.vec3(0.9294117689, 0.6705882549, 0.3137255012)
+      local clr = entity:getVariable("color") or vectors.hexToRGB("#5ac54f")
       if type(clr) == "Vector3" then
          for i = 1, 4, 1 do
             local w = (i-1)/4

@@ -4,7 +4,6 @@
 ---@field pos Vector3
 ---@field lrot Vector3
 ---@field rot Vector3
----@field vel Vector3
 ---@field spin number
 ---@field spinvel number
 ---@field part ModelPart
@@ -18,9 +17,8 @@ local swords = {}
 ---@return Sword
 function sword.new(premade)
    local new = premade or {}
-   new.pos = vectors.vec3()
    new.lpos = vectors.vec3()
-   new.vel = vectors.vec3()
+   new.pos = vectors.vec3()
    new.lrot = vectors.vec3()
    new.rot = vectors.vec3()
    new.spinvel = 0
@@ -48,12 +46,14 @@ end
 
 events.WORLD_TICK:register(function ()
    for i, s in pairs(swords) do
-      s.lpos = s.pos
       s.lrot = s.rot
-      s.pos = s.pos + s.vel
+      if (s.pos-s.lpos):lengthSquared() > 0.01 then
+         s.rot = toAngle(s.pos-s.lpos)
+      end
+      s.rot:add(-s.spin,0,0)
       s.lspin = s.spin
       s.spin = s.spin + s.spinvel
-      s.rot = toAngle(s.vel):add(-s.spin,0,0)
+      s.lpos = s.pos
    end
 end)
 

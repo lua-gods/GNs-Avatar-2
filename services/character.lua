@@ -1,11 +1,13 @@
 
 local config = {
-   update_interval = 4
+   update_interval = 3
 }
 local update_timer = 0
 
 local lrot = vectors.vec2()
 local rot = vectors.vec2()
+local lvel = vectors.vec3()
+local vel = vectors.vec3()
 local time = 0
 
 events.RENDER:register(function (delta, context)
@@ -14,13 +16,14 @@ events.RENDER:register(function (delta, context)
          local d = (update_timer + delta) / config.update_interval
          local trot = -math.lerp(lrot,rot,d)
          local breath = (time + delta) * 0.1
-         models.player.base:setPos(0,0,trot.x*-0.022)
-         models.player.base.LeftLeg:setPos(0,0,trot.x * 0.01 + trot.y * 0.02):setRot(trot.x * -0.05 + trot.y * 0.1,trot.y * 0.25,0)
-         models.player.base.RightLeg:setPos(0,0,trot.x * 0.01 - trot.y * 0.02):setRot(trot.x * -0.05 - trot.y * 0.1,trot.y * 0.25,0)
-         models.player.base.Torso:setRot(trot.x * 0.2,trot.y * 0.5,0):pos(0,(math.sin(breath)+1) * 0.1,0)
-         models.player.base.Torso.Head:setRot(trot.x * -0.4,trot.y * -0.75,trot.y * (math.abs(math.rad(math.min(trot.x,0)))) * -0.25)
-         models.player.base.Torso.LeftArm:setRot(trot.x * -0.1 + trot.y * -0.2,0,math.abs(trot.y)*-0.05)
-         models.player.base.Torso.RightArm:setRot(trot.x * -0.1 - trot.y * -0.2,0,math.abs(trot.y)*0.05)
+         local tvel = math.lerp(lvel,vel,d)
+         models.player.base:setPos(0,0,0)
+         models.player.base.LeftLeg:setPos(0,0,trot.x * 0.01 + trot.y * 0.02):setRot(trot.x * 0.05 + trot.y * 0.1,trot.y * 0.25,-1)
+         models.player.base.RightLeg:setPos(0,0,trot.x * 0.01 - trot.y * 0.02):setRot(trot.x * 0.05 - trot.y * 0.1,trot.y * 0.25,1)
+         models.player.base.Torso:setRot(trot.x * 0.2,trot.y * 0.25,0):pos(0,(math.sin(breath)+1) * 0.1,0)
+         models.player.base.Torso.Head:setRot(trot.x * -0.4,trot.y * -0.75 * math.abs(1 - trot.x * 0.01),0)
+         models.player.base.Torso.LeftArm:setRot(trot.x * -0.1 + trot.y * 0.2,0,math.abs(trot.y)*-0.05)
+         models.player.base.Torso.RightArm:setRot(trot.x * -0.1 - trot.y * 0.2,0,math.abs(trot.y)*0.05)
          models.player.base.Torso.Head.HClothing.eyes:setPos(trot.y * -0.01,0,0)
          models.player.base.Torso.Head.HClothing.Mouth:setRot(0,0,trot.y * 0.1)
       end
@@ -30,14 +33,19 @@ events.RENDER:register(function (delta, context)
    end
 end)
 
+
+local up = vectors.vec3(0,1,0)
+
 events.TICK:register(function ()
    time = time + 1
    update_timer = (update_timer + 1) % config.update_interval
    if update_timer == 0 then
       lrot = rot
-
-      rot = player:getRot():sub(0,player:getBodyYaw())
+      lvel = vel
+      local body = player:getVehicle() and player:getVehicle():getBodyYaw() or player:getBodyYaw()
+      rot = player:getRot():sub(0,body)
       rot.y = (rot.y + 180) % 360 - 180
+      vel = vectors.rotateAroundAxis(body,player:getVelocity(),up)
    end
 end)
 

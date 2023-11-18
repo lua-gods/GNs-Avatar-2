@@ -10,6 +10,7 @@ local text = {}
 text.__index = function (t,i)
    return text[i] or base.__index(t,i)
 end
+text.__type = "GNpanel.Element.TextInput"
 
 function text.new(obj)
    local new = obj or base.new()
