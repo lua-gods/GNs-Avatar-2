@@ -9,7 +9,7 @@ local next_free = 0
 ---@field Position Vector2 # tells where the book is at
 ---@field Origin Vector2 # tells where the placements start
 ---@field Anchor Vector2 # tells what corner of the screen the origin anchors to
----@field DefaultPlacement function # tells how each page is displayed
+---@field DefaultPlacement fun(x: number,y: number,sx: number,sy: number,i: number): Vector2 # tells how each page is displayed
 ---@field EscapeOverride function # tells how each page is displayed
 ---@field Page GNpanel.page
 ---@field PageHistory table<any,GNpanel.page>
@@ -109,9 +109,9 @@ function Book:updatePlacement()
    local cursor = self.Origin:copy()
    if self.Page then
       self.BoundingBox = vectors.vec4(0,0,0,0)
-      for key, child in pairs(self.Page.Elements) do
+      for i, child in pairs(self.Page.Elements) do
          local dim = child:getSize()
-         cursor = self.Page.Placement and self.Page.Placement(cursor.x,cursor.y,dim.x,dim.y) or self.DefaultPlacement(cursor.x,cursor.y,dim.x,dim.y)
+         cursor = self.Page.Placement and self.Page.Placement(cursor.x,cursor.y,dim.x,dim.y,i) or self.DefaultPlacement(cursor.x,cursor.y,dim.x,dim.y, i)
          child:setPos(cursor)
          self.BoundingBox.x = math.min(cursor.x + dim.x, cursor.x, self.BoundingBox.x)
          self.BoundingBox.y = math.min(cursor.y + dim.y, cursor.y, self.BoundingBox.y)

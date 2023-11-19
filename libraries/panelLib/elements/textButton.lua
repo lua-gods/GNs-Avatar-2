@@ -43,12 +43,10 @@ end
 ---@param text string
 ---@return GNpanel.Element.TextButton
 function button:setText(text)
-   if self.Label then
-      self.Label:setText(text)
-   end
    self.text = text
-   if self.PageParent then
+   if self:shouldRender() then
       self:rebuild()
+      self:update()
    end
    return self
 end
@@ -61,7 +59,7 @@ function button.get_color_overrides(pressed,hovering)
 end
 
 function button:getSize()
-   return vectors.vec2(client.getTextWidth(self.text),10)
+   return vectors.vec2(client.getTextWidth(self.text),client.getTextHeight(self.text))
 end
 
 return button

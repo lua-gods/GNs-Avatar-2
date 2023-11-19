@@ -31,15 +31,8 @@ events.SKULL_RENDER:register(function (delta, block, item,entity,context)
    else
       models.plushie:setVisible(true)
       models.hat:setVisible(false)
-      if block then
-         local under = world.getBlockState(block:getPos():sub(0,1,0))
-         local stack = under.id == "minecraft:player_head"
-         models.plushie.Plushie:setVisible(not stack):setRot(0,0,0)
-         models.plushie.Extension:setVisible(stack)
-      else
-         models.plushie.Plushie:setVisible(true)
-         models.plushie.Extension:setVisible(false)
-      end
+      models.plushie.Plushie:setVisible(true)
+      models.plushie.Extension:setVisible(false)
    end
 end)
 

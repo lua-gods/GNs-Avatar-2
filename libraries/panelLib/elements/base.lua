@@ -35,7 +35,7 @@ function element.new(obj)
    new.RELEASED = core.event.newEvent()
    new.STATE_CHANGED:register(function (state)
       if state == "HOVERING" then
-         core.uiSound("minecraft:entity.item_frame.rotate_item",new.id / #new.PageParent.Elements + 0.75,0.5)
+         core.uiSound("minecraft:entity.item_frame.rotate_item",0.75,0.5)
       end
       if state == "PRESSED" then
          core.uiSound("minecraft:block.wooden_button.click_on",1,0.5)
@@ -46,7 +46,6 @@ function element.new(obj)
    end,"sounds")
    new.id = next_free
    setmetatable(new,element)
-
    next_free = next_free + 1
    return new
 end

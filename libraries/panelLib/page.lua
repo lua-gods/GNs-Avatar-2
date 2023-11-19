@@ -5,7 +5,7 @@ local pages = {}
 
 local next_free = 0
 ---@class GNpanel.page
----@field Placement function # tells how each page is displayed
+---@field Placement fun(x: number,y: number,sx: number,sy: number,i: number): Vector2 # tells how each page is displayed
 ---@field CursorPlacement function # tells how each page is displayed
 ---@field id integer # tells how each page is displayed
 ---@field BookParent GNpanel.book?

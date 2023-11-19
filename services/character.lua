@@ -17,7 +17,7 @@ events.RENDER:register(function (delta, context)
          local trot = -math.lerp(lrot,rot,d)
          local breath = (time + delta) * 0.1
          local tvel = math.lerp(lvel,vel,d)
-         models.player.base:setPos(0,0,0)
+         models.player.base:setPos(0,0,0):setRot(0,0,0)
          models.player.base.LeftLeg:setPos(0,0,trot.x * 0.01 + trot.y * 0.02):setRot(trot.x * 0.05 + trot.y * 0.1,trot.y * 0.25,-1)
          models.player.base.RightLeg:setPos(0,0,trot.x * 0.01 - trot.y * 0.02):setRot(trot.x * 0.05 - trot.y * 0.1,trot.y * 0.25,1)
          models.player.base.Torso:setRot(trot.x * 0.2,trot.y * 0.25,0):pos(0,(math.sin(breath)+1) * 0.1,0)
@@ -42,7 +42,7 @@ events.TICK:register(function ()
    if update_timer == 0 then
       lrot = rot
       lvel = vel
-      local body = player:getVehicle() and player:getVehicle():getBodyYaw() or player:getBodyYaw()
+      local body = player:getVehicle() and player:getVehicle():getRot().y or player:getBodyYaw()
       rot = player:getRot():sub(0,body)
       rot.y = (rot.y + 180) % 360 - 180
       vel = vectors.rotateAroundAxis(body,player:getVelocity(),up)
@@ -67,3 +67,17 @@ events.TICK:register(function ()
       wait = math.floor(math.lerp(min_wait,max_wait,math.random()) + 0.5)
    end
 end)
+
+local function validate(num)
+   return num == math.floor(num) and num..".0" or tostring(num)
+end
+--[[
+for x = 1, 16, 1 do
+   for y = 1, 16, 1 do
+      host:sendChatCommand("/summon minecraft:interaction "..validate(x * 1.5).." -80 "..validate(y * 1.5)..' {width:2,height:0.6,NoGravity:1,Passengers:[{id:"minecraft:boat",Type:"cherry",Passengers:[{id:"area_effect_cloud",Duration:9999999999999999},{id:"area_effect_cloud",Duration:9999999999999999}]}]}')
+      if x == 1 or y == 1 or x == 16 or y == 16 then
+         host:sendChatCommand("/summon minecraft:interaction "..validate(x * 1.5).." -79 "..validate(y * 1.5)..' {width:2,height:0.6,NoGravity:1,Passengers:[{id:"minecraft:boat",Type:"dark_oak",Passengers:[{id:"area_effect_cloud",Duration:9999999999999999},{id:"area_effect_cloud",Duration:9999999999999999}]}]}')
+      end
+   end 
+end
+]]

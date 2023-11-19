@@ -4,4 +4,5 @@ local elements = {
 
 }
 page:insertElement(elements)
+page:insertElement(panel.newReturnButton())
 return page
