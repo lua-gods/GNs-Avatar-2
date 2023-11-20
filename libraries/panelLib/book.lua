@@ -18,7 +18,7 @@ local next_free = 0
 ---@field Active boolean
 ---@field LockCursor boolean
 ---@field SelectedIndex integer
----@field Selected GNpanel.Element
+---@field Selected GNpanel.element
 ---@field Visible boolean
 ---@field REBUILD AuriaEvent #delete all render tasks and make new ones
 ---@field TRANSFORM AuriaEvent #reposition, translates, rotates or scales

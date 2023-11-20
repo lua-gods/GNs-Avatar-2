@@ -1,7 +1,7 @@
 local next_free = 0
 local core = require("libraries.panelLib.panelCore")
 
----@class GNpanel.Element
+---@class GNpanel.element
 ---@field id integer
 ---@field PageParent GNpanel.page
 ---@field rebuild function
@@ -17,12 +17,15 @@ local core = require("libraries.panelLib.panelCore")
 ---@field PRESSED AuriaEvent
 ---@field RELEASED AuriaEvent
 local element = {}
-element.__index = element
+element.__index = function (t,i)
+   return element[i]
+end
 element.__type = "GNpanel.Element"
 
 function element.new(obj)
-   ---@type GNpanel.Element.TextButton
+   ---@type GNpanel.element
    local new = obj or {}
+   setmetatable(new,element)
    new.pos = vectors.vec2()
    new.down = false
    new.Hovering = false
@@ -45,7 +48,6 @@ function element.new(obj)
       end
    end,"sounds")
    new.id = next_free
-   setmetatable(new,element)
    next_free = next_free + 1
    return new
 end

@@ -1,7 +1,7 @@
 local anchor = require("services.host.anchors")
 local d = textures.cute:getDimensions() * 16
 local contain = models:newPart("ky","WORLD")
-local sprite = contain:newSprite("NOW"):texture(textures.cute):setRenderType("BLURRY")
+local sprite = contain:newSprite("NOW"):visible(false):texture(textures.cute):setRenderType("BLURRY")
 sprite:setPos(d.x/32,d.y/32,0)
 events.WORLD_RENDER:register(function (delta)
    contain:setPos(client:getCameraPos():add(client:getCameraDir()) * 16)

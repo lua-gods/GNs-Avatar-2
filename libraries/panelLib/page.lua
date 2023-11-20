@@ -9,7 +9,7 @@ local next_free = 0
 ---@field CursorPlacement function # tells how each page is displayed
 ---@field id integer # tells how each page is displayed
 ---@field BookParent GNpanel.book?
----@field Elements table<any,GNpanel.Element>
+---@field Elements table<any,GNpanel.element>
 ---@field BOOK_CHANGED AuriaEvent
 local Page = {}
 Page.__index = Page
@@ -36,7 +36,7 @@ end
 
 ---Inserts the element into the page.  
 ---* of no index is given, element will be appended at the top
----@param element GNpanel.Element|table<any,GNpanel.Element>
+---@param element GNpanel.element|table<any,GNpanel.element>
 ---@param index integer?
 ---@return GNpanel.page
 function Page:insertElement(element,index)

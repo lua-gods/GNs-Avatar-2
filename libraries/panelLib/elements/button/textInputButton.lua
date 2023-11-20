@@ -1,8 +1,8 @@
-local base = require("libraries.panelLib.elements.textButton")
+local base = require("libraries.panelLib.elements.button.textButton")
 local core = require("libraries.panelLib.panelCore")
 
 
----@class GNpanel.Element.TextInput : GNpanel.Element.TextButton
+---@class GNpanel.Element.TextInput : GNpanel.element.button.textButton
 ---@field Input string
 ---@field Placeholder string
 ---@field History table

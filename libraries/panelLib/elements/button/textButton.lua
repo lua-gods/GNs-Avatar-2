@@ -1,23 +1,22 @@
-local base = require("libraries.panelLib.elements.base")
+local base = require("libraries.panelLib.elements.button")
 local core = require("libraries.panelLib.panelCore")
 
----@class GNpanel.Element.TextButton : GNpanel.Element
+---@class GNpanel.element.button.textButton : GNpanel.element.button
 ---@field text string
 ---@field Label Label
 ---@field pressed boolean
-local button = {}
-button.__index = function (t,i)
-   return button[i] or base[i]
+local txtbtn = {}
+txtbtn.__index = function (t,i)
+   return txtbtn[i] or base.__index(t,i)
 end
-button.__type = "GNpanel.Element.TextButton"
+txtbtn.__type = "GNpanel.Element.TextButton"
 
 ---@param obj table?
----@return GNpanel.Element.TextButton
-function button.new(obj)
+---@return GNpanel.element.button.textButton
+function txtbtn.new(obj)
    local new = obj or base.new()
    new.text = '[{"text":"Empty Button","color":"default"}]'
-   new.down = false
-   setmetatable(new,button)
+   setmetatable(new,txtbtn)
    new.REBUILD:register(function ()
       if new.Label then
          new.Label:delete()
@@ -28,7 +27,7 @@ function button.new(obj)
    end,"label")
    new.UPDATE:register(function ()
       if new.Label then
-         new.Label.TextOverride = button.get_color_overrides(new.down,new.Hovering)
+         new.Label.TextOverride = txtbtn.get_color_overrides(new.down,new.Hovering)
          new.Label:setText(new.text):setPos(new.pos):setEffect("OUTLINE")
          if new.Hovering then
             new.Label:setGlowColor(0.3,0.3,0.3)
@@ -41,8 +40,8 @@ function button.new(obj)
 end
 
 ---@param text string
----@return GNpanel.Element.TextButton
-function button:setText(text)
+---@return GNpanel.element.button.textButton
+function txtbtn:setText(text)
    self.text = text
    if self:shouldRender() then
       self:rebuild()
@@ -51,15 +50,15 @@ function button:setText(text)
    return self
 end
 
-function button.get_color_overrides(pressed,hovering)
+function txtbtn.get_color_overrides(pressed,hovering)
    if pressed then return core.color_overrides.pressed else
       if hovering then return core.color_overrides.hovering
       else return core.color_overrides.none end
    end
 end
 
-function button:getSize()
+function txtbtn:getSize()
    return vectors.vec2(client.getTextWidth(self.text),client.getTextHeight(self.text))
 end
 
-return button
+return txtbtn

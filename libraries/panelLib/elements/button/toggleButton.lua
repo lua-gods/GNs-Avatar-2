@@ -1,9 +1,9 @@
 local core = require("libraries.panelLib.panelCore")
-local base = require("libraries.panelLib.elements.textButton")
+local base = require("libraries.panelLib.elements.button.textButton")
 
 local private = {}
 
----@class GNpanel.Element.ToggleButton : GNpanel.Element.TextButton
+---@class GNpanel.Element.ToggleButton : GNpanel.element.button.textButton
 ---@field Toggle boolean
 ---@field Labels table
 ---@field ON_TOGGLE AuriaEvent

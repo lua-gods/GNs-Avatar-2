@@ -1,36 +1,106 @@
 local tweenLib = require("libraries.GNTweenLib")
 
-local lookup = {}
+local emotes = {
+   {
+      name = "Clipping",
+      anim = animations.player.clip:speed(2),
+      sound = "clipping"
+   },{
+      name = "Kazotsky kick",
+      anim = animations.player.Kazotskykick,
+   },{
+      name = "Kazotsky kick2",
+      anim = animations.player.Kazotskykick2,
+   },{
+      name = "Club Penguin",
+      anim = animations.player.clubpenguin,
+   },{
+      name = "T Pose",
+      anim = animations.player.tpose,
+   },{
+      name = "Sit Down",
+      anim = animations.player.sit,
+   },{
+      name = "Sit Shame",
+      anim = animations.player.sitShame,
+   },{
+      name = "Roblox death",
+      anim = animations.player.roblox,
+   },{
+      name = "Carramel Dancen",
+      anim = animations.player.carrameldancen,
+   },{
+      name = "Family guy Toilet",
+      anim = animations.player.Toilet,
+   },{
+      name = "Spin",
+      anim = animations.player.spin,
+   },{
+      name = "Morph Cow",
+      anim = animations.player.cow,
+   },{
+      name = "Morph Penguin",
+      anim = animations.player.penguin,
+   }
+}
 
-for id, anim in pairs(animations.player) do
-   lookup[id] = {weight = 0,anim = anim}
+for id, anim in pairs(emotes) do
+   emotes[id].weight = 0
+   if emotes[id].sound then
+      emotes[id].sound = sounds[emotes[id].sound]:loop(true)
+   end
+   emotes[id].playing = false
 end
 
 function pings.emote(id,toggle)
    if toggle then
-      lookup[id].anim:stop():play():blend(0)
-      tweenLib.tweenFunction(lookup[id].weight,1,0.2,"inOutQuad",function (x)
-         lookup[id].weight = x
-         lookup[id].anim:blend(x)
+      emotes[id].anim:stop():play():blend(0)
+      tweenLib.tweenFunction(emotes[id].weight,1,0.2,"inOutQuad",function (x)
+         emotes[id].weight = x
+         emotes[id].anim:blend(x)
       end,nil,"emote"..id)
+      if emotes[id].sound then
+         emotes[id].sound:play()
+      end
+      emotes[id].playing = true
    else
-      tweenLib.tweenFunction(lookup[id].weight,0,0.4,"inQuad",function (x)
-         lookup[id].weight = x
-         lookup[id].anim:blend(x)
+      tweenLib.tweenFunction(emotes[id].weight,0,0.2,"inOutQuad",function (x)
+         emotes[id].weight = x
+         emotes[id].anim:blend(x)
       end,function ()
-         lookup[id].anim:stop()
+         emotes[id].anim:stop()
       end,"emote"..id)
+      if emotes[id].sound then
+         emotes[id].sound:stop()
+      end
+      emotes[id].playing = false
    end
 end
+
+events.TICK:register(function ()
+   local pos = player:getPos()
+   for key, emote in pairs(emotes) do
+      if emote.playing and emote.sound then
+         emote.sound:pos(pos)
+      end
+   end
+end)
 
 if not host:isHost() then return end
 
 local panel = require("libraries.panelLib.main")
 local page = panel.newPage()
 
+local first_row = 25
+local rest_row = 20
+
 page.Placement = function (x, y, sx, sy, i)
-   if i % 13 == 0 then
-      return vectors.vec2(x+60,y+100)
+   if i <= first_row and ((i-1) % (first_row-1) == 0 and i ~= 1) or (i > first_row and ((i-1-(first_row-1)) % rest_row == 0) and i ~= 1) then
+      if i > first_row then
+         return vectors.vec2(x+60,y+rest_row * 10 - 10)
+      else
+         return vectors.vec2(x+60,y+(first_row * 10 - 20))
+      end
    else
       return vectors.vec2(x,y-10)
    end
@@ -40,21 +110,21 @@ local elements = {
 panel.newButton():setText('{"text":"EMOTES","color":"red"}'),
 }
 
-for id, anim in pairs(animations.player) do
-   local loop = anim:getLoop()
+for id, emote in pairs(emotes) do
+   local loop = emote.anim:getLoop()
    if loop == "LOOP" or loop == "HOLD" then
       local btn = panel.newToggleButton()
       btn.ON_TOGGLE:register(function (toggle)
          pings.emote(id,toggle)
       end)
-      btn:setText('{"text":"'..anim:getName()..'","color":"default"}')
+      btn:setText('{"text":"'..emote.name..'","color":"default"}')
       elements[#elements+1] = btn
    else
       local btn = panel.newButton()
       btn.PRESSED:register(function ()
          pings.emote(id,true)
       end)
-      btn:setText('{"text":"'..anim:getName()..'","color":"default"}')
+      btn:setText('{"text":"'..emote.name..'","color":"default"}')
       elements[#elements+1] = btn
    end
 end

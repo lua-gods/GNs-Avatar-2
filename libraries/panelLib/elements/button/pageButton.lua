@@ -1,7 +1,7 @@
-local base = require("libraries.panelLib.elements.textButton")
+local base = require("libraries.panelLib.elements.button")
 local core = require("libraries.panelLib.panelCore")
 
----@class GNpanel.Element.PageButton : GNpanel.Element.TextButton
+---@class GNpanel.Element.PageButton : GNpanel.element.button.textButton
 ---@field page GNpanel.page
 ---@field Label table<any,Label>
 local button = {}
