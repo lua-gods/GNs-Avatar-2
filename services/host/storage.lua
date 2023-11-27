@@ -28,6 +28,16 @@ keybinds:fromVanilla("key.use").press = function ()
    end
 end
 
+local function isContainer(block)
+   return not ((not block:getEntityData() or not block:getEntityData().Items) and not block.id:find("shulker") and not block.id:find("chest$"))
+end
+
+local container_screens = {
+   ["net.minecraft.class_476"] = true, -- Chest, Ender Chest, Barrel
+   ["net.minecraft.class_480"] = true, -- Dispenser, Dropper
+   ["net.minecraft.class_488"] = true, -- Hopper
+   ["net.minecraft.class_495"] = true  -- Shulker Box
+}
 
 local save_timer = 0
 events.WORLD_TICK:register(function ()
@@ -42,7 +52,7 @@ events.WORLD_TICK:register(function ()
       end
    end
    save_timer = save_timer - 1
-   if block_interacted and screen == "net.minecraft.class_476" and block_interacted.id == "minecraft:chest" and save_timer < 0 then -- chest
+   if block_interacted and container_screens[screen] and isContainer(block_interacted) and save_timer < 0 then -- container + screen
       save_timer = 20
 
       -- Collect Container Data
