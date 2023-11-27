@@ -43,7 +43,7 @@ events.WORLD_TICK:register(function ()
    end
    save_timer = save_timer - 1
    if block_interacted and screen == "net.minecraft.class_476" and block_interacted.id == "minecraft:chest" and save_timer < 0 then -- chest
-      save_timer = 10
+      save_timer = 20
 
       -- Collect Container Data
       local container = {} --[[@type table<any,ItemStack>]]
@@ -59,7 +59,12 @@ events.WORLD_TICK:register(function ()
       -- Generate RID to detect changes
       local rid = block_interacted.id..":"..block_interacted:getPos():toString()..":"
       for key, value in pairs(container) do
-         rid = rid .. value.id .. table.concat(value.tag,":") .. ":"
+         if value.id == "minecraft:air" then
+            container[key] = nil
+            rid = rid .. ":"
+         else
+            rid = rid .. value.id .. table.concat(value.tag,":") .. ":"
+         end
       end
 
       -- Write to file if something changed
