@@ -19,7 +19,7 @@ local last_rid = ""
 local last_screen = ""
 local server = client:getServerData().ip
 local block_interacted = nil --[[@type BlockState]]
-config:setName(server)
+config:setName(server.."storage_cache")
 
 keybinds:fromVanilla("key.use").press = function ()
    block_interacted = player:getTargetedBlock(true,5)
