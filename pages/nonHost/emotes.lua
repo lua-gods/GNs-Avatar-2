@@ -41,6 +41,7 @@ local emotes = {
    },{
       name = "Spin",
       anim = animations.player.spin,
+      sound = "lovely",
    },{
       name = "Morph Cow",
       anim = animations.player.cow,
