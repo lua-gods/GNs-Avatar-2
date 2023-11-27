@@ -16,10 +16,10 @@ local emotes = {
       anim = animations.player.clubpenguin,
    },{
       name = "Shake",
-      anim = animations.player.duckDance:setSpeed(1.1),
+      anim = animations.player.duckDance:setSpeed(1),
    },{
       name = "Shake Smooth",
-      anim = animations.player.duckDance2:setSpeed(1.1),
+      anim = animations.player.duckDance2:setSpeed(1),
    },{
       name = "T Pose",
       anim = animations.player.tpose,
