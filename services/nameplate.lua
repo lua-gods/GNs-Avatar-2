@@ -13,10 +13,11 @@ local colorB = vectors.rgbToHSV(vectors.hexToRGB("#1e6f50"))
 --composition[#composition+1] = {text="\n"}
 
 
-
+local composition
 local function update()
-   local composition = {}
-   composition[#composition+1] = {text="${badges}:@gn:"}
+   composition = {}
+   composition[#composition+1] = {text="${badges}"}
+   composition[#composition+1] = {font="figura:emoji_portrait",text=""}
    for i = 1, #username, 1 do
       composition[#composition+1] = {
          text = username:sub(i,i),
@@ -66,3 +67,7 @@ command.register(function (words)
       end
    end
 end)
+
+return function ()
+   return composition
+end

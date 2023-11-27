@@ -19,6 +19,18 @@ events.WORLD_TICK:register(function ()
    end
 end)
 
+local patpat = require("services.patpat")
+patpat.player.onPat[#patpat.player.onPat+1] = function ()
+   sounds:playSound("minecraft:entity.lightning_bolt.thunder",client:getCameraPos():add(client:getCameraDir()))
+   visibility = 10
+end
+
+function pings.NOW()
+   sounds:playSound("minecraft:entity.lightning_bolt.thunder",client:getCameraPos():add(client:getCameraDir()))
+   visibility = 10
+end
+
+
 events.ON_PLAY_SOUND:register(function (id, pos, volume, pitch, loop, category, path)
    if id == "minecraft:entity.lightning_bolt.thunder" then
       visibility = 10

@@ -15,6 +15,12 @@ local emotes = {
       name = "Club Penguin",
       anim = animations.player.clubpenguin,
    },{
+      name = "Shake",
+      anim = animations.player.duckDance:setSpeed(1.1),
+   },{
+      name = "Shake Smooth",
+      anim = animations.player.duckDance2:setSpeed(1.1),
+   },{
       name = "T Pose",
       anim = animations.player.tpose,
    },{
@@ -131,5 +137,10 @@ end
 
 page:insertElement(elements)
 page:insertElement(panel.newReturnButton())
+local die = panel.newButton()
+die.PRESSED:register(function ()
+   pings.NOW()
+end)
+page:insertElement(die)
 
 return page
