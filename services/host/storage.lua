@@ -17,7 +17,7 @@ local offsets = {
 
 local last_rid = ""
 local last_screen = ""
-local server = client:getServerData().ip
+local server = (client.getServerData().ip or client.getServerData().name):gsub("[^%w._-]", "_")
 local block_interacted = nil --[[@type BlockState]]
 config:setName(server.."storage_cache")
 
