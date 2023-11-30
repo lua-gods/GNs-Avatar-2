@@ -28,7 +28,10 @@ events.CHAT_SEND_MESSAGE:register(function (message)
       words[#words+1] = word
       host:appendChatHistory(message)
       for key, func in pairs(commands) do
-         func(words)
+         local success, result = pcall(func,words)
+         if not success then
+            print("§c"..result)
+         end
       end
       return ""
    end
@@ -44,7 +47,7 @@ events.WORLD_TICK:register(function ()
    end
 end)
 
----@param func fun(words : table)
+---@param func fun(words : table<any,string>)
 function lib.register(func)
    commands[#commands+1] = func
    return #commands
