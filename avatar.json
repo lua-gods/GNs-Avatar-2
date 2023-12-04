@@ -3,5 +3,5 @@
    "author":"GNamimates",
    "color":"#4dd966",
    "description":"",
-   "autoScripts": ["init"]
+   "autoScripts": ["traceback"]
 }

@@ -59,14 +59,14 @@ for id, anim in pairs(emotes) do
    emotes[id].playing = false
 end
 
-function pings.emote(id,toggle)
+function pings.emote(id,toggle,canplay)
    if toggle then
       emotes[id].anim:stop():play():blend(0)
       tweenLib.tweenFunction(emotes[id].weight,1,0.2,"inOutQuad",function (x)
          emotes[id].weight = x
          emotes[id].anim:blend(x)
       end,nil,"emote"..id)
-      if emotes[id].sound then
+      if emotes[id].sound and canplay then
          emotes[id].sound:play()
       end
       emotes[id].playing = true
@@ -113,23 +113,33 @@ page.Placement = function (x, y, sx, sy, i)
    end
 end
 
+local mute_button = panel.newToggleButton():setText('{"text":"Mute","color":"default"}')
+
 local elements = {
 panel.newButton():setText('{"text":"EMOTES","color":"red"}'),
+mute_button,
+panel.newButton():setText('{"text":""}'),
 }
+
+mute_button.ON_TOGGLE:register(function (toggle)
+   if toggle then
+      
+   end
+end)
 
 for id, emote in pairs(emotes) do
    local loop = emote.anim:getLoop()
    if loop == "LOOP" or loop == "HOLD" then
       local btn = panel.newToggleButton()
       btn.ON_TOGGLE:register(function (toggle)
-         pings.emote(id,toggle)
+         pings.emote(id,toggle,not mute_button.Toggle)
       end)
       btn:setText('{"text":"'..emote.name..'","color":"default"}')
       elements[#elements+1] = btn
    else
       local btn = panel.newButton()
       btn.PRESSED:register(function ()
-         pings.emote(id,true)
+         pings.emote(id,true,not mute_button.Toggle)
       end)
       btn:setText('{"text":"'..emote.name..'","color":"default"}')
       elements[#elements+1] = btn
@@ -143,5 +153,4 @@ die.PRESSED:register(function ()
    pings.NOW()
 end)
 page:insertElement(die)
-
 return page

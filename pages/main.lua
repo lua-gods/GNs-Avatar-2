@@ -21,7 +21,6 @@ local elements = {
 
 panel.newButton():setText('[{"text":"Just GN v3","color":"green"}]'),
 panel.newPageButton():setText('{"text":"Emotes","color":"default"}'):setRedirectPage(require("pages.nonHost.emotes")),
-panel.newPageButton():setText('{"text":"Clipboard","color":"default"}'):setRedirectPage(require("pages.clipboard")),
 nametagName
 }
 page:insertElement(elements)

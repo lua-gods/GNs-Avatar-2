@@ -5,17 +5,17 @@ events.TICK:register(function ()
    local cpos = client:getCameraPos()
    local distance = cpos-vectors.vec3(ppos.x,math.clamp(cpos.y,ppos.y,ppos.y+2),ppos.z)
    if distance.x + distance.y + distance.z < 3^3 then
-      distance = distance:length()
+      distance = distance:length() * 1.8
    else
       distance = math.huge
    end
    local close = (distance < 4) and 1 or 0
-   model:setOpacity(math.clamp(distance - 1,0,1))
+   model:setOpacity(math.clamp((distance - 1) * 2,0,1))
    if distance < 1 then close = 2 end
    if close ~= was_close then
       was_close = close
       if close == 1 then
-         model:setPrimaryRenderType("TRANSLUCENT"):setVisible(true)
+         model:setPrimaryRenderType("TRANSLUCENT_CULL"):setVisible(true)
       elseif close == 2 then
          model:setVisible(false)
       else
