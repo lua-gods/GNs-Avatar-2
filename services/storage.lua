@@ -45,7 +45,7 @@ local categories = {
    },
    ----------------------------------------ROW 2
    {
-      name = "Terrain2",
+      name = "Underground Terrain",
       item = "minecraft:stone",
       pos  = vectors.vec2(5,-3),
       items = {}
@@ -76,7 +76,7 @@ local categories = {
    },
    ----------------------------------------ROW 3
    {
-      name = "Terrain3",
+      name = "Undergound terrain2",
       item = "minecraft:deepslate",
       pos  = vectors.vec2(5,-4),
       items = {}
@@ -198,6 +198,10 @@ local categories = {
    },
 }
 
+local PROJECTOR_ORIGIN = vectors.vec3(889,61,904)
+local PROJECTOR_AREA = vectors.vec4(-5,-4,5,-2)
+local HOVER_SIZE = vectors.vec2(0.5,0.8)
+
 local s = 1/16
 do
    ---@type table<Vector2,Category>
@@ -205,17 +209,19 @@ do
    for key, category in pairs(categories) do
       category.renderTask = {
       title = projector:newText(key.."name")
-         --:setText(category.name)
+         :setText(category.name)
          :setAlignment("CENTER")
          :setOutline(true)
          :setSeeThrough(true)
-         :scale(s * 0.3,s * 0.3,s * 0.3)
-         :setPos(category.pos.x,category.pos.y-0.25,-0.1),
+         :scale(0, 0, 0)
+         -- :scale(s * 0.3,s * 0.3,s * 0.3)
+         :setPos(category.pos.x,category.pos.y-0.25,-0.1)
+         :light(15, 15),
       icon = projectorFlat:newItem(key.."icon")
          :item(category.item or "minecraft:grass_block")
-         :setDisplayMode("GUI")
-         :scale(s * 0.7,s * 0.7,s * 0.7)
-         --:scale(s,s,s)
+         :setDisplayMode("fixed")
+         :scale(s * HOVER_SIZE.x, s * HOVER_SIZE.x, s * HOVER_SIZE.x)
+         :rot(0, 180, 0)
          :pos(category.pos.x,category.pos.y,0)
       }
       temp[category.pos:toString()] = category
@@ -231,11 +237,6 @@ do
    categories = temp
 end
 
-
-local PROJECTOR_ORIGIN = vectors.vec3(889,61,904)
-local PROJECTOR_AREA = vectors.vec4(-5,-4,5,-2)
-local HOVER_SIZE = vectors.vec2(0.5,0.8)
-
 local tween = require("libraries.GNTweenLib")
 
 
@@ -250,21 +251,31 @@ local function highlighted_changed(pos,lpos)
    local selected = categories[pos:toString()]
    local lselected = categories[lpos:toString()]
    if selected then
-      --sounds:playSound("minecraft:block.wooden_button.click_off",vectors.vec3(selected.x,selected.y,0)+PROJECTOR_ORIGIN,1,1)
-      tween.tweenFunction(selected.t or 0,1,0.1,"outBack",function (x )
-         selected.renderTask.title:setText(selected.name:sub(1,math.ceil(x * #selected.name)))
+      -- sounds:playSound("minecraft:block.wooden_button.click_off",vectors.vec3(selected.x,selected.y,0)+PROJECTOR_ORIGIN,1,1)
+      -- text
+      tween.tweenFunction(selected.t or 0,1,0.25,"outBack",function(x)
          local r = math.lerp(HOVER_SIZE.x,HOVER_SIZE.y,x)*s
          selected.renderTask.icon:setScale(r,r,r)
          selected.t = x
-      end,nil,selected.pos:toString())
+      end,nil,selected.pos:toString()..'icon')
+      -- icon
+      tween.tweenFunction(selected.t or 0,1,0.25,"outCubic",function(x)
+         local r, r2 = x * s * 0.3, (x * 0.5 + 0.5) * s * 0.3
+         selected.renderTask.title:setScale(r2, r, r2)
+      end,nil,selected.pos:toString()..'text')
    end
    if lselected then
-      tween.tweenFunction(lselected.t or 1,0,0.5,"outBounce",function (x )
-         lselected.renderTask.title:setText(lselected.name:sub(1,math.ceil(x * #lselected.name)))
+      -- icon
+      tween.tweenFunction(lselected.t or 1,0,0.5,"outBack",function(x)
          local r = math.lerp(HOVER_SIZE.x,HOVER_SIZE.y,x)*s
          lselected.renderTask.icon:setScale(r,r,r)
          lselected.t = x
-      end,nil,lselected.pos:toString())
+      end,nil,lselected.pos:toString()..'icon')
+      -- text
+      tween.tweenFunction(lselected.t or 1,0,0.25,"outCubic",function(x)
+         local r, r2 = x * s * 0.3, (x * 0.5 + 0.5) * s * 0.3
+         lselected.renderTask.title:setScale(r2, r, r2)
+      end,nil,lselected.pos:toString()..'text')
    end
 end
 
