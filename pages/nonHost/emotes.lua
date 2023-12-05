@@ -7,19 +7,23 @@ local emotes = {
       sound = "clipping"
    },{
       name = "Kazotsky kick",
-      anim = animations.player.Kazotskykick,
+      anim = animations.player.Kazotskykick:setSpeed(1.2),
+      sound = "kick"
    },{
       name = "Kazotsky kick2",
-      anim = animations.player.Kazotskykick2,
+      anim = animations.player.Kazotskykick2:setSpeed(1.2),
+      sound = "kick",
    },{
       name = "Club Penguin",
       anim = animations.player.clubpenguin,
    },{
       name = "Shake",
       anim = animations.player.duckDance:setSpeed(1),
+      sound = "lovely"
    },{
       name = "Shake Smooth",
       anim = animations.player.duckDance2:setSpeed(1),
+      sound = "lovely"
    },{
       name = "T Pose",
       anim = animations.player.tpose,
@@ -34,14 +38,17 @@ local emotes = {
       anim = animations.player.roblox,
    },{
       name = "Carramel Dancen",
-      anim = animations.player.carrameldancen,
+      anim = animations.player.carrameldancen:setSpeed(1.3),
+      sound = "caramel"
    },{
       name = "Family guy Toilet",
       anim = animations.player.Toilet,
+      sound = "toilet",
+      loop = false,
    },{
       name = "Spin",
       anim = animations.player.spin,
-      sound = "lovely",
+      sound = "shimmy",
    },{
       name = "Morph Cow",
       anim = animations.player.cow,
@@ -54,7 +61,7 @@ local emotes = {
 for id, anim in pairs(emotes) do
    emotes[id].weight = 0
    if emotes[id].sound then
-      emotes[id].sound = sounds[emotes[id].sound]:loop(true)
+      emotes[id].sound = sounds[emotes[id].sound]:loop(emotes[id].loop or true)
    end
    emotes[id].playing = false
 end
@@ -67,7 +74,7 @@ function pings.emote(id,toggle,canplay)
          emotes[id].anim:blend(x)
       end,nil,"emote"..id)
       if emotes[id].sound and canplay then
-         emotes[id].sound:play()
+         pcall(emotes[id].sound.play,emotes[id].sound)
       end
       emotes[id].playing = true
    else
@@ -78,7 +85,7 @@ function pings.emote(id,toggle,canplay)
          emotes[id].anim:stop()
       end,"emote"..id)
       if emotes[id].sound then
-         emotes[id].sound:stop()
+         pcall(emotes[id].sound.stop,emotes[id].sound)
       end
       emotes[id].playing = false
    end
