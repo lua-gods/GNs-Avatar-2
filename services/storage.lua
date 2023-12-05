@@ -2,6 +2,7 @@
 
 local main = models:newPart("main projector")
 local is_available = false
+local is_available_frames = 0
 local projectorFlat = main:newPart("projectorFlat","SKULL"):setScale(16,16,8):setPos(0,8,8)
 local projector = main:newPart("projector","SKULL"):setScale(16,16,16):setPos(0,8,8)
 local garage = main:newPart("garage","SKULL"):setScale(16,16,16):setPos(0,0,0)
@@ -314,15 +315,18 @@ end)
 
 events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
    if ctx == "BLOCK" and block:getPos() == PROJECTOR_ORIGIN then
-      main:setVisible(false)
-      projector:setVisible(true)
+      is_available_frames = 2
+      main:setVisible(true)
       projectorFlat:setVisible(true)
       garage:setVisible(true)
-      is_available = true
    else
-      is_available = false
       main:setVisible(false)
       projectorFlat:setVisible(false)
       garage:setVisible(false)
    end
+end)
+
+events.world_render:register(function()
+   is_available_frames = math.max(is_available_frames - 1, 0)
+   is_available = is_available_frames >= 1
 end)
