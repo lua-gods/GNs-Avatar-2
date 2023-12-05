@@ -135,13 +135,13 @@ local categories = {
    },
    ----------------------------------------ROW 2
    {
-      name = "",
-      item = "minecraft:air",
+      name = "Human Organs",
+      item = "minecraft:red_concrete",
       pos  = vectors.vec2(-5,-3),
       items = {}
    },
    {
-      name = "Player Heads",
+      name = "Sliced off Human Heads",
       item = "minecraft:player_head",
       pos  = vectors.vec2(-4,-3),
       items = {}
@@ -166,14 +166,14 @@ local categories = {
    },
    ----------------------------------------ROW 3
    {
-      name = "",
-      item = "minecraft:air",
+      name = "Fake Legal Documents",
+      item = "minecraft:paper",
       pos  = vectors.vec2(-5,-4),
       items = {}
    },
    {
-      name = "",
-      item = "minecraft:air",
+      name = "Illegal Compound of Medicines Recipes",
+      item = "minecraft:map",
       pos  = vectors.vec2(-4,-4),
       items = {}
    },
