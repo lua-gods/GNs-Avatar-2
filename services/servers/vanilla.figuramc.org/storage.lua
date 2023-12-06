@@ -4,7 +4,7 @@ local main = models:newPart("main projector")
 local is_available = false
 local is_available_frames = 0
 local projectorItems = main:newPart("projectorFlat","SKULL"):setScale(16,16,8):setPos(0,8,8)
-local projectorText = main:newPart("projector","SKULL"):setScale(16,16,16):setPos(0,8,8)
+local projectorText = main:newPart("projector","SKULL"):setPos(0,8,8)
 local garage = main:newPart("garage","SKULL"):setScale(16,16,16):setPos(0,0,0)
 
 ---@class Category
@@ -283,7 +283,7 @@ local g = 0
 local sound_slide = sounds["minecraft:entity.minecart.riding"]:stop():pitch(0.5)
 local function lmao_garage(x)
    garage:setPos(0,x*-49,0)
-   local squish = math.clamp(((x-1) * 10) + 1,0,1)
+   local squish = math.clamp(((x-1) * 10) + 1,0.01,1)
    projectorItems:scale(16,16,16*squish):pos(0,8,7.99+(1-squish))
    projectorText:setVisible(x ~= 0)
    if not (x == 0 or x == 1) then
@@ -305,14 +305,15 @@ events.WORLD_TICK:register(function ()
       if enabled ~= _enabled then
          _enabled = enabled
          if enabled then
-            tween.tweenFunction(g,1,1.5,"linear",lmao_garage,nil,"garag")
+            tween.tweenFunction(g,1,1.5,"inOutQuad",lmao_garage,nil,"garag")
          else
-            tween.tweenFunction(g,0,1.5,"linear",lmao_garage,nil,"garag")
+            highlighted_changed(vec(0, 0, 0),_target_block.xy)
+            tween.tweenFunction(g,0,1.5,"inOutQuad",lmao_garage,nil,"garag")
          end
       end
       local switch = world.getBlockState(PROJECTOR_ORIGIN:copy():sub(0,2,0))
       if switch.id == "minecraft:lever" then
-         enabled = switch.properties.powered == "true"
+         enabled = switch.properties.powered == "true" or player:isSneaking()
          if age == 0 then
             lmao_garage(enabled and 1 or 0)
          end
@@ -342,10 +343,12 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
       is_available_frames = 2
       main:setVisible(true)
       projectorItems:setVisible(true)
+      projectorText:setScale(16, 16, 16)
       garage:setVisible(true)
    else
       main:setVisible(false)
       projectorItems:setVisible(false)
+      projectorText:setScale(0, 0, 0)
       garage:setVisible(false)
    end
 end)
