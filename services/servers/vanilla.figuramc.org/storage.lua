@@ -3,8 +3,8 @@
 local main = models:newPart("main projector")
 local is_available = false
 local is_available_frames = 0
-local projectorFlat = main:newPart("projectorFlat","SKULL"):setScale(16,16,8):setPos(0,8,8)
-local projector = main:newPart("projector","SKULL"):setScale(16,16,16):setPos(0,8,8)
+local projectorItems = main:newPart("projectorFlat","SKULL"):setScale(16,16,8):setPos(0,8,8)
+local projectorText = main:newPart("projector","SKULL"):setScale(16,16,16):setPos(0,8,8)
 local garage = main:newPart("garage","SKULL"):setScale(16,16,16):setPos(0,0,0)
 
 ---@class Category
@@ -208,7 +208,7 @@ do
    local temp = {}
    for key, category in pairs(categories) do
       category.renderTask = {
-      title = projector:newText(key.."name")
+      title = projectorText:newText(key.."name")
          :setText(category.name)
          :setAlignment("CENTER")
          :setOutline(true)
@@ -217,7 +217,7 @@ do
          -- :scale(s * 0.3,s * 0.3,s * 0.3)
          :setPos(category.pos.x,category.pos.y-0.25,-0.1)
          :light(15, 15),
-      icon = projectorFlat:newItem(key.."icon")
+      icon = projectorItems:newItem(key.."icon")
          :item(category.item or "minecraft:grass_block")
          :setDisplayMode("fixed")
          :scale(s * HOVER_SIZE.x, s * HOVER_SIZE.x, s * HOVER_SIZE.x)
@@ -283,15 +283,16 @@ local g = 0
 local sound_slide = sounds["minecraft:entity.minecart.riding"]:stop():pitch(0.5)
 local function lmao_garage(x)
    garage:setPos(0,x*-49,0)
-   projectorFlat:setPos(0,8,8+(1-x)*2)
-   projector:setVisible(x ~= 0)
+   local squish = math.clamp(((x-1) * 10) + 1,0,1)
+   projectorItems:scale(16,16,16*squish):pos(0,8,7.99+(1-squish))
+   projectorText:setVisible(x ~= 0)
    if not (x == 0 or x == 1) then
       if not sound_slide:isPlaying() then
          sound_slide:play():pos(PROJECTOR_ORIGIN)
       end
    else
       sound_slide:stop()
-      if age > 20 then
+      if age > 40 then
          sounds:playSound("minecraft:block.fire.extinguish",PROJECTOR_ORIGIN)
          sounds:playSound("minecraft:block.piston.contract",PROJECTOR_ORIGIN,1,0.5)
       end
@@ -340,11 +341,11 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
    if ctx == "BLOCK" and block:getPos() == PROJECTOR_ORIGIN then
       is_available_frames = 2
       main:setVisible(true)
-      projectorFlat:setVisible(true)
+      projectorItems:setVisible(true)
       garage:setVisible(true)
    else
       main:setVisible(false)
-      projectorFlat:setVisible(false)
+      projectorItems:setVisible(false)
       garage:setVisible(false)
    end
 end)
