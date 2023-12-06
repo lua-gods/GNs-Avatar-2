@@ -278,23 +278,35 @@ local function highlighted_changed(pos,lpos)
       end,nil,lselected.pos:toString()..'text')
    end
 end
-
+local age = 0
 local g = 0
-
+local sound_slide = sounds["minecraft:entity.minecart.riding"]:stop():pitch(0.5)
 local function lmao_garage(x)
    garage:setPos(0,x*-49,0)
-   projectorFlat:setPos(0,8+(1-x)*-48,8)
+   projectorFlat:setPos(0,8,8+(1-x)*2)
+   projector:setVisible(x ~= 0)
+   if not (x == 0 or x == 1) then
+      if not sound_slide:isPlaying() then
+         sound_slide:play():pos(PROJECTOR_ORIGIN)
+      end
+   else
+      sound_slide:stop()
+      if age > 20 then
+         sounds:playSound("minecraft:block.fire.extinguish",PROJECTOR_ORIGIN)
+         sounds:playSound("minecraft:block.piston.contract",PROJECTOR_ORIGIN,1,0.5)
+      end
+   end
    g = x
 end
-local age = 0
+
 events.WORLD_TICK:register(function ()
    if is_available then
       if enabled ~= _enabled then
          _enabled = enabled
          if enabled then
-            tween.tweenFunction(g,1,0.25,"outBack",lmao_garage,nil,"garag")
+            tween.tweenFunction(g,1,1.5,"linear",lmao_garage,nil,"garag")
          else
-            tween.tweenFunction(g,0,0.2,"linear",lmao_garage,nil,"garag")
+            tween.tweenFunction(g,0,1.5,"linear",lmao_garage,nil,"garag")
          end
       end
       local switch = world.getBlockState(PROJECTOR_ORIGIN:copy():sub(0,2,0))
