@@ -1,3 +1,4 @@
+---@diagnostic disable: undefined-global, deprecated, undefined-field
 local lib = {}
 local requests = {}
 
@@ -79,7 +80,7 @@ readers = {
    end,
 }
 
-function events.world_tick()
+events.WORLD_TICK:register(function ()
    for i, v in pairs(requests) do
       if v.future then
          if v.future:isDone() then
@@ -102,6 +103,6 @@ function events.world_tick()
          end
       end
    end
-end
+end)
 
 return lib
