@@ -1,7 +1,8 @@
+---@diagnostic disable: return-type-mismatch
 local eventLib = require("libraries.eventHandler")
 local utils = require("libraries.gnui.utils")
 
-local debug_texture = textures:newTexture("debug_outline",3,3):fill(0,0,2,2,vectors.vec3(1,1,1)):setPixel(1,1,vectors.vec3(0,0,0,0))
+local debug_texture = textures:newTexture("debug_outline",3,3):fill(0,0,2,2,vectors.vec3(1,1,1)):setPixel(1,1,vectors.vec3(0,0,0))
 local element = require("libraries.gnui.elements.element")
 local sprite = require("libraries.gnui.spriteLib")
 local core = require("libraries.gnui.core")
@@ -302,9 +303,6 @@ function container:setCursor(xpos,y,forced)
       self.PRESSED:invoke()
    else
       if self.Hovering and self.CaptureCursor then
-         if press then
-            self.PRESSED:invoke()
-         end
          self.CURSOR_CHANGED:invoke(pos)
       end
    end
