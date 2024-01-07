@@ -126,13 +126,17 @@ function utils.string2instructions(text)
       for word,white in line:gmatch("([^%s]+)(%s*)") do -- splits every word
          if #word > 0 then -- word
             local splitted = false
-            for word_island_left, hexformat, word_island in word:gmatch("([^%s]*)%s*(#%x%x%x%x%x%x)%s*([^%s]*)") do
+            for word_island_left, hex_format, word_island_right in word:gmatch("([^%s]*)%s*(#%x%x%x%x%x%x)%s*([^%s]*)") do
                if #word_island_left > 0 then -- splitted word
-                  table.insert(instructions,{worde=word_island_left,len=client.getTextWidth(word_island_left)})
+                  table.insert(instructions,{word=word_island_left,len=client.getTextWidth(word_island_left)})
                   splitted = true
                end
-               if #hexformat > 0 then -- §......
-                  table.insert(instructions,{hex=hexformat:sub(2,-1)})
+               if #hex_format > 0 then -- §......
+                  table.insert(instructions,{hex=hex_format:sub(2,-1)})
+                  splitted = true
+               end
+               if #word_island_right > 0 then -- splitted word
+                  table.insert(instructions,{word=word_island_right,len=client.getTextWidth(word_island_right)})
                   splitted = true
                end
             end
