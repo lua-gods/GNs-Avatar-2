@@ -9,8 +9,11 @@ sprite_window:setBorderThickness(2,12,24,1)
 local window = gnui.newContainer()
 window:setSprite(sprite_window)
 window:setSize(130,120):setPos(16,16)
-local window_label = gnui.newLabel():setText("Example Name")
+local window_label = gnui.newLabel()
+window_label:setText("#000000Window Example")
 window_label:setAnchor(0,0,1,1)
+window_label:setMargin(1,1,1,1)
+window_label:canCaptureCursor(false)
 window:addChild(window_label)
 
 local input = {
@@ -52,7 +55,7 @@ events.MOUSE_MOVE:register(function (x, y)
       dim.w = math.max(dim.w,15)
 
       window:setTopLeft(dim.xy)
-      window:setSize(dim.zw)
+      window:setSize(dim.z,dim.w)
    end
 end)
 
