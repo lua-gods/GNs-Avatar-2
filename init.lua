@@ -1,4 +1,18 @@
 
+--[[
+do
+   local r = require
+   function require(a, b, ...)
+      local t = avatar:getCurrentInstructions()
+      local l = {r(a, b, ...)}
+      local s = avatar:getCurrentInstructions() - t - 10
+      if s >= 1 then
+         print(a, s)
+      end
+      return table.unpack(l)
+   end
+end]]
+
 -- services are called first, as they are potentially used by programs, but they use libraries
 for key, script in pairs(listFiles("services")) do
    require(script)
