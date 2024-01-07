@@ -146,35 +146,27 @@ tween.ease = easing
 local queue_free = {}
 
 ---@class GNtween
----@field from number|Vector.any
----@field to number|Vector.any
 ---@field duration number
 ---@field start number
 ---@field type EaseTypes
----@field tick fun(x : number|Vector.any)
+---@field tick fun(y : number)
 ---@field on_finish function?
----@field is string
 ---@field id string|number
 
----@param from number|Vector.any
----@param to number|Vector.any
 ---@param duration number
 ---@param ease EaseTypes
----@param tick fun(x : number|Vector.any)
+---@param tick fun(y : number)
 ---@param finish function?
 ---@param id string?
 ---@return GNtween
-function tween.tweenFunction(from, to, duration, ease, tick, finish, id)
+function tween.tweenFunction(duration, ease, tick, finish, id)
   ---@type GNtween
   local compose = {
-    from = from,
-    to = to,
     start = client:getSystemTime(),
     duration = duration,
     type = ease,
     tick = tick,
     on_finish = finish,
-    is = type(from),
     id = nil,
   }
   if id then
@@ -200,29 +192,12 @@ events.WORLD_RENDER:register(function()
   local system_time = client:getSystemTime()
   for id, ease in pairs(eases) do
     local time = (system_time - ease.start) / 1000
-    local from_unpacked
-    local to_unpacked
-    if ease.is == "number" then
-      if time > ease.duration then
-        pcall(ease.tick,ease.to,time/ease.duration)
+    if time > ease.duration then
+      pcall(ease.tick,1,time/ease.duration)
+      free(id)
+    else
+      if not pcall(ease.tick,easing[ease.type](time, 0, 1, ease.duration),time/ease.duration) then
         free(id)
-      else
-        if not pcall(ease.tick,easing[ease.type](time, ease.from, ease.to - ease.from, ease.duration),time/ease.duration) then
-          free(id)
-        end
-      end
-    elseif ease.is:sub(1,-2) == "Vector" then
-      from_unpacked = {ease.from:unpack()}
-      to_unpacked = {ease.to:unpack()}
-
-      for i, from in pairs(from_unpacked) do
-        to_unpacked[i] = easing[ease.type](time, from, to_unpacked[i] - from, ease.duration)
-      end
-      if time > ease.duration then
-        pcall(ease.tick,ease.to,time/ease.duration)
-        free(id)
-      else
-        if not pcall(ease.tick,vec(table.unpack(to_unpacked)),time/ease.duration) then free(id) end
       end
     end
   end

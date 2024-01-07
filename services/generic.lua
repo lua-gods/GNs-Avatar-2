@@ -1,1 +1,0 @@
-renderer:setShadowRadius(0)
