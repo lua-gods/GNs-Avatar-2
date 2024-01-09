@@ -1,6 +1,8 @@
 local eventLib = require("libraries.eventHandler")
 local utils = require("libraries.gnui.utils")
 
+---@generic
+
 local element_next_free = 0
 ---@class GNUI.element
 ---@field Visible boolean
@@ -45,15 +47,19 @@ end
 
 ---Adopts an element as its child.
 ---@param child GNUI.element
----@param order integer?
+---@param index integer?
 ---@return GNUI.element
-function element:addChild(child,order)
+function element:addChild(child,index)
    if not type(child):find("^GNUI.element") then
       error("invalid child given, recived"..type(child),2)
    end
-   order = order or #self.Children+1
-   table.insert(self.Children,order,child)
-   self:updateChildrenOrder()
+   index = index or #self.Children+1
+   for i = index, #self.Children, 1 do -- everything above index will get pushed up
+      self.Children[i].ChildIndex = i + 1
+      self.Children[i] = self.Children[i+1]
+   end
+   self.Children[index] = child
+   child.ChildIndex = index
    child.Parent = self
    child.PARENT_CHANGED:invoke(self)
    return self
@@ -64,12 +70,16 @@ end
 ---@return GNUI.element
 function element:removeChild(child)
    if child.Parent == self then -- check if the parent is even the one registered in the child's birth certificate
-      self.Children[child.ChildrenIndex] = nil -- lmao
+      self.Children[child.ChildIndex] = nil -- lmao
+      for i = child.ChildIndex+1, #self.Children, 1 do -- everything above index will get pushed down
+         self.Children[i].ChildIndex = i - 1
+         self.Children[i] = self.Children[i-1]
+      end
+      self.Children[#self.Children] = nil -- remove duplicate on last
       child.Parent = nil
-      child.ChildrenIndex = 0
+      child.ChildIndex = 0
       child.PARENT_CHANGED:invoke(nil)
    end
-   self:updateChildrenOrder()
    return self
 end
 

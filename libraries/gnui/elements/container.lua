@@ -9,6 +9,8 @@ local core = require("libraries.gnui.core")
 
 ---@class GNUI.container : GNUI.element
 ---@field Dimensions Vector4
+---@field MinimumSize Vector2
+---@field GrowDirection Vector2
 ---@field Z number
 ---@field ContainmentRect Vector4
 ---@field DIMENSIONS_CHANGED EventLib
@@ -41,6 +43,8 @@ function container.new(preset)
    local new = preset or element.new()
    setmetatable(new,container)
    new.Dimensions = vectors.vec4(0,0,0,0) 
+   new.MinimumSize = vectors.vec2()
+   new.GrowDirection = vectors.vec2(0.5,0.5)
    new.Z = 0
    new.DIMENSIONS_CHANGED = eventLib.new()
    new.Margin = vectors.vec4()
@@ -99,7 +103,7 @@ function container.new(preset)
       :setPos(
          -new.Dimensions.x-new.Margin.x-new.Padding.x,
          -new.Dimensions.y-new.Margin.y-new.Padding.y,
-         ((new.Z + new.ChildIndex / (new.Parent and #new.Parent.Children or 1) * 0.99) * core.clipping_margin)
+         -((new.Z + new.ChildIndex / (new.Parent and #new.Parent.Children or 1) * 0.99) * core.clipping_margin)
       )
       for key, value in pairs(new.Children) do
          if value.DIMENSIONS_CHANGED then
@@ -325,6 +329,14 @@ end
 ---@return GNUI.container
 function container:canCaptureCursor(capture)
    self.CaptureCursor = capture
+   return self
+end
+
+---@param x number
+---@param y number
+function container:setMinimumSize(x,y)
+   self.MinimumSize.x = x or self.MinimumSize.x
+   self.MinimumSize.y = y or self.MinimumSize.y
    return self
 end
 

@@ -175,7 +175,7 @@ function label:_updateRenderTasks()
          :setPos(
             word_length.x + (line.width - self.ContainmentRect.z + self.ContainmentRect.x) * self.Align.x,
             word_length.y + ((current_line) * 8 * self.FontScale - (self.ContainmentRect.w - self.ContainmentRect.y)) * self.Align.y - self.ContainmentRect.y,
-         -0.01)
+            -((self.Z + self.ChildIndex / (self.Parent and #self.Parent.Children or 1) * 0.99) * core.clipping_margin))
          :setScale(self.FontScale,self.FontScale,1)
          :setShadow(self.TextEffect == "SHADOW")
          :setOutline(self.TextEffect == "OUTLINE")

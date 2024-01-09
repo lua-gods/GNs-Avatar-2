@@ -1,30 +1,62 @@
+---@diagnostic disable: undefined-field
 local gnui = require("libraries.gnui")
 local screen = require("services.screenui")
 
 local winapi = {windows = {}}
 
+---@class Window
+---@field window GNUI.container
+local Window = {}
+Window.__index = Window
+
+---@param title string
+---@return Window
+function Window:setTitle(title)
+   local label = self.window.Children[1] 
+   label:setText("#000000"..title)
+   return self
+end
+
 local sprite_window = gnui.newSprite()
 sprite_window:setTexture(textures["textures.window"])
-sprite_window:setBorderThickness(2,12,24,1)
+sprite_window:setBorderThickness(1,1,1,1)
+sprite_window:setUV(0,4,2,6)
 
+local sprite_titlebar = gnui.newSprite()
+sprite_titlebar:setTexture(textures["textures.window"])
+sprite_titlebar:setBorderThickness(1,1,1,2)
+sprite_titlebar:setUV(0,0,2,3)
+
+
+---@return Window
 function winapi.newWindow()
    local window = gnui.newContainer()
    window:setSprite(sprite_window:duplicate())
    window:setSize(130,120):setPos(16,16)
+
+   local window_titlebar = gnui.newContainer()
+   window_titlebar:setAnchor(0,0,1,0)
+   window_titlebar:setSprite(sprite_titlebar:duplicate())
+
    local window_label = gnui.newLabel()
    window_label:setText("#000000Window Example")
    window_label:setAnchor(0,0,1,1)
-   window_label:setPadding(5,5,5,5)
-   window_label:setMargin(5,5,5,5)
+   window_label:setMargin(1,1,1,1)
    window_label:canCaptureCursor(false)
    window:addChild(window_label)
+   window:addChild(window_titlebar)
    screen:addChild(window)
    winapi.windows[#winapi.windows+1] = window
-   return window
+
+   local new = {}
+   new.window = window
+   setmetatable(new,Window)
+   return new
 end
 
-winapi.newWindow()
-winapi.newWindow()
+local wow = winapi.newWindow()
+
+wow:setTitle("Hello World")
 
 local input = {
    mouse_left = keybinds:newKeybind("Left Mouse","key.mouse.left",true),
