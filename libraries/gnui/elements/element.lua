@@ -6,7 +6,7 @@ local element_next_free = 0
 ---@field Visible boolean
 ---@field VISIBILITY_CHANGED EventLib
 ---@field Children table<any,GNUI.element|GNUI.container>
----@field ChildrenIndex integer
+---@field ChildIndex integer
 ---@field CHILDREN_CHANGED table
 ---@field Parent GNUI.element|GNUI.container
 ---@field PARENT_CHANGED table
@@ -38,7 +38,7 @@ end
 
 function element:updateChildrenOrder()
    for i, c in pairs(self.Children) do
-      c.ChildrenIndex = i
+      c.ChildIndex = i
    end
    return self
 end

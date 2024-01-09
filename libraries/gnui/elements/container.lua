@@ -2,7 +2,7 @@
 local eventLib = require("libraries.eventHandler")
 local utils = require("libraries.gnui.utils")
 
-local debug_texture = textures:newTexture("debug_outline",3,3):fill(0,0,2,2,vectors.vec3(1,1,1)):setPixel(1,1,vectors.vec3(0,0,0))
+local debug_texture = textures:newTexture("gnui_debug_outline",3,3):fill(0,0,3,3,vectors.vec3(1,1,1)):setPixel(1,1,vectors.vec3(0,0,0))
 local element = require("libraries.gnui.elements.element")
 local sprite = require("libraries.gnui.spriteLib")
 local core = require("libraries.gnui.core")
@@ -99,7 +99,7 @@ function container.new(preset)
       :setPos(
          -new.Dimensions.x-new.Margin.x-new.Padding.x,
          -new.Dimensions.y-new.Margin.y-new.Padding.y,
-         (-(new.Z + 1) * core.clipping_margin)
+         ((new.Z + new.ChildIndex / (new.Parent and #new.Parent.Children or 1) * 0.99) * core.clipping_margin)
       )
       for key, value in pairs(new.Children) do
          if value.DIMENSIONS_CHANGED then
@@ -131,13 +131,14 @@ function container.new(preset)
             contain.w - contain.y)
          :setPos(
             - contain.x,
-            - contain.y,(-(new.Z + 1) * core.clipping_margin) * 0.8)
+            - contain.y,
+            -((new.Z + 1 + new.ChildIndex / (new.Parent and #new.Parent.Children or 1)) * core.clipping_margin) * 0.8)
          
          debug_margin
          :setPos(
             margin.x + padding.x - contain.x,
             margin.y + padding.y - contain.y,
-            -(-(new.Z + 1) * core.clipping_margin) * 0.3)
+            -((new.Z + 1 + new.ChildIndex / (new.Parent and #new.Parent.Children or 1)) * core.clipping_margin) * 0.3)
          :setSize(
             (contain.z - contain.x + margin.z + margin.x + padding.x + padding.z),
             (contain.w - contain.y + margin.w + margin.y + padding.y + padding.w)
@@ -146,7 +147,7 @@ function container.new(preset)
          :setPos(
             padding.x - contain.x,
             padding.y - contain.y,
-            -(-(new.Z + 1) * core.clipping_margin) * 0.6)
+            -((new.Z + 1 + new.ChildIndex / (new.Parent and #new.Parent.Children or 1)) * core.clipping_margin) * 0.6)
          :setSize(
             (contain.z+padding.x+padding.z - contain.x),
             (contain.w+padding.y+padding.w - contain.y)
@@ -161,7 +162,7 @@ function container.new(preset)
             debug_cursor:setPos(
                -new.Cursor.x - new.ContainmentRect.x + new.Padding.x,
                -new.Cursor.y - new.ContainmentRect.y + new.Padding.y,
-               (-(new.Z + 1) * core.clipping_margin) * 0.1
+               ((new.Z + 1 + new.ChildIndex / (new.Parent and #new.Parent.Children or 1)) * core.clipping_margin) * 0.1
             ):setVisible(true)
          else
             debug_cursor:setVisible(false)

@@ -22,7 +22,7 @@ events.WORLD_RENDER:register(function (delta)
 end)
 
 events.MOUSE_MOVE:register(function (x, y)
-   if host:isChatOpen() then
+   if not host:getScreen() or host:isChatOpen() then
       local pos = client:getMousePos()/client:getGuiScale()
       screen:setCursor(pos)
    end
