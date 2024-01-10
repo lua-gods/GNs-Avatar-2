@@ -38,13 +38,14 @@ container.__type = "GNUI.element.container"
 
 ---Creates a new container.
 ---@param preset GNUI.container?
+---@param force_debug boolean?
 ---@return GNUI.container
-function container.new(preset)
+function container.new(preset,force_debug)
    local new = preset or element.new()
    setmetatable(new,container)
    new.Dimensions = vectors.vec4(0,0,0,0) 
    new.MinimumSize = vectors.vec2()
-   new.GrowDirection = vectors.vec2(0,0)
+   new.GrowDirection = vectors.vec2(1,1)
    new.Z = 0
    new.DIMENSIONS_CHANGED = eventLib.new()
    new.Margin = vectors.vec4()
@@ -72,7 +73,7 @@ function container.new(preset)
    local debug_margin    
    local debug_padding   
    local debug_cursor
-   if core.debug_visible then
+   if core.debug_visible or force_debug then
       debug_container = sprite.new():setModelpart(new.Part):setTexture(debug_texture):setBorderThickness(1,1,1,1):setRenderType("EMISSIVE_SOLID"):setScale(core.debug_scale):setColor(0,1,0):excludeMiddle(true)
       debug_margin    = sprite.new():setModelpart(new.Part):setTexture(debug_texture):setBorderThickness(1,1,1,1):setRenderType("EMISSIVE_SOLID"):setScale(core.debug_scale):setColor(1,0,0):excludeMiddle(true)
       debug_padding   = sprite.new():setModelpart(new.Part):setTexture(debug_texture):setBorderThickness(1,1,1,1):setRenderType("EMISSIVE_SOLID"):setScale(core.debug_scale):excludeMiddle(true)
@@ -94,15 +95,15 @@ function container.new(preset)
             math.lerp(p.x,p.z,new.Anchor.z),
             math.lerp(p.y,p.w,new.Anchor.w)
          )
-
-         local limit = vectors.vec2(
-            math.min(new.ContainmentRect.z + o.z-new.MinimumSize.x,0),
-            math.min(new.ContainmentRect.w + o.w-new.MinimumSize.y,0)
+         local gd = new.GrowDirection * 0.5 - 0.5
+         local shift = vectors.vec2(
+            math.min(((new.ContainmentRect.z + o.x) - (new.ContainmentRect.x + o.z))-new.MinimumSize.x,0) * gd.x,
+            math.min(((new.ContainmentRect.w + o.y) - (new.ContainmentRect.y + o.w))-new.MinimumSize.y,0) * gd.y
          )
-         new.ContainmentRect.x = new.ContainmentRect.y + o.x - limit.x * new.GrowDirection.x
-         new.ContainmentRect.y = new.ContainmentRect.y + o.y - limit.y * new.GrowDirection.y
-         new.ContainmentRect.z = math.max(new.ContainmentRect.z + o.z,new.MinimumSize.x) - limit.x * new.GrowDirection.x
-         new.ContainmentRect.w = math.max(new.ContainmentRect.w + o.w,new.MinimumSize.y) - limit.y * new.GrowDirection.y
+         new.ContainmentRect.x = new.ContainmentRect.x + o.x - shift.x
+         new.ContainmentRect.y = new.ContainmentRect.y + o.y - shift.y
+         new.ContainmentRect.z = math.max(new.ContainmentRect.z + o.z - new.ContainmentRect.x,new.MinimumSize.x) + new.ContainmentRect.x
+         new.ContainmentRect.w = math.max(new.ContainmentRect.w + o.w - new.ContainmentRect.y,new.MinimumSize.y) + new.ContainmentRect.y
       end
       new.Part
       :setPos(
@@ -128,7 +129,7 @@ function container.new(preset)
                (contain.w+padding.y+padding.w - contain.y)
             )
       end
-      if core.debug_visible then
+      if core.debug_visible or force_debug then
          local contain = new.ContainmentRect
          local margin = new.Margin
          local padding = new.Padding
@@ -165,7 +166,7 @@ function container.new(preset)
    end,core.internal_events_name)
 
    new.CURSOR_CHANGED:register(function ()
-      if core.debug_visible then
+      if core.debug_visible or force_debug then
          -- Display the cursor in local space
          if new.Hovering then
             debug_cursor:setPos(
@@ -337,11 +338,29 @@ function container:canCaptureCursor(capture)
    return self
 end
 
----@param x number
----@param y number
+-->====================[ Minimum Size ]====================<--
+
+--Sets the smallest size possible for this container.  
+--nil arguments will do nothing.
+---@param x number?
+---@param y number?
 function container:setMinimumSize(x,y)
    self.MinimumSize.x = x or self.MinimumSize.x
    self.MinimumSize.y = y or self.MinimumSize.y
+   self.DIMENSIONS_CHANGED:invoke(self.Dimensions)
+   return self
+end
+
+--Sets which direction to expand to when the container is bellow the minimum size cap.  
+-- -1 <-> 1 left to right  
+-- -1 <-> 1 top to bottom  
+--Default is (1, 1) or grow towards the bottom right.
+---@param x number
+---@param y number
+function container:setGrowDirection(x,y)
+   self.GrowDirection.x = x or self.GrowDirection.x
+   self.GrowDirection.y = y or self.GrowDirection.y
+   self.DIMENSIONS_CHANGED:invoke(self.Dimensions)
    return self
 end
 

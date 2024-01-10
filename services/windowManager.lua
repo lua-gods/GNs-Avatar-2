@@ -12,8 +12,7 @@ Window.__index = Window
 ---@param title string
 ---@return Window
 function Window:setTitle(title)
-   local label = self.window.Children[1] 
-   label:setText("#000000"..title)
+   self.label:setText("#000000"..title)
    return self
 end
 
@@ -27,6 +26,10 @@ sprite_titlebar:setTexture(textures["textures.window"])
 sprite_titlebar:setBorderThickness(1,1,1,2)
 sprite_titlebar:setUV(0,0,2,3)
 
+local sprite_close = gnui.newSprite()
+sprite_close:setTexture(textures["textures.window"])
+sprite_close:setUV(7,0,13,6)
+sprite_close:setRenderType("CUTOUT_CULL")
 
 ---@return Window
 function winapi.newWindow()
@@ -44,13 +47,22 @@ function winapi.newWindow()
    window_label:setAnchor(0,0,1,1)
    window_label:setMargin(1,1,1,1)
    window_label:canCaptureCursor(false)
+
+   local window_close = gnui.newContainer(nil,true)
+   window_close:setSprite(sprite_close)
+   window_close:setGrowDirection(-1,1)
+   window_close:setAnchor(1,0,1,0)
+   window_close:setMinimumSize(10,10)
+
    window:addChild(window_label)
    window:addChild(window_titlebar)
+   window:addChild(window_close)
    screen:addChild(window)
    
    local new = {}
    new.window = window
    new.titlebar = window_titlebar
+   new.label = window_label
    setmetatable(new,Window)
 
    winapi.windows[#winapi.windows+1] = new
