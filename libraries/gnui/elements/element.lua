@@ -53,13 +53,13 @@ function element:addChild(child,index)
    end
    index = index or #self.Children+1
    for i = index, #self.Children, 1 do -- everything above index will get pushed up
-      self.Children[i].ChildIndex = i + 1
       self.Children[i] = self.Children[i+1]
    end
    self.Children[index] = child
    child.ChildIndex = index
    child.Parent = self
    child.PARENT_CHANGED:invoke(self)
+   self:updateChildrenIndex()
    return self
 end
 
@@ -71,14 +71,21 @@ function element:removeChild(child)
       self.Children[child.ChildIndex] = nil -- lmao
       for i = child.ChildIndex+1, #self.Children, 1 do -- everything above index will get pushed down
          self.Children[i].ChildIndex = i - 1
-         self.Children[i] = self.Children[i-1]
       end
       self.Children[#self.Children] = nil -- remove duplicate on last
       child.Parent = nil
       child.ChildIndex = 0
       child.PARENT_CHANGED:invoke(nil)
+      self:updateChildrenIndex()
    end
    return self
+end
+
+function element:updateChildrenIndex()
+   for i, child in pairs(self.Children) do
+      child.ChildIndex = i
+      child.DIMENSIONS_CHANGED:invoke()
+   end
 end
 
 ---Frees all the data of the element. all thats left to do is to forget it ever existed.

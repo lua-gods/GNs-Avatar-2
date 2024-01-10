@@ -11,6 +11,7 @@ local core = require("libraries.gnui.core")
 ---@field Dimensions Vector4
 ---@field MinimumSize Vector2
 ---@field GrowDirection Vector2
+---@field ContainerShift Vector2
 ---@field Z number
 ---@field ContainmentRect Vector4
 ---@field DIMENSIONS_CHANGED EventLib
@@ -46,6 +47,7 @@ function container.new(preset,force_debug)
    new.Dimensions = vectors.vec4(0,0,0,0) 
    new.MinimumSize = vectors.vec2()
    new.GrowDirection = vectors.vec2(1,1)
+   new.ContainerShift = vectors.vec2()
    new.Z = 0
    new.DIMENSIONS_CHANGED = eventLib.new()
    new.Margin = vectors.vec4()
@@ -100,6 +102,7 @@ function container.new(preset,force_debug)
             math.min(((new.ContainmentRect.z + o.x) - (new.ContainmentRect.x + o.z))-new.MinimumSize.x,0) * gd.x,
             math.min(((new.ContainmentRect.w + o.y) - (new.ContainmentRect.y + o.w))-new.MinimumSize.y,0) * gd.y
          )
+         new.ContainerShift = shift
          new.ContainmentRect.x = new.ContainmentRect.x + o.x - shift.x
          new.ContainmentRect.y = new.ContainmentRect.y + o.y - shift.y
          new.ContainmentRect.z = math.max(new.ContainmentRect.z + o.z - new.ContainmentRect.x,new.MinimumSize.x) + new.ContainmentRect.x
@@ -286,7 +289,8 @@ function container:setCursor(xpos,y,forced)
    self.Cursor = pos
    if self.Hovering and not forced then
       local hovering
-      for i, child in pairs(self.Children) do
+      for i = #self.Children, 1, -1 do
+         local child = self.Children[i]
          if not hovering then
             if child.CaptureCursor then
                hovering = child:setCursor(
