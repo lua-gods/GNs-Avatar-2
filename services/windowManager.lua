@@ -1,11 +1,22 @@
+if not host:isHost() then return end
 ---@diagnostic disable: undefined-field
 local gnui = require("libraries.gnui")
 local screen = require("services.screenui")
+local tween = require("libraries.GNTweenLib")
+local eventLib = require("libraries.eventHandler")
 
-local winapi = {windows = {}}
+local winapi = {
+   windows = {} --[[@type table<any,Window>]]
+}
 
 ---@class Window
+---@field TICK EventLib
+---@field FRAME EventLib
+---@field EXIT EventLib
 ---@field window GNUI.container
+---@field titlebar GNUI.container
+---@field window_close GNUI.container
+---@field label GNUI.Label
 local Window = {}
 Window.__index = Window
 
@@ -15,6 +26,30 @@ function Window:setTitle(title)
    self.label:setText("#000000"..title)
    return self
 end
+
+function Window:close()
+   local anchor = self.window.Anchor:copy()
+   local dim = self.window.Dimensions:copy()
+   tween.tweenFunction(0.2,"inSine",function (x)
+      self.window:setAnchor(math.lerp(
+         anchor,
+         vectors.vec4(0,1,0,1),x
+      ))
+   end,function ()
+      self.EXIT:invoke()
+      self.window:free()
+      winapi.windows[self.id] = nil
+   end)
+end
+
+function Window:hide()
+   
+end
+
+function Window:show()
+   
+end
+
 
 local sprite_window = gnui.newSprite()
 sprite_window:setTexture(textures["textures.window"])
@@ -54,10 +89,6 @@ function winapi.newWindow()
    window_close:setMargin(1,1,1,1)
    window_close:setAnchor(1,0,1,0)
    window_close:setMinimumSize(7,7)
-   window_close:canCaptureCursor(true)
-   window_close.MOUSE_ENTERED:register(function ()
-      print("inside")
-   end)
 
    window:addChild(window_titlebar)
    window:addChild(window_label)
@@ -65,14 +96,20 @@ function winapi.newWindow()
    screen:addChild(window)
    
    local new = {}
+   new.TICK = eventLib.new()
+   new.FRAME = eventLib.new()
+   new.EXIT = eventLib.new()
    new.window = window
    new.titlebar = window_titlebar
    new.label = window_label
+   new.button_close = window_close
+   local id = #winapi.windows+1
+   new.id = id
    setmetatable(new,Window)
-
-   winapi.windows[#winapi.windows+1] = new
+   winapi.windows[id] = new
    return new
 end
+
 
 local wow = winapi.newWindow()
 
@@ -98,6 +135,9 @@ end
 input.mouse_left.press = function ()
    window_resize_type = 0
    for id, windowData in pairs(winapi.windows) do
+      if windowData.button_close.Hovering then
+         windowData:close()
+      end
       local window = windowData.window
       if window.Hovering or windowData.titlebar.Hovering then
          window_selected = window
@@ -164,8 +204,29 @@ events.MOUSE_MOVE:register(function (x, y)
       dim.z = math.max(dim.z,25)
       dim.w = math.max(dim.w,15)
 
+      local center = vectors.vec2(
+         math.lerp(dim.x,dim.z,0.5),
+         math.lerp(dim.y,dim.w,0.5)
+      ) / screen.Dimensions.zw
+      
       window_selected:setTopLeft(dim.xy)
       window_selected:setSize(dim.z,dim.w)
+   end
+end)
+
+events.WORLD_TICK:register(function ()
+   for id, windowData in pairs(winapi.windows) do
+      windowData.TICK:invoke()
+   end
+end)
+
+local last_system_time = client:getSystemTime()
+events.WORLD_RENDER:register(function ()
+   local system_time = client:getSystemTime()
+   local delta = (system_time - last_system_time) / 1000
+   last_system_time = system_time
+   for id, windowData in pairs(winapi.windows) do
+      windowData.FRAME:invoke(delta)
    end
 end)
 
