@@ -1,8 +1,6 @@
 local eventLib = require("libraries.eventHandler")
 local utils = require("libraries.gnui.utils")
 
----@generic
-
 local element_next_free = 0
 ---@class GNUI.element
 ---@field Visible boolean

@@ -44,7 +44,7 @@ function container.new(preset)
    setmetatable(new,container)
    new.Dimensions = vectors.vec4(0,0,0,0) 
    new.MinimumSize = vectors.vec2()
-   new.GrowDirection = vectors.vec2(0.5,0.5)
+   new.GrowDirection = vectors.vec2(0,0)
    new.Z = 0
    new.DIMENSIONS_CHANGED = eventLib.new()
    new.Margin = vectors.vec4()
@@ -94,10 +94,15 @@ function container.new(preset)
             math.lerp(p.x,p.z,new.Anchor.z),
             math.lerp(p.y,p.w,new.Anchor.w)
          )
-         new.ContainmentRect.x = new.ContainmentRect.y + o.x
-         new.ContainmentRect.y = new.ContainmentRect.y + o.y
-         new.ContainmentRect.z = new.ContainmentRect.z + o.z
-         new.ContainmentRect.w = new.ContainmentRect.w + o.w
+
+         local limit = vectors.vec2(
+            math.min(new.ContainmentRect.z + o.z-new.MinimumSize.x,0),
+            math.min(new.ContainmentRect.w + o.w-new.MinimumSize.y,0)
+         )
+         new.ContainmentRect.x = new.ContainmentRect.y + o.x - limit.x * new.GrowDirection.x
+         new.ContainmentRect.y = new.ContainmentRect.y + o.y - limit.y * new.GrowDirection.y
+         new.ContainmentRect.z = math.max(new.ContainmentRect.z + o.z,new.MinimumSize.x) - limit.x * new.GrowDirection.x
+         new.ContainmentRect.w = math.max(new.ContainmentRect.w + o.w,new.MinimumSize.y) - limit.y * new.GrowDirection.y
       end
       new.Part
       :setPos(

@@ -36,6 +36,7 @@ function winapi.newWindow()
 
    local window_titlebar = gnui.newContainer()
    window_titlebar:setAnchor(0,0,1,0)
+   window_titlebar:setMinimumSize(0,10)
    window_titlebar:setSprite(sprite_titlebar:duplicate())
 
    local window_label = gnui.newLabel()
@@ -46,11 +47,13 @@ function winapi.newWindow()
    window:addChild(window_label)
    window:addChild(window_titlebar)
    screen:addChild(window)
-   winapi.windows[#winapi.windows+1] = window
-
+   
    local new = {}
    new.window = window
+   new.titlebar = window_titlebar
    setmetatable(new,Window)
+
+   winapi.windows[#winapi.windows+1] = new
    return new
 end
 
@@ -77,8 +80,9 @@ end
 
 input.mouse_left.press = function ()
    window_resize_type = 0
-   for id, window in pairs(winapi.windows) do
-      if window.Hovering then
+   for id, windowData in pairs(winapi.windows) do
+      local window = windowData.window
+      if window.Hovering or windowData.titlebar.Hovering then
          window_selected = window
          if window.Cursor.x < 3 and window.Cursor.y < 3 then -- top left
             window_resize_type = 1
@@ -96,7 +100,7 @@ input.mouse_left.press = function ()
             window_resize_type = 7
          elseif window.Dimensions.w-window.Cursor.y < 3 then -- bottom edge
             window_resize_type = 8
-         elseif window.Cursor.y < 10 then -- top bar
+         elseif windowData.titlebar.Hovering then -- top bar
             window_resize_type = 9
          end
          break
