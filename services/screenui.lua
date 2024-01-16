@@ -1,13 +1,9 @@
 if not host:isHost() then return end
 local gnui = require("libraries.gnui")
 
-local panel_texture = gnui.newSprite()
-:setTexture(textures["textures.window"])
-:setBorderThickness(2,2,2,2)
-:excludeMiddle(false)
-
 local screen = gnui.newContainer()
 models:addChild(screen.Part)
+screen:setPos(0,2) -- IDKY WHY
 screen.Part:setParentType("HUD")
 --window:setSprite(panel_texture)
 

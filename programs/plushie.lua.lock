@@ -10,10 +10,8 @@ sit on stairs - makes plushie sit on stairs
 there might be issues with stacking if pivot point of model group is not at 0 0 0
 
 ]]-- config
-local model = models.plushie -- model part for plushie
 local headOffset = 6 -- how high should plushie move when entity have it on helmet slot
 local sitOffset = vec(0, -8, -2) -- where should plushie move when its placed on stairs
-model:setParentType("Skull")
 
 -- basic variables
 local offset = vec(0, 1, 0)

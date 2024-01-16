@@ -10,12 +10,14 @@ local config = {
 
 local username = avatar:getEntityName()
 
-local colors = {
+local default_colors = {
    vectors.hexToRGB("#5ac54f"),
    vectors.hexToRGB("#d3fc7e"),
    vectors.hexToRGB("#5ac54f"),
    vectors.hexToRGB("#1e6f50"),
 }
+
+local colors = default_colors
 nameplate.ENTITY:setOutline(true):setBackgroundColor(0,0,0,0)
 
 -->====================[ Mixing Styles ]====================<--
@@ -55,7 +57,8 @@ local function generate_gradient_text()
    return toJson(final)
 end
 
-function pings.syncName(name)
+function pings.syncName(name,...)
+   colors = {...}
    if not host:isHost() then  username = name end
    local final = generate_gradient_text()
    nameplate.ALL:setText(final)
@@ -65,7 +68,7 @@ end
 -- Host only things that will sync data to non host view of this avatar.
 if not host:isHost() then return end
 local OK,command = pcall(require, config.gn_command_handler_library)
-pings.syncName(username)
+pings.syncName(username,table.unpack(colors))
 
 
 -- every config.sync_wait_time, the timer triggers to sync the name to everyone
@@ -75,7 +78,7 @@ events.TICK:register(function ()
    timer = timer - 1
    if timer < 0 then
       timer = config.sync_wait_time
-      pings.syncName(username)
+      pings.syncName(username,table.unpack(colors))
    end
 end)
 
@@ -88,6 +91,19 @@ if OK then -- if the library
             command.announce("renamed to "..words[2])
          else
             username = avatar:getEntityName()
+            command.announce("resetted username")
+         end
+      elseif words[1] == "clr" then
+         timer = 0
+         if words[2] then
+            local converted = {}
+            for word in string.gmatch(words[2],"#[%w]+") do
+               converted[#converted+1] = vectors.hexToRGB(word)
+            end
+            colors = converted
+            command.announce("updated colors")
+         else
+            colors = default_colors
             command.announce("resetted username")
          end
       end

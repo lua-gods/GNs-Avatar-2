@@ -70,6 +70,7 @@ sprite_close:setRenderType("CUTOUT_CULL")
 function winapi.newWindow()
    local window = gnui.newContainer()
    window:setSprite(sprite_window:duplicate())
+   window:setAnchor(0.5,0.5,0.5,0.5)
    window:setSize(130,120):setPos(16,16)
 
    local window_titlebar = gnui.newContainer()
@@ -157,7 +158,7 @@ input.mouse_left.press = function ()
             window_resize_type = 7
          elseif window.Dimensions.w-window.Cursor.y < 3 then -- bottom edge
             window_resize_type = 8
-         elseif windowData.titlebar.Hovering then -- top bar
+         elseif window.Cursor.y < 10 then -- top bar
             window_resize_type = 9
          end
          break

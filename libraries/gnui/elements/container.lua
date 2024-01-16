@@ -79,7 +79,7 @@ function container.new(preset,force_debug)
       debug_container = sprite.new():setModelpart(new.Part):setTexture(debug_texture):setBorderThickness(1,1,1,1):setRenderType("EMISSIVE_SOLID"):setScale(core.debug_scale):setColor(0,1,0):excludeMiddle(true)
       debug_margin    = sprite.new():setModelpart(new.Part):setTexture(debug_texture):setBorderThickness(1,1,1,1):setRenderType("EMISSIVE_SOLID"):setScale(core.debug_scale):setColor(1,0,0):excludeMiddle(true)
       debug_padding   = sprite.new():setModelpart(new.Part):setTexture(debug_texture):setBorderThickness(1,1,1,1):setRenderType("EMISSIVE_SOLID"):setScale(core.debug_scale):excludeMiddle(true)
-      debug_cursor   = sprite.new():setModelpart(new.Part):setTexture(debug_texture):setUV(1,1,1,1):setRenderType("EMISSIVE_SOLID"):setSize(1,1)
+      debug_cursor   = sprite.new():setModelpart(new.Part):setTexture(debug_texture):setUV(0,0,0,0):setRenderType("EMISSIVE_SOLID"):setSize(8,8)
    end
 
    new.DIMENSIONS_CHANGED:register(function ()
@@ -175,7 +175,7 @@ function container.new(preset,force_debug)
             debug_cursor:setPos(
                -new.Cursor.x - new.ContainmentRect.x + new.Padding.x,
                -new.Cursor.y - new.ContainmentRect.y + new.Padding.y,
-               ((new.Z + 1 + new.ChildIndex / (new.Parent and #new.Parent.Children or 1)) * core.clipping_margin) * 0.1
+               -((new.Z + 1 + new.ChildIndex / (new.Parent and #new.Parent.Children or 1)) * core.clipping_margin) * 0.9
             ):setVisible(true)
          else
             debug_cursor:setVisible(false)
@@ -289,7 +289,7 @@ function container:setCursor(xpos,y,forced)
    self.Cursor = pos
    if self.Hovering and not forced then
       local hovering
-      for i = #self.Children, 1, -1 do
+      for i = 1, #self.Children, 1 do
          local child = self.Children[i]
          if not hovering then
             if child.CaptureCursor then

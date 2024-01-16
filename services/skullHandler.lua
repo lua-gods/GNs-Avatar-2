@@ -10,8 +10,11 @@ instead of individually rendering each one,saving performance.
 ]]
 
 ---@class WorldSkull
+---@field is_wall boolean
+---@field id string
 ---@field last_seen number
 ---@field model ModelPart
+---@field model_block ModelPart
 ---@field pos Vector3
 ---@field rot number
 ---@field dir Vector3
@@ -33,8 +36,6 @@ local api = {
    skulls = skulls,
    INIT = eventLib.new(),
    EXIT = eventLib.new(),
-   TICK = eventLib.new(),
-   FRAME = eventLib.new(),
 }
 
 local half = vectors.vec3(.5, .5, .5)
@@ -68,9 +69,9 @@ end
 local systime = client:getSystemTime() / 1000
 local order = 0
 events.SKULL_RENDER:register(function(delta, block, item, entity, context)
-   inviskull:setVisible(context == "BLOCK")
-   worldPart:setVisible(order == 0 and context == "BLOCK")
    if context == "BLOCK" then
+      inviskull:setVisible(true)
+      worldPart:setVisible(order == 0)
       order = order + 1
       local pos = block:getPos()
       local id = "x" .. pos.x .. "y" .. pos.y .. "z" .. pos.z
@@ -82,18 +83,24 @@ events.SKULL_RENDER:register(function(delta, block, item, entity, context)
          local rot
          local offset
          local properties = block:getProperties()
+         local wall = false
          if block.id == "minecraft:player_wall_head" then
             dir = lookup.dir.wall[properties.facing]
             rot = lookup.rot.wall[properties.facing]
-            offset = vectors.vec3(-8,-4,-8) + dir * 4
+            offset = vectors.vec3(8,-4,8) + dir * 4
+            wall = true
          else
             dir = lookup.dir.floor[properties.rotation]
             rot = lookup.rot.floor[properties.rotation]
-            offset = vectors.vec3(-8,0,-8)
+            offset = vectors.vec3(8,0,8)
          end
-         local part = worldPart:newPart(id)
+         local part_block = worldPart:newPart(id)
+         local part = part_block:newPart("partBlock")
          skulls[id] = {
+            id = id,
+            is_wall = wall,
             model = part,
+            model_block = part_block,
             block = block,
             pos = pos,
             dir = dir,
@@ -101,39 +108,37 @@ events.SKULL_RENDER:register(function(delta, block, item, entity, context)
             last_seen = systime,
             offset_model = offset,
          }
-         part:setPos(pos * 16)
+         part_block:setPos(pos * 16)
+         part:pos(offset):rot(0,rot,0)
          api.INIT:invoke(skulls[id])
       end
 
       if order == 1 then
          local mat = matrices.mat4()
          :translate(-pos * 16)
-         :translate(skulls[id].offset_model)
+         :translate(-skulls[id].offset_model)
          :rotateY(-skulls[id].rot)
          worldPart:setMatrix(mat)
       end
+   else
+      worldPart:setVisible(false)
+      inviskull:setVisible(false)
    end
 end)
 
 events.WORLD_TICK:register(function()
    for id, skull in pairs(skulls) do
-      api.TICK:invoke(skull)
       if not (world.getBlockState(skull.pos).id:find("player") and systime - skull.last_seen < config.expire) then
          api.EXIT:invoke(skulls[id])
-         skull.model:getParent():removeChild(skull.model)
+         worldPart:removeChild(skull.model_block)
          skulls[id] = nil
       end
    end
 end)
 
-events.WORLD_RENDER:register(function (delta_tick)
+events.WORLD_RENDER:register(function ()
    order = 0
-   local t = client:getSystemTime() / 1000
-   local delta_frame = t-systime
-   systime = t
-   for id, skull in pairs(skulls) do
-      api.FRAME:invoke(skull,delta_tick,delta_frame)
-   end
 end)
+
 
 return api
