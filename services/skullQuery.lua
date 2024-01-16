@@ -8,12 +8,16 @@ local eventLib = require("libraries.eventLib")
 ---@field EXIT EventLib
 
 local queries = listFiles("skullQuery")
+local last_resort = "skullQuery.default"
 local query_checks = {}
 local skulls = {}
 
 for _, path in pairs(queries) do
-   query_checks[path] = require(path)
+   if last_resort ~= path then
+      query_checks[#query_checks+1] = require(path)
+   end
 end
+query_checks[#query_checks+1] = require(last_resort)
 
 ---@param skull WorldSkull
 skull_handler.INIT:register(function (skull)
@@ -23,9 +27,10 @@ skull_handler.INIT:register(function (skull)
       EXIT = eventLib.new()
    }
    for key, value in pairs(query_checks) do
-      local result = value() -- query check
+      local result = value(skull) -- query check
       if result then
          result(skull,api)
+         break
       end
    end
    skulls[skull.pos] = {skull=skull,api=api}
