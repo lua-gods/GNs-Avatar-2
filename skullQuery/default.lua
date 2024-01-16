@@ -1,10 +1,14 @@
+local plushie = models.plushie
+models:removeChild(models.plushie)
+
+
 ---@param skull WorldSkull
 ---@param events SkullEvents
 local function new(skull,events)
-   local model = models.plushie:copy(skull.id)
+   local model = plushie:copy(skull.id)
    skull.model:addChild(model)
    
-   --[[ basic variables
+   -- basic variables
    local offset = vec(0, 1, 0)
    local vec3 = vec(1, 1, 1)
    local vec2Half = vec(0.5, 0.5)
@@ -49,7 +53,7 @@ local function new(skull,events)
       else
          model:setPos(0, 0, 0)
       end
-   end]]
+   end
 end
 
 

@@ -87,7 +87,7 @@ events.SKULL_RENDER:register(function(delta, block, item, entity, context)
          if block.id == "minecraft:player_wall_head" then
             dir = lookup.dir.wall[properties.facing]
             rot = lookup.rot.wall[properties.facing]
-            offset = vectors.vec3(8,-4,8) + dir * 4
+            offset = vectors.vec3(8,4,8) - dir * 4
             wall = true
          else
             dir = lookup.dir.floor[properties.rotation]
