@@ -107,8 +107,10 @@ events.CHAT_RECEIVE_MESSAGE:register(function (message, json_text)
          end
       end
       local translation = client.getTranslatedString(json.translate)
-      local compose = {{text=""}} --[[@type table<any,any> why]]
-
+      local compose = {} --[[@type table<any,any> why]]
+      if translation == "chat.type.text" then
+         compose[#compose+1] = {text=""}
+      end
       -- convert plain text translation to raw json text translation
       for word,place in string.gmatch(translation .. "%s" ,"([^%%s]*)(%%s*)") do
          if #word > 0 then
