@@ -10,7 +10,7 @@ This service aims to aid the creation of custom commands in chat
 if not host:isHost() then return end
 
 local PREFIX = "$" -- every message with this at the start will get canceled from being sent in chat reguardless if one exists or not
-local ANNOUNCE_LAYOUT = '[{"text":"[cmd] ","color":"dark_gray"},{"text":"%s","color":"gray"}]'-- replaces %s with the message
+local ANNOUNCE_LAYOUT = '[{"text":"[cmd] ","color":"dark_gray"},{"text":"%s\n","color":"gray"}]'-- replaces %s with the message
 
 
 local lib = {}
@@ -20,7 +20,7 @@ function lib.announce(message)
 end
 
 events.CHAT_SEND_MESSAGE:register(function (message)
-   if message:sub(1,#PREFIX) == PREFIX then
+   if message and message:sub(1,#PREFIX) == PREFIX then
       local words = {}
       local word = ""
       local inside_string = false

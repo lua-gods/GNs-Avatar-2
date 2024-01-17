@@ -46,6 +46,46 @@ local chat_sounds = {
    }
 }
 
+--[[local function fragment(text,keyword)
+   keyword = keyword:gsub("([%(%)%.%%%+%-%*%?%[%]%^%$])", "%%%1")
+   local fragments = {}
+   for word,kw in string.gmatch(text .. "#000000" ,"([^"..keyword.."]*)("..keyword..")") do
+      if #word > 0 then
+         fragments[#fragments+1] = word
+      end
+      if #kw > 0 then
+         fragments[#fragments+1] = kw
+      end
+   end
+   fragments[#fragments] = nil
+   return fragments
+end]]
+
+local function fragment(text,keyword)
+   local init = 0
+   local slice = {}
+   slice[1] = 0
+   for i = 1, 100, 1 do
+      local a,b = string.find(text,keyword,init)
+      if not b then break end
+      init = b
+      slice[#slice+1] = a
+      slice[#slice+1] = b
+   end
+   local split = {}
+   
+   for i = 1, #slice, 1 do
+      split[#split+1] = text:sub(
+         #split % 2 == 1 and slice[i] or slice[i]+1,
+         slice[i+1] and (#split % 2 == 1 and slice[i+1] or slice[i+1]-1) or -1)
+   end
+   return split
+end
+
+--print(fragment("Heello Weerld","ee"))
+
+--print(fragment("hex detect #00ff00 cool #ff0000 amazing","#%x%x%x%x%x%x"))
+
 events.CHAT_RECEIVE_MESSAGE:register(function (message, json_text)
    local json = parseJson(json_text)
    if json.translate then
@@ -66,7 +106,69 @@ events.CHAT_RECEIVE_MESSAGE:register(function (message, json_text)
             break
          end
       end
+      local translation = client.getTranslatedString(json.translate)
+      local compose = {{text=""}} --[[@type table<any,any> why]]
+
+      -- convert plain text translation to raw json text translation
+      for word,place in string.gmatch(translation .. "%s" ,"([^%%s]*)(%%s*)") do
+         if #word > 0 then
+            compose[#compose+1] = {text = word}
+         end
+         if #place > 0 then
+            compose[#compose+1] = "%s"
+         end
+      end
+
+      -- replace all placeholders with json.with
+      local placeholder_found = 0
+      for i = 1, #compose, 1 do 
+         if compose[i] == "%s" then
+            placeholder_found = placeholder_found + 1
+            compose[i] = json.with[placeholder_found]
+            if #json.with == placeholder_found then
+               break
+            end
+         end
+      end
+
+      -- trim off existing empty place holders
+      for key, value in pairs(compose) do
+         if value == "%s" then
+            table.remove(compose,key)
+         end
+      end
+
+      -- replace hex codes with colored ones
+      for i = 1, #compose, 1 do
+         local component = compose[i]
+         local inserted = false
+         local frag = fragment(component.text,"#%x%x%x%x%x%x")
+         if #frag > 1 then -- if modified
+            table.remove(compose,i) -- remove last
+            for o, txtfrag in pairs(frag) do
+               if txtfrag:find("#%x%x%x%x%x%x") then
+                  table.insert(compose,i,{
+                     text=txtfrag,
+                     color=txtfrag,
+                     clickEvent={
+                        action="suggest_command",
+                        value=txtfrag
+                     },
+                     hoverEvent={
+                        action = "show_text",
+                        contents = "Copy to Clipboard"
+                     }
+                  })
+               else
+                  table.insert(compose,i,{text=txtfrag})
+               end
+               i = i + 1
+            end
+         end
+      end
+      --printTable(compose,3)
+      return toJson(compose)
+   else
+      return toJson(json)
    end
-   --json.with[1].text = "Amogus"
-   return toJson(json)
 end)
