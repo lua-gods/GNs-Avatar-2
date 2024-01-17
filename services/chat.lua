@@ -6,13 +6,14 @@
 --[[ A Service script that adds tweaks to chat ]]
 if not host:isHost() then return end
 
-local chat_sounds = {
+local properties = {
    { -- talk
       when = {
          "chat.type.text",
          "chat.type.emote",
          "chat.type.announcement"
       },
+      override = "%s §8:§r %s",
       play = {{id="minecraft:entity.item.pickup",pitch=0.6,volume=0.08}}
    },
    {
@@ -29,13 +30,21 @@ local chat_sounds = {
       when = {
          "multiplayer.player.left",
       },
-      play = {{id="minecraft:block.barrel.close",pitch=0.9,volume=1},}
+      override = "§e%s left the game",
+      play = {{id="minecraft:block.barrel.close",pitch=0.9,volume=1},},
    },
    {
       when = {
          "multiplayer.player.joined",
+      },
+      override = "§e%s joined the game",
+      play = {{id="minecraft:block.barrel.open",pitch=0.9,volume=1},}
+   },
+   {
+      when = {
          "multiplayer.player.joined.renamed",
       },
+      override = "§e%s (formly known as %s) joined the game",
       play = {{id="minecraft:block.barrel.open",pitch=0.9,volume=1},}
    },
    ping = {
@@ -89,14 +98,21 @@ end
 events.CHAT_RECEIVE_MESSAGE:register(function (message, json_text)
    local json = parseJson(json_text)
    if json.translate then
+      local translation = client.getTranslatedString(json.translate)
+      if json.translate == "multiplayer.player.joined" then
+         host:clipboard(translation)
+      end
       local found = false
-      for _, query in pairs(chat_sounds) do
+      for _, query in pairs(properties) do
          if query.when then
             for _, pattern in pairs(query.when) do
                if json.translate:find(pattern) then -- same context
                   for key, soundata in pairs(query.play) do
                      sounds[soundata.id]:pos(client:getCameraPos():add(client:getCameraDir())):pitch(soundata.pitch or 1):volume(soundata.volume or 1):play()
                      found = true
+                  end
+                  if query.override then
+                     translation = query.override
                   end
                   break
                end
@@ -106,7 +122,6 @@ events.CHAT_RECEIVE_MESSAGE:register(function (message, json_text)
             break
          end
       end
-      local translation = client.getTranslatedString(json.translate)
       local compose = {} --[[@type table<any,any> why]]
       if translation == "chat.type.text" then
          compose[#compose+1] = {text=""}
