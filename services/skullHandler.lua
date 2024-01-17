@@ -12,6 +12,7 @@ instead of individually rendering each one,saving performance.
 ---@class WorldSkull
 ---@field is_wall boolean
 ---@field id string
+---@field order integer
 ---@field last_seen number
 ---@field model ModelPart
 ---@field model_block ModelPart
@@ -79,9 +80,10 @@ events.SKULL_RENDER:register(function(delta, block, item, entity, context)
       worldPart:setVisible(order == 0)
       order = order + 1
       local pos = block:getPos()
-      local id = order
+      local id = pos.x..","..pos.y..","..pos.z
       
       if skulls[id] then
+         skulls[id].order = order
          skulls[id].last_seen = systime
       else
          local dir
@@ -103,6 +105,7 @@ events.SKULL_RENDER:register(function(delta, block, item, entity, context)
          local part = part_block:newPart("partBlock")
          skulls[id] = {
             id = id,
+            order = order,
             is_wall = wall,
             model = part,
             model_block = part_block,

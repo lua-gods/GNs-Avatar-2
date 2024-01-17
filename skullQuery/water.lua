@@ -12,15 +12,15 @@ end
 ---@param skull WorldSkull
 ---@param events SkullEvents
 local function new(skull,events)
-   local model = plushie:copy(skull.id):setScale(1,1,1)
+   local model = plushie:copy(skull.order):setScale(1,1,1)
    skull.model:addChild(model)
    events.FRAME:register(function ()
       local time = client:getSystemTime() / 100
-      model:setPos(0,superSine(time * 0.05+skull.id,123,4)*4-8)
+      model:setPos(0,superSine(time * 0.05+skull.order,123,4)*4-8)
       :rot(
-         superSine(time * 0.04+skull.id,213,4)*15,
-         superSine(time * 0.02+skull.id,413,4)*15,
-         superSine(time * 0.03+skull.id,23,4)*15)
+         superSine(time * 0.04+skull.order,213,4)*15,
+         superSine(time * 0.02+skull.order,413,4)*15,
+         superSine(time * 0.03+skull.order,23,4)*15)
    end)
 end
 
