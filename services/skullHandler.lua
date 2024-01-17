@@ -85,6 +85,7 @@ events.SKULL_RENDER:register(function(delta, block, item, entity, context)
       if skulls[id] then
          skulls[id].order = order
          skulls[id].last_seen = systime
+         skulls[id].model_block:setLight(world.getBlockLightLevel(pos),world.getSkyLightLevel(pos))
       else
          local dir
          local rot
