@@ -16,17 +16,18 @@ local function new(skull,events)
    skull.model:addChild(model)
    events.FRAME:register(function ()
       local time = client:getSystemTime() / 100
-      model:setPos(0,superSine(time * 0.05+skull.order,123,4)*4-8)
+      model:setPos(0,superSine(time * 0.05+skull.order,123,4)*1-4)
       :rot(
-         superSine(time * 0.04+skull.order,213,4)*15,
-         superSine(time * 0.02+skull.order,413,4)*15,
-         superSine(time * 0.03+skull.order,23,4)*15)
+         superSine(time * 0.04+skull.order,213,4)*5,
+         superSine(time * 0.02+skull.order,413,4)*5,
+         superSine(time * 0.03+skull.order,23,4)*5)
    end)
 end
 
 ---@param skull WorldSkull
 return function (skull)
-   if world.getBlockState(skull.pos - vectors.vec3(0,1,0)).id == "minecraft:water" then
+   local bellow = world.getBlockState(skull.pos - vectors.vec3(0,1,0)).id 
+   if bellow == "minecraft:water" or bellow == "minecraft:water_cauldron" then
       return new
    end
 end
