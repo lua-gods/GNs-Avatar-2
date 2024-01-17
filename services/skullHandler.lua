@@ -24,6 +24,7 @@ instead of individually rendering each one,saving performance.
 local skulls = {}
 local eventLib = require("libraries.eventHandler")
 
+local itemModel = models.tinyhat:setParentType("SKULL")
 local worldPart = models:newPart("worldPart","SKULL")
 local inviskull = models:newPart("inviskull","SKULL"):newBlock("placeholder"):block("dirt"):scale(0,0,0)
 
@@ -66,15 +67,19 @@ for i = 0, 15, 1 do
    lookup.rot.floor[tostring(i)] = angle
 end
 
+local ambient_light_color = vectors.hexToRGB("#115188")
+
+local avatarVars = {}
 local systime = client:getSystemTime() / 1000
 local order = 0
 events.SKULL_RENDER:register(function(delta, block, item, entity, context)
    if context == "BLOCK" then
+      itemModel:setVisible(false)
       inviskull:setVisible(true)
       worldPart:setVisible(order == 0)
       order = order + 1
       local pos = block:getPos()
-      local id = "x" .. pos.x .. "y" .. pos.y .. "z" .. pos.z
+      local id = order
       
       if skulls[id] then
          skulls[id].last_seen = systime
@@ -121,12 +126,37 @@ events.SKULL_RENDER:register(function(delta, block, item, entity, context)
          worldPart:setMatrix(mat)
       end
    else
+      if item then -- hard coded things for hat
+         if context == "HEAD" then
+            if entity:getType() == "minecraft:player" and avatarVars[entity:getUUID()] then
+               local color = avatarVars[entity:getUUID()].color or "#5ac54f"
+               local height = avatarVars[entity:getUUID()].hat_height and tonumber(avatarVars[entity:getUUID()].hat_height) or 7
+               if type(color) == "string" then
+                  color = vectors.hexToRGB(color)
+               end
+               itemModel.center.cylinder:setScale(1,height,1)
+               itemModel.center.ribbon.shade4:setColor(color)
+               itemModel.center.ribbon.shade3:setColor(math.lerp(color,ambient_light_color,0.2))
+               itemModel.center.ribbon.shade2:setColor(math.lerp(color,ambient_light_color,0.4))
+               itemModel.center.ribbon.shade1:setColor(math.lerp(color,ambient_light_color,0.6))
+               
+            end
+            itemModel:setVisible(true):setPos(0,6,0):scale(1.15,1.15,1.15)
+         else   
+            itemModel:setVisible(true):setPos(0,0,0):scale(1.2,1.2,1.2)
+         end
+      else
+         itemModel:setVisible(false)
+         inviskull:setVisible(false)
+      end
       worldPart:setVisible(false)
-      inviskull:setVisible(false)
    end
 end)
 
+
+
 events.WORLD_TICK:register(function()
+   avatarVars = world.avatarVars()
    for id, skull in pairs(skulls) do
       if not (world.getBlockState(skull.pos).id:find("player") and systime - skull.last_seen < config.expire) then
          api.EXIT:invoke(skulls[id])

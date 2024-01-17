@@ -45,6 +45,7 @@ end
 
 -- Generates a json text for minecraft to interpret as gradient text.
 local function generate_gradient_text()
+   avatar:color(colors[1])
    local final = {}
    final[#final+1] = {text="${badges}"}
    final[#final+1] = {font="figura:emoji_portrait",text=""} -- top hat
@@ -87,8 +88,8 @@ if OK then -- if the library
       if words[1] == "nick" then
          timer = 0
          if words[2] then
-            username = words[2]
-            command.announce("renamed to "..words[2])
+            username = words[2]words[2]:sub(1,255)
+            command.announce("renamed to "..username)
          else
             username = avatar:getEntityName()
             command.announce("resetted username")

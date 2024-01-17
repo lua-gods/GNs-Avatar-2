@@ -30,21 +30,21 @@ local properties = {
       when = {
          "multiplayer.player.left",
       },
-      override = "§e%s left the game",
+      override = "§e%s §eleft the game",
       play = {{id="minecraft:block.barrel.close",pitch=0.9,volume=1},},
    },
    {
       when = {
          "multiplayer.player.joined",
       },
-      override = "§e%s joined the game",
+      override = "%s §ejoined the game",
       play = {{id="minecraft:block.barrel.open",pitch=0.9,volume=1},}
    },
    {
       when = {
          "multiplayer.player.joined.renamed",
       },
-      override = "§e%s (formly known as %s) joined the game",
+      override = "§e%s §e(formly known as %s) joined the game",
       play = {{id="minecraft:block.barrel.open",pitch=0.9,volume=1},}
    },
    ping = {
@@ -54,21 +54,6 @@ local properties = {
       play = {{id="minecraft:block.bell.use",pitch=0.5,volume=1}}
    }
 }
-
---[[local function fragment(text,keyword)
-   keyword = keyword:gsub("([%(%)%.%%%+%-%*%?%[%]%^%$])", "%%%1")
-   local fragments = {}
-   for word,kw in string.gmatch(text .. "#000000" ,"([^"..keyword.."]*)("..keyword..")") do
-      if #word > 0 then
-         fragments[#fragments+1] = word
-      end
-      if #kw > 0 then
-         fragments[#fragments+1] = kw
-      end
-   end
-   fragments[#fragments] = nil
-   return fragments
-end]]
 
 local function fragment(text,keyword)
    local init = 0
@@ -91,17 +76,11 @@ local function fragment(text,keyword)
    return split
 end
 
---print(fragment("Heello Weerld","ee"))
-
---print(fragment("hex detect #00ff00 cool #ff0000 amazing","#%x%x%x%x%x%x"))
-
 events.CHAT_RECEIVE_MESSAGE:register(function (message, json_text)
    local json = parseJson(json_text)
-   if json.translate then
+   if json.with and json.translate then
       local translation = client.getTranslatedString(json.translate)
-      if json.translate == "multiplayer.player.joined" then
-         host:clipboard(translation)
-      end
+      local raw_override = false
       local found = false
       for _, query in pairs(properties) do
          if query.when then
@@ -112,7 +91,12 @@ events.CHAT_RECEIVE_MESSAGE:register(function (message, json_text)
                      found = true
                   end
                   if query.override then
-                     translation = query.override
+                     if query.raw_override then
+                        translation = query.raw_override
+                        raw_override = true
+                     else
+                        translation = query.override
+                     end
                   end
                   break
                end
@@ -127,13 +111,17 @@ events.CHAT_RECEIVE_MESSAGE:register(function (message, json_text)
          compose[#compose+1] = {text=""}
       end
       -- convert plain text translation to raw json text translation
-      for word,place in string.gmatch(translation .. "%s" ,"([^%%s]*)(%%s*)") do
-         if #word > 0 then
-            compose[#compose+1] = {text = word}
+      if not raw_override then
+         for word,place in string.gmatch(translation .. "%s" ,"([^%%s]*)(%%s*)") do
+            if #word > 0 then
+               compose[#compose+1] = {text = word}
+            end
+            if #place > 0 then
+               compose[#compose+1] = "%s"
+            end
          end
-         if #place > 0 then
-            compose[#compose+1] = "%s"
-         end
+      else
+         compose = raw_override
       end
 
       -- replace all placeholders with json.with
@@ -159,7 +147,7 @@ events.CHAT_RECEIVE_MESSAGE:register(function (message, json_text)
       for i = 1, #compose, 1 do
          local component = compose[i]
          local inserted = false
-         local frag = fragment(component.text,"#%x%x%x%x%x%x")
+         local frag = fragment(component.text or "","#%x%x%x%x%x%x")
          if #frag > 1 then -- if modified
             table.remove(compose,i) -- remove last
             for o, txtfrag in pairs(frag) do

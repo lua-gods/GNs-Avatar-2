@@ -1,5 +1,5 @@
 local plushie = models.plushie
-models:removeChild(models.plushie)
+models.plushie:setScale(0,0,0)
 
 
 ---@param skull WorldSkull
