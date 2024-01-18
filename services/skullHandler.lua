@@ -69,11 +69,10 @@ end
 
 local systime = client:getSystemTime() / 1000
 local order = 0
+local king_pos
 events.SKULL_RENDER:register(function(delta, block, item, entity, context)
-   if context == "BLOCK" then
+   if block then
       inviskull:setVisible(true)
-      worldPart:setVisible(order == 0)
-      order = order + 1
       local pos = block:getPos()
       local id = pos.x..","..pos.y..","..pos.z
       
@@ -116,20 +115,23 @@ events.SKULL_RENDER:register(function(delta, block, item, entity, context)
          part:pos(offset):rot(0,rot,0)
          api.INIT:invoke(skulls[id])
       end
-
-      if order == 1 then
+      if order == 0 or king_pos == pos then
          local mat = matrices.mat4()
          :translate(-pos * 16)
          :translate(-skulls[id].offset_model)
          :rotateY(-skulls[id].rot)
          worldPart:setMatrix(mat)
+         king_pos = pos
+         worldPart:setVisible(true)
+      else
+         worldPart:setVisible(false)
       end
+      order = order + 1
    else
       inviskull:setVisible(false)
       worldPart:setVisible(false)
    end
 end)
-
 
 
 events.WORLD_TICK:register(function()
