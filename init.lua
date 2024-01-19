@@ -13,19 +13,18 @@ do
    end
 end]]
 
-local delay = 0
-events.WORLD_TICK:register(function ()
-   delay = delay + 1
-   if delay > 20 then
-      -- services are called first, as they are potentially used by programs, but they use libraries
-      for key, script in pairs(listFiles("services")) do
-         require(script)
-      end
+-- services are called first, as they are potentially used by programs, but they use libraries
+for key, script in pairs(listFiles("services")) do
+   require(script)
+end
 
-      -- programs are the lowest level scripts, they use services and libraries
-      for key, script in pairs(listFiles("programs")) do
-         require(script)
-      end
-      events.WORLD_TICK:remove("init")
-   end
-end,"init")
+-- programs are the lowest level scripts, they use services and libraries
+for key, script in pairs(listFiles("programs")) do
+   require(script)
+end
+
+if not host:isHost() then return end
+-- hosts are just programs but only runs on the host
+for key, script in pairs(listFiles("host")) do
+   require(script)
+end

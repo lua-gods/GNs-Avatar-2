@@ -13,6 +13,8 @@ local core = require("libraries.gnui.core")
 ---@class GNUI.Label : GNUI.container
 ---@field Text string
 ---@field TextEffect TextEffect
+---@field LineHeight number
+---@field WrapText boolean
 ---@field Words table<any,{word:string?,hex:string?,len:number?}>
 ---@field RenderTasks table<any,TextTask>
 ---@field TEXT_CHANGED EventLib
@@ -33,6 +35,8 @@ function label.new(preset)
    new.Text = ""
    new.TEXT_CHANGED = eventLib.new()
    new.TextEffect = "NONE"
+   new.LineHeight = 8
+   new.WrapText = false
    new.Align = vectors.vec2()
    new.Words = {}
    new.RenderTasks = {}
@@ -67,6 +71,13 @@ function label:setText(text)
    self.Text = text or ""
    self.TEXT_CHANGED:invoke(self.Text)
    return self
+end
+
+function label:wrapText(wrap)
+   self.WrapText = wrap
+   self:_deleteRenderTasks()
+   self:_buildRenderTasks()
+   self:_updateRenderTasks()
 end
 
 ---Sets how the text is anchored to the container.  
@@ -149,12 +160,15 @@ function label:_updateRenderTasks()
       if cursor.x > self.ContainmentRect.z then
          -- reset cursor
          cursor.x = self.ContainmentRect.x + (current_word_width or 0)
-         cursor.y = cursor.y - 8 * self.FontScale
+         cursor.y = cursor.y - self.LineHeight * self.FontScale
          
          -- finalize data on next line
          lines[current_line].width = line_len * self.FontScale
-         line_len = 0
+         if not self.WrapText and current_line >= 1 then
+            break
+         end
          current_line = current_line + 1
+         line_len = 0
          lines[current_line] = {width=0,len={},clr={}}
       end
 
@@ -174,7 +188,7 @@ function label:_updateRenderTasks()
          rt
          :setPos(
             word_length.x + (line.width - self.ContainmentRect.z + self.ContainmentRect.x) * self.Align.x,
-            word_length.y + ((current_line) * 8 * self.FontScale - (self.ContainmentRect.w - self.ContainmentRect.y)) * self.Align.y - self.ContainmentRect.y,
+            word_length.y + ((current_line) * self.LineHeight * self.FontScale - (self.ContainmentRect.w - self.ContainmentRect.y)) * self.Align.y,
             -((self.Z + self.ChildIndex / (self.Parent and #self.Parent.Children or 1) * 0.99) * core.clipping_margin * 0.5))
          :setScale(self.FontScale,self.FontScale,1)
          :setShadow(self.TextEffect == "SHADOW")

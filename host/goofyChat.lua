@@ -1,4 +1,4 @@
-local NAME = "GNamimates"
+local NAME = "4P5"
 local INITIAL_CHAR = "@"
 local CHAT_MARK = "§l§u§a§g§o§o§f§s"
 local TIMEOUT_IN_MILLISECONDS = 10 * 1000
@@ -132,9 +132,26 @@ for i = 1, #keys do
 end
 
 local function send(msg)
+    if not host:isAvatarUploaded() then
+        logJson(toJson{
+            {
+                text = "GoofyChat §7» §r",
+                color = "#ffaaaa"
+            },
+            {
+                text = "failed to send; avatar not uploaded",
+                color = "red"
+            },
+            "\n"
+        })
+        return
+    end
     local encrypted = bulkEncrypt(msg .. ("\0"):rep(4), keys)
     pings.goofyChat(encrypted)
 end
+
+local UPLOADED = vectors.hexToRGB("#ccffcc")
+local NOT_UPLOADED = vectors.hexToRGB("#ffaaaa")
 
 local function receive(ign, msg)
     local decrypted = bulkDecrypt(msg, keys):gsub("\0", "")
@@ -165,6 +182,10 @@ function events.CHAT_RECEIVE_MESSAGE(message, json)
     end
 end
 
+local state = {
+    latched = false
+}
+
 local received = {}
 local set = false
 function events.WORLD_TICK()
@@ -177,8 +198,8 @@ function events.WORLD_TICK()
     end
 
     local text = host:getChatText()
-    if text and text:sub(1,1) == INITIAL_CHAR then
-        host:setChatColor(vectors.hexToRGB("#ccffcc"))
+    if (text and text:sub(1,1) == INITIAL_CHAR) or state.latched then
+        host:setChatColor(host:isAvatarUploaded() and UPLOADED or NOT_UPLOADED)
         set = true
     elseif set then
         host:setChatColor()
@@ -186,9 +207,6 @@ function events.WORLD_TICK()
     end
 end
 
-local state = {}
-
-state.latched = false
 function events.CHAT_SEND_MESSAGE(message)
     if not message then return end
 

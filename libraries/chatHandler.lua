@@ -76,8 +76,8 @@ local function fragment(text,keyword)
    return split
 end
 
-events.CHAT_RECEIVE_MESSAGE:register(function (message, json_text)
-   local json = parseJson(json_text)
+local function parseChatMessage(json_text)
+   local json = type(json_text) == "string" and parseJson(json_text) or json_text
    if json.with and json.translate then
       local translation = client.getTranslatedString(json.translate)
       local raw_override = false
@@ -176,4 +176,6 @@ events.CHAT_RECEIVE_MESSAGE:register(function (message, json_text)
    else
       return toJson(json)
    end
-end)
+end
+
+return parseChatMessage
