@@ -72,9 +72,8 @@ function label.new(preset)
       :_updateRenderTasks()
    end,core.internal_events_name.."_txt")
 
-   new.DIMENSIONS_CHANGED:register(function ()
-      new
-      :_updateRenderTasks()
+   new.SIZE_CHANGED:register(function ()
+      new:_updateRenderTasks()
    end,core.internal_events_name.."_txt")
 
    new.PARENT_CHANGED:register(function ()
@@ -211,7 +210,7 @@ function label:_buildRenderTasks()
       for _, component in pairs(lines.content) do
          if component.text then
             i = i + 1
-            self.RenderTasks[i] = self.Part:newText("word" .. i)
+            self.RenderTasks[i] = self.Part:newText("word" .. i):setText(toJson(component))
          end
       end
    end
@@ -231,7 +230,7 @@ function label:_updateRenderTasks()
             if pos.x - component.length > size.x then
                task:setVisible(true)
                if self._TextChanged then
-                  task:setText(toJson(component)):setPos(pos.xy_)
+                  task:setPos(pos.xy_)
                end
             else
                task:setVisible(false)

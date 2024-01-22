@@ -15,6 +15,7 @@ local core = require("libraries.gnui.core")
 ---@field Z number
 ---@field ContainmentRect Vector4
 ---@field DIMENSIONS_CHANGED EventLib
+---@field SIZE_CHANGED EventLib
 ---@field Margin Vector4
 ---@field MARGIN_CHANGED EventLib
 ---@field Padding Vector4
@@ -51,6 +52,7 @@ function container.new(preset,force_debug)
    new.ContainerShift = vectors.vec2()
    new.Z = 0
    new.DIMENSIONS_CHANGED = eventLib.new()
+   new.SIZE_CHANGED = eventLib.new()
    new.ContainmentRect = vectors.vec4() -- Dimensions but with margins and anchored applied
    new.Anchor = vectors.vec4(0,0,0,0)
    new.ANCHOR_CHANGED = eventLib.new()
@@ -81,7 +83,7 @@ function container.new(preset,force_debug)
    end
 
    new.DIMENSIONS_CHANGED:register(function ()
-      new.Part:setVisible(visible)
+      local last_size = new.ContainmentRect.zw - new.ContainmentRect.xy
       -- generate the containment rect
       new.ContainmentRect = vectors.vec4(
          new.Dimensions.x,
@@ -115,6 +117,14 @@ function container.new(preset,force_debug)
             child.DIMENSIONS_CHANGED:invoke(child.DIMENSIONS_CHANGED)
          end
       end
+
+      local size = new.ContainmentRect.zw - new.ContainmentRect.xy
+      local size_changed = false
+      if last_size ~= new.ContainmentRect.zw - new.ContainmentRect.xy then
+         new.SIZE_CHANGED:invoke(size)
+         size_changed = true
+      end
+
       local visible = new.isVisible and (not new.isClipping) and (not clipping)
       new.Part:setVisible(visible)
       if visible then
@@ -124,7 +134,7 @@ function container.new(preset,force_debug)
             -new.ContainmentRect.y,
             -((new.Z + new.ChildIndex / (new.Parent and #new.Parent.Children or 1) * 0.99) * core.clipping_margin)
          )
-         if new.Sprite then
+         if new.Sprite and size_changed then
             local contain = new.ContainmentRect
             new.Sprite
                :setSize(
@@ -139,10 +149,11 @@ function container.new(preset,force_debug)
                0,
                0,
                -((new.Z + 1 + new.ChildIndex / (new.Parent and #new.Parent.Children or 1)) * core.clipping_margin) * 0.6)
-            :setSize(
-               contain.z - contain.x,
-               contain.w - contain.y
-            )
+            if size_changed then
+               debug_container:setSize(
+                  contain.z - contain.x,
+                  contain.w - contain.y)
+            end
          end
       end
    end,core.internal_events_name)
