@@ -140,7 +140,7 @@ local function flattenComponents(json)
          local end_line = select(2,string.gsub(comp.text,"\n",""))
          local i = 0
          for line in string.gmatch(comp.text,"[^\n]*") do -- separate each line
-            for word in string.gmatch(line,"[%S]+[%s]*") do -- split words
+            for word in string.gmatch(line,"[%s]*[%S]+[%s]*") do -- split words
                local prop = {}
                -- only append used data in labels
                prop.text = word

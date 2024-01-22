@@ -4,7 +4,7 @@ local windowManager = require("services.windowManager")
 local GNUI = require("libraries.gnui")
 
 local window = windowManager.newWindow(true)
-window:setTitle("Chat on the flat")
+window:setTitle("Chat")
 
 local HISTORY_SIZE = 5
 
@@ -16,7 +16,7 @@ for i = 1, HISTORY_SIZE, 1 do
    line:setText("")
    line:setAlign(0,1)
    line:canCaptureCursor(false)
-   line:setClipOnParent(false)
+   line:setClipOnParent(true)
    window.container:addChild(line)
    chatline[i] = line
 end

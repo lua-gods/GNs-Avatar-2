@@ -107,10 +107,12 @@ function container.new(preset,force_debug)
          new.ContainmentRect.w = new.ContainmentRect.w + anchor_shift.w
 
          -- calculate clipping
-         clipping = parent_containment.x > new.ContainmentRect.x
-         or parent_containment.y > new.ContainmentRect.y
-         or parent_containment.z < new.ContainmentRect.z
-         or parent_containment.w < new.ContainmentRect.w
+         if new.ClipOnParent then
+            clipping = parent_containment.x > new.ContainmentRect.x
+            or parent_containment.y > new.ContainmentRect.y
+            or parent_containment.z < new.ContainmentRect.z
+            or parent_containment.w < new.ContainmentRect.w
+         end
       end
       for _, child in pairs(new.Children) do
          if child.DIMENSIONS_CHANGED then
