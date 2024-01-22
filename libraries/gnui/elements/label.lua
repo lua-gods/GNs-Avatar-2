@@ -5,6 +5,26 @@ local utils = require("libraries.gnui.utils")
 local container = require("libraries.gnui.elements.container")
 local core = require("libraries.gnui.core")
 
+local LEN_BORDER = "."
+local BORDER_LEN = client.getTextWidth(LEN_BORDER)
+
+---Calculates text length along with its spaces as well.  
+---accepts raw json component as well, if the given text is a table.
+---@param text string|table
+---@return integer
+local function getlen(text)
+   local t = type(text)
+   if t == "string" then
+      return client.getTextWidth(LEN_BORDER .. text .. LEN_BORDER) - BORDER_LEN * 2
+   else
+      local og = text.text
+      text.text = LEN_BORDER .. text.text .. LEN_BORDER
+      local l = client.getTextWidth(toJson(text)) - BORDER_LEN * 2
+      text.text = og
+      return l
+   end
+end
+
 ---@alias TextEffect string
 ---| "NONE"
 ---| "OUTLINE"
@@ -12,14 +32,15 @@ local core = require("libraries.gnui.core")
 
 ---@class GNUI.Label : GNUI.container
 ---@field Text string
+---@field TextData table
 ---@field TextEffect TextEffect
 ---@field LineHeight number
 ---@field WrapText boolean
----@field Words table<any,{word:string?,hex:string?,len:number?}>
 ---@field RenderTasks table<any,TextTask>
 ---@field TEXT_CHANGED EventLib
 ---@field Align Vector2
 ---@field AutoWarp boolean
+---@field Offset Vector2
 ---@field FontScale number
 ---@field _TextChanged boolean -- for optimization purposes
 local label = {}
@@ -37,8 +58,8 @@ function label.new(preset)
    new.TextEffect = "NONE"
    new.LineHeight = 8
    new.WrapText = false
+   new.TextData = {}
    new.Align = vectors.vec2()
-   new.Words = {}
    new.RenderTasks = {}
    new.FontScale = 1
    new._TextChanged = false
@@ -108,98 +129,117 @@ function label:setTextEffect(effect)
    return self
 end
 
+local function flattenComponents(json)
+   local output = {}
+   local content = {}
+   local content_length = 0
+   if json.extra then
+      json = {json}
+   end
+   for _, comp in pairs(json) do
+      if comp.text and (comp.text ~= "") then
+         local end_line = select(2,string.gsub(comp.text,"\n",""))
+         local i = 0
+         for line in string.gmatch(comp.text,"[^\n]*") do -- separate each line
+            for word in string.gmatch(line,"[%S]+[%s]*") do -- split words
+               local prop = {}
+               -- only append used data in labels
+               prop.text = word
+               prop.font = comp.font
+               prop.bold = comp.bold
+               prop.italic = comp.italic
+               prop.color = comp.color
+               local l
+               if prop.font then
+                  l = client.getTextWidth(toJson(prop))
+               else
+                  l = getlen(prop)
+               end
+               prop.length = l
+               content_length = l
+               content[#content+1] = prop
+            end
+            if i ~= end_line then -- false if current line is the last line
+               output[#output+1] = {content = content,length = content_length}
+               content_length = 0
+            end
+            i = i + 1
+         end
+      end
+      if comp.extra then
+         for _, lines in pairs(flattenComponents(comp.extra)) do
+            for _, data in pairs(lines.content) do
+               content[#content+1] = data
+               content_length = content_length + lines.length
+            end
+         end
+      end
+   end
+   output[#output+1] = {content = content,length = content_length}
+   return output
+end
+
+---@param from string|table
+local function parseText(from)
+   local output = {}
+   local t = type(from)
+   if t == "table" then
+      output = flattenComponents(from)
+   elseif t == "string" then
+      for line in string.gmatch(from,"[^\n]*") do -- separate each line
+         local compose = {}
+         for word in string.gmatch(line,"[%S]+[%s]*") do -- split words
+            compose[#compose+1] = {text=word,length=getlen(word)}
+         end
+         output[#output+1] = {length=getlen(line),content=compose}
+      end
+   end
+   return output
+end
+
+
+
 function label:_bakeWords()
-   self.Words = utils.string2instructions(self.Text)
+   self.TextData = parseText(self.Text)
    self._TextChanged = true
    return self
 end
 
 function label:_buildRenderTasks()
-   for i, data in pairs(self.Words) do
-      local data_type = type(data)
-      if data_type == "table" and data.word then
-         self.RenderTasks[i] = self.Part:newText("word" .. i)
+   local i = 0
+   for _, lines in pairs(self.TextData) do
+      for _, component in pairs(lines.content) do
+         if component.text then
+            i = i + 1
+            self.RenderTasks[i] = self.Part:newText("word" .. i)
+         end
       end
    end
    return self
 end
 
-local e = 0
 function label:_updateRenderTasks()
-   e = e + 1
-   if #self.Words == 0 then return end
-   local cursor = vectors.vec2(self.ContainmentRect.x,0)
-   local current_color = "ffffff"
-   local current_line = 1
-   local line_len = 0
-   local lines = {}
-   
-   lines[current_line] = {width=0,len={},clr={}}
-   -- generate lines
-   for i, data in pairs(self.Words) do
-      --- calculate where the next word should be placed
-      local data_type = type(data)
-      local current_word_width
-      if data_type == "table" then -- everything else
-         if data.word then -- word
-            current_word_width = data.len * self.FontScale
-            cursor.x = cursor.x + current_word_width
-            line_len = line_len + current_word_width
-         elseif data.hex then -- word
-            current_color = data.hex
-         end
-      elseif data_type == "number" then -- whitespace
-         current_word_width = data * self.FontScale
-         cursor.x = cursor.x + current_word_width
-         line_len = line_len + current_word_width
-      elseif data_type == "boolean" then
-         cursor.x = math.huge
-      end
-      
-      -- inside bounds verification
-      if cursor.x > self.ContainmentRect.z then
-         -- reset cursor
-         cursor.x = self.ContainmentRect.x + (current_word_width or 0)
-         cursor.y = cursor.y - self.LineHeight * self.FontScale
-         
-         -- finalize data on next line
-         lines[current_line].width = line_len * self.FontScale
-         if not self.WrapText and current_line >= 1 then
-            break
-         end
-         current_line = current_line + 1
-         line_len = 0
-         lines[current_line] = {width=0,len={},clr={}}
-      end
-
-      -- pregenerating more temporary data
-      if data_type == "table" and data.word then
-         lines[current_line].len[i] = vectors.vec2(-cursor.x + current_word_width,cursor.y) -- tells where the text should be positioned
-         lines[current_line].clr[i] = current_color
-      end
-   end
-
-   --- finalize last line
-   lines[current_line].width =  line_len
-   -- place render tasks
-   for key, line in pairs(lines) do
-      for id, word_length in pairs(line.len) do
-         local rt = self.RenderTasks[id]
-         rt
-         :setPos(
-            word_length.x + (line.width - self.ContainmentRect.z + self.ContainmentRect.x) * self.Align.x,
-            word_length.y + ((current_line) * self.LineHeight * self.FontScale - (self.ContainmentRect.w - self.ContainmentRect.y)) * self.Align.y,
-            -((self.Z + self.ChildIndex / (self.Parent and #self.Parent.Children or 1) * 0.99) * core.clipping_margin * 0.5))
-         :setScale(self.FontScale,self.FontScale,1)
-         :setShadow(self.TextEffect == "SHADOW")
-         :setOutline(self.TextEffect == "OUTLINE")
-         :setVisible(true)
-         if self._TextChanged then
-            rt:setText('{"text":"'..self.Words[id].word..'","color":"#'..line.clr[id]..'"}')
+   local i = 0
+   local size = self.ContainmentRect.xy - self.ContainmentRect.zw -- inverted for optimization
+   local pos = vectors.vec2()
+   if #self.TextData == 0 then return end
+   for _, lines in pairs(self.TextData) do
+      for _, component in pairs(lines.content) do
+         if component.text then
+            i = i + 1
+            local task = self.RenderTasks[i]
+            if pos.x - component.length > size.x then
+               task:setVisible(true)
+               if self._TextChanged then
+                  task:setText(toJson(component)):setPos(pos.xy_)
+               end
+            else
+               task:setVisible(false)
+            end
+            pos.x = pos.x - component.length
          end
       end
    end
-   --self._TextChanged = false -- optimization breaks things for some reason :L
    return self
 end
 
