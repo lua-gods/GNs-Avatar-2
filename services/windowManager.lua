@@ -5,6 +5,10 @@ local screen = require("services.screenui")
 local tween = require("libraries.GNTweenLib")
 local eventLib = require("libraries.eventHandler")
 
+local conf = {
+   edge_select_size = 10,
+}
+
 local winapi = {
    windows = {} --[[@type table<any,Window>]]
 }
@@ -65,12 +69,20 @@ sprite_minimize:setTexture(textures["textures.window"])
 sprite_minimize:setUV(14,0,20,6)
 sprite_minimize:setRenderType("CUTOUT_CULL")
 
+---@param id string
 ---@param invincible boolean?
 ---@return Window
-function winapi.newWindow(invincible)
+function winapi.newWindow(id,invincible)
+   config:setName("gnwinremember")
+   local old = config:load(id) --[[@type Vector4]]
    local window = gnui.newContainer()
    window:setSprite(sprite_window:duplicate())
-   window:setDimensions(32,32,128,128)
+   host:setActionbar(tostring(old))
+   if type(old) == "Vector4" then
+      window:setDimensions(old)
+   else
+      window:setDimensions(32,32,128,128)
+   end
 
    local window_titlebar = gnui.newContainer()
    window_titlebar:setAnchor(0,0,1,0)
@@ -120,7 +132,6 @@ function winapi.newWindow(invincible)
    new.label = window_label
    new.button_close = window_close
    new.button_minimize = window_minimize
-   local id = #winapi.windows+1
    new.id = id
    setmetatable(new,Window)
    winapi.windows[id] = new
@@ -161,23 +172,24 @@ input.mouse_left.press = function ()
       end
       local window = win_dat.container
       if window.Hovering then
+         local e = conf.edge_select_size / client:getGuiScale()
          window_selected = win_dat
          local size = window.ContainmentRect.zw-window.ContainmentRect.xy
-         if window.Cursor.x < 3 and window.Cursor.y < 3 then -- top left
+         if window.Cursor.x < e and window.Cursor.y < e then -- top left
             window_resize_type = 1
-         elseif size.x-window.Cursor.x < 3 and window.Cursor.y < 3 then -- top right
+         elseif size.x-window.Cursor.x < e and window.Cursor.y < e then -- top right
             window_resize_type = 2
-         elseif window.Cursor.x < 3 and size.y-window.Cursor.y < 3  then -- bottom left
+         elseif window.Cursor.x < e and size.y-window.Cursor.y < e  then -- bottom left
             window_resize_type = 3
-         elseif size.x-window.Cursor.x < 3 and size.y-window.Cursor.y < 3 then -- bottom right
+         elseif size.x-window.Cursor.x < e and size.y-window.Cursor.y < e then -- bottom right
             window_resize_type = 4
-         elseif window.Cursor.x < 3 then -- left edge
+         elseif window.Cursor.x < e then -- left edge
             window_resize_type = 5
-         elseif window.Cursor.y < 3 then -- top edge
+         elseif window.Cursor.y < e then -- top edge
             window_resize_type = 6
-         elseif size.x-window.Cursor.x < 3 then -- bottom edge
+         elseif size.x-window.Cursor.x < e then -- bottom edge
             window_resize_type = 7
-         elseif size.y-window.Cursor.y < 3 then -- bottom edge
+         elseif size.y-window.Cursor.y < e then -- bottom edge
             window_resize_type = 8
          elseif window.Cursor.y < 10 then -- top bar
             window_resize_type = 9
@@ -188,6 +200,10 @@ input.mouse_left.press = function ()
 end
 
 input.mouse_left.release = function ()
+   if window_selected then
+      config:setName("gnwinremember")
+      config:save(window_selected.id,window_selected.container.Dimensions)
+   end
    window_selected = nil
    window_resize_type = 0
 end
