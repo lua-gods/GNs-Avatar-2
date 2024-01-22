@@ -136,7 +136,7 @@ function container.new(preset,force_debug)
             -new.ContainmentRect.y,
             -((new.Z + new.ChildIndex / (new.Parent and #new.Parent.Children or 1) * 0.99) * core.clipping_margin)
          )
-         if new.Sprite and size_changed then
+         if new.Sprite then
             local contain = new.ContainmentRect
             new.Sprite
                :setSize(

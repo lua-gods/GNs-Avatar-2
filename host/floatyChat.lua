@@ -3,8 +3,13 @@ if not host:isHost() then return end
 local windowManager = require("services.windowManager")
 local GNUI = require("libraries.gnui")
 
-local window = windowManager.newWindow("floatychat",true)
+local icon = GNUI.newSprite()
+icon:setTexture(textures["textures.window"])
+icon:setUV(0,21,6,27)
+
+local window = windowManager.newWindow("floatychat",icon,true)
 window:setTitle("Chat")
+
 
 local HISTORY_SIZE = 20
 

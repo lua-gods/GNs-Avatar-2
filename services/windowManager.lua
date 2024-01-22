@@ -56,13 +56,18 @@ sprite_window:setRenderType("TRANSLUCENT")
 
 local sprite_titlebar = gnui.newSprite()
 sprite_titlebar:setTexture(textures["textures.window"])
-sprite_titlebar:setBorderThickness(1,1,1,2)
+sprite_titlebar:setBorderThickness(1,1,1,1)
 sprite_titlebar:setUV(0,0,2,3)
 
-local sprite_close = gnui.newSprite()
-sprite_close:setTexture(textures["textures.window"])
-sprite_close:setUV(7,0,13,6)
-sprite_close:setRenderType("CUTOUT_CULL")
+local sprite_titlebar_bg = gnui.newSprite()
+sprite_titlebar_bg:setTexture(textures["textures.window"])
+sprite_titlebar_bg:setBorderThickness(1,1,1,1)
+sprite_titlebar_bg:setUV(3,3,5,5)
+
+local sprite_tab = gnui.newSprite()
+sprite_tab:setTexture(textures["textures.window"])
+sprite_tab:setBorderThickness(1,1,1,2)
+sprite_tab:setUV(3,0,5,2)
 
 local sprite_minimize = gnui.newSprite()
 sprite_minimize:setTexture(textures["textures.window"])
@@ -70,32 +75,55 @@ sprite_minimize:setUV(14,0,20,6)
 sprite_minimize:setRenderType("CUTOUT_CULL")
 
 ---@param id string
+---@param icon Sprite
 ---@param invincible boolean?
+---@param minimizable boolean?
 ---@return Window
-function winapi.newWindow(id,invincible)
+function winapi.newWindow(id,icon,invincible,minimizable)
    config:setName("gnwinremember")
    local old = config:load(id) --[[@type Vector4]]
    local window = gnui.newContainer()
    window:setSprite(sprite_window:duplicate())
-   host:setActionbar(tostring(old))
    if type(old) == "Vector4" then
       window:setDimensions(old)
    else
       window:setDimensions(32,32,128,128)
    end
 
+   local window_tab = gnui.newContainer()
+   window_tab:setAnchor(0,0,0,0)
+   window_tab:setDimensions(0,-8,40,2)
+   window_tab:setSprite(sprite_tab:duplicate())
+   window_tab:canCaptureCursor(false)
+   window_tab:setZ(2)
+
    local window_titlebar = gnui.newContainer()
    window_titlebar:setAnchor(0,0,1,0)
-   window_titlebar:offsetBottomRight(0,10)
+   window_titlebar:setDimensions(0,0,0,4)
    window_titlebar:setSprite(sprite_titlebar:duplicate())
    window_titlebar:canCaptureCursor(false)
    window_titlebar:setZ(2)
 
+   local window_titlebar_bg = gnui.newContainer()
+   window_titlebar_bg:setAnchor(0,0,1,0)
+   window_titlebar_bg:setDimensions(0,-8,0,4)
+   window_titlebar_bg:setSprite(sprite_titlebar_bg:duplicate())
+   window_titlebar_bg:canCaptureCursor(false)
+   window_titlebar_bg:setZ(2)
+
    local window_label = gnui.newLabel()
    window_label:setText("Untitled")
-   window_label:setAnchor(0,0,1,1):setDimensions(0.5,0.5,-0.5,-0.5)
+   window_label:setAnchor(0,0,1,1):setDimensions(12.5,-6.5,-0.5,-0.5)
    window_label:canCaptureCursor(false)
    window_label:setZ(2)
+
+   local window_icon = gnui.newContainer()
+   window_icon:setAnchor(0,0,0,0)
+   window_icon:setDimensions(1,1,10,10)
+   window_icon:setZ(2)
+   window_icon:setSprite(icon)
+   icon:setRenderType("CUTOUT_CULL")
+   window_tab:addChild(window_icon)
    
    local x = 0
    local window_close
@@ -106,32 +134,32 @@ function winapi.newWindow(id,invincible)
       window_close:setDimensions(-8+x,1,-1,8+x)
       x = x - 8
    end
-
-   local window_minimize = gnui.newContainer()
-   window_minimize:setSprite(sprite_minimize)
-   window_minimize:setAnchor(1,0,1,0)
-   window_minimize:setDimensions(-8+x,1,-1+x,8)
-   window_minimize:setZ(2)
    
+   window:addChild(window_titlebar_bg)
    window:addChild(window_titlebar)
+   window:addChild(window_tab)
    window:addChild(window_label)
    if window_close then
       window:addChild(window_close)
    end
-   window:addChild(window_minimize)
    screen:addChild(window)
    
    local new = {}
+   new.icon = icon
    new.TICK = eventLib.new()
    new.FRAME = eventLib.new()
    new.EXIT = eventLib.new()
-   new.container = window
-   new.invincible = invincible
-   new.minimized = false
-   new.titlebar = window_titlebar
-   new.label = window_label
-   new.button_close = window_close
-   new.button_minimize = window_minimize
+   new.ui = {
+      container = window,
+      minimized = false,
+      titlebar = window_titlebar,
+      label = window_label,
+      button_close = window_close
+   }
+   new.flags = {
+      invincible = invincible or false,
+      minimizable = minimizable or false
+   }
    new.id = id
    setmetatable(new,Window)
    winapi.windows[id] = new
