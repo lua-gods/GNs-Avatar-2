@@ -85,6 +85,8 @@ function label.new(preset)
    return new
 end
 
+local overflow = require("libraries.debug.overflowPrint")
+
 ---@param text string
 ---@return GNUI.Label
 function label:setText(text)

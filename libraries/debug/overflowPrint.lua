@@ -5,7 +5,7 @@ local function p(count,...)
    i = i + 1
    if i >= count then
       print(...)
-      error("^^^",99999)
+      error("^^^")
    end
 end
 

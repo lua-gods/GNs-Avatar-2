@@ -70,7 +70,3 @@ events.WORLD_RENDER:register(function (delta)
    end
    newMessage = 0
 end)
-
-window.container.DIMENSIONS_CHANGED:register(function ()
-   updateChat()
-end)
