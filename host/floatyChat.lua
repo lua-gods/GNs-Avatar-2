@@ -6,7 +6,7 @@ local GNUI = require("libraries.gnui")
 local window = windowManager.newWindow(true)
 window:setTitle("Chat")
 
-local HISTORY_SIZE = 5
+local HISTORY_SIZE = 20
 
 local chatline = {}
 for i = 1, HISTORY_SIZE, 1 do
@@ -21,10 +21,9 @@ for i = 1, HISTORY_SIZE, 1 do
    chatline[i] = line
 end
 
-local newMessage = 0
+local newMessage = HISTORY_SIZE
 local history = {}
 
-newMessage = 0
 local function updateChat()
    local size = math.floor((window.container.Dimensions.w-window.container.Dimensions.y) / 10)-1
    --host:setActionbar(tostring(#history.." "..size.." "..LINE_COUNT.." "..math.min(#history,size,LINE_COUNT)))
