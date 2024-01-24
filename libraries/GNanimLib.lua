@@ -15,25 +15,43 @@ local animationStateMachine = {}
 animationStateMachine.__index = animationStateMachine
 
 local next_free = 0
+---@return animationStateMachine
 function animationStateMachine.new()
    local new = {}
    new.blend_time = 1
    new.queue_next = {}
-   next_free = next_free + 1
    new.id = next_free
    setmetatable(new,animationStateMachine)
+   next_free = next_free + 1
    return new
+end
+
+function animationStateMachine:setBlendTime(seconds)
+   self.blend_time = seconds
+   return self
 end
 
 ---Transitions to the given animation from the last playing one.  
 ---default value is none, this will just blend to having no animation at all
 ---@param animation Animation?
-function animationStateMachine:setAnimation(animation)
-   tween.tweenFunction(self.blend_time,"linear",function (t)
-      
-   end,function ()
-      
-   end,tostring(self.id))
+---@param force boolean?
+---@return animationStateMachine
+function animationStateMachine:setAnimation(animation,force)
+   -- if different
+   if animation ~= self.current_animation or force then
+      self.last_animation = self.current_animation
+      self.current_animation = animation
+      local a,b = self.current_animation,self.last_animation
+      if a then a:setBlend(0):stop():play() end
+      tween.tweenFunction(self.blend_time,"linear",function (t)
+         if a then a:setBlend(t) end
+         if b then b:setBlend(1-t) end
+      end,function ()
+         if a then a:setBlend(1) end
+         if b and not force then b:stop() end
+      end,tostring(self.id))
+   end
+   return self
 end
 
 return {new = animationStateMachine.new}

@@ -1,8 +1,8 @@
---[[______   __                _                 __
-  / ____/ | / /___ _____ ___  (_)___ ___  ____ _/ /____  _____
- / / __/  |/ / __ `/ __ `__ \/ / __ `__ \/ __ `/ __/ _ \/ ___/
-/ /_/ / /|  / /_/ / / / / / / / / / / / / /_/ / /_/  __(__  )
-\____/_/ |_/\__,_/_/ /_/ /_/_/_/ /_/ /_/\__,_/\__/\___/____]]
+--[[______  __
+  / ____/ | / /
+ / / __/  |/ /
+/ /_/ / /|  /
+\____/_/ |_/ ]] --[[
 --[[
 Disclaimer for Robert Penner's Easing Equations license:
 
@@ -149,29 +149,29 @@ local queue_free = {}
 ---@field duration number
 ---@field start number
 ---@field type EaseTypes
----@field frame fun(x : number)
+---@field tick fun(y : number)
 ---@field on_finish function?
 ---@field id string|number
 
 ---@param duration number
----@param ease_type EaseTypes
----@param frame fun(x : number)
----@param on_finish function?
----@param identifier any?
+---@param ease EaseTypes
+---@param tick fun(y : number)
+---@param finish function?
+---@param id string?
 ---@return GNtween
-function tween.tweenFunction(duration, ease_type, frame, on_finish, identifier)
+function tween.tweenFunction(duration, ease, tick, finish, id)
   ---@type GNtween
   local compose = {
     start = client:getSystemTime(),
     duration = duration,
-    type = ease_type,
-    frame = frame,
-    on_finish = on_finish,
+    type = ease,
+    tick = tick,
+    on_finish = finish,
     id = nil,
   }
-  if identifier then
-    compose.id = identifier
-    eases[identifier] = compose
+  if id then
+    compose.id = id
+    eases[id] = compose
   else
     for i = 1, #eases+1, 1 do
       if not eases[i] then
