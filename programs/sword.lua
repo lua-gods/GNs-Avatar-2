@@ -3,6 +3,7 @@ local was_holding_sword
 
 local GNanim = require("libraries.GNanimLib")
 local extraMath = require("libraries.extraMath")
+local trail = require("libraries.GNtrailLib")
 
 local state = GNanim.new()
 
@@ -18,6 +19,9 @@ local roll1 = 0
 local weary = 0.9
 local sword = models.sword
 sword:setParentType("WORLD")
+local sword_trail = trail:newTwoLeadTrail(textures["textures.trail"])
+sword_trail:setDivergeness(0)
+sword_trail:setDuration(10)
 
 events.ENTITY_INIT:register(function ()
    pos = player:getPos()
@@ -46,6 +50,7 @@ events.TICK:register(function ()
    end
    if is_holding_sword then
       if player:getSwingTime() == 1 then
+         sounds:playSound("swing",player:getPos():add(0,1,0),1,1+(math.random()-0.5)*0.2)
          if swing_count % 2 == 1 then
             roll1 = math.random(-45,45)
             state:setAnimation(animations.sword.swing2swing2)
@@ -60,6 +65,9 @@ end)
 
 events.WORLD_RENDER:register(function (dt)
    if player:isLoaded() then
+      local mat = models.sword.Roll.Pole.Handle:partToWorldMatrix()
+      sword_trail:setLeads(mat:apply(0,0,1),mat:apply(0,0,-24))
+
       local r = player:getBodyYaw(dt)
       local sneak = player:isSneaking()
       local dir = vectors.rotateAroundAxis(-r,vectors.vec3(0,.25,1),vectors.vec3(0,1,0))

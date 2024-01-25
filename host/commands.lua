@@ -20,5 +20,7 @@ command.register(function (words)
          rev = msg:sub(i,i) .. rev
       end
       host:sendChatMessage(rev)
+   elseif words[1] == "tonether" and #words == 3 then -- solve
+      command.announce("nether: " .. tonumber(words[2]) / 8 .. " " .. tonumber(words[3]) / 8)
    end
 end)
