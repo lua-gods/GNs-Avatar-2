@@ -65,16 +65,16 @@ end)
 
 events.WORLD_RENDER:register(function (dt)
    if player:isLoaded() then
+      local meta = models.sword.metadata:getAnimPos()
       local mat = models.sword.Roll.Pole.Handle:partToWorldMatrix()
-      sword_trail:setLeads(mat:apply(0,0,1),mat:apply(0,0,-24))
+      sword_trail:setLeads(mat:apply(0,0,1),mat:apply(0,0,-24),meta.y)
 
       local r = player:getBodyYaw(dt)
       local sneak = player:isSneaking()
       local dir = vectors.rotateAroundAxis(-r,vectors.vec3(0,.25,1),vectors.vec3(0,1,0))
       sword:pos(math.lerp(player:getPos(dt),math.lerp(lpos,pos,dt),weary) * 16 + (sneak and dir*-10 or vectors.vec3(0,0,0)))
       sword:rot(sneak and -30 or 0,180-math.lerp(r,math.lerp(lrot,rot,dt),weary),0)
-      local meta = models.sword.metadata:getAnimPos()
-      sword.Roll:setRot(0,0,math.lerp(roll1,roll2,meta.x))
+      sword.Roll:setRot(0,0,math.lerp(roll1,roll2,meta.x) * meta.y)
       is_holding_sword = (player:getHeldItem().id:find("sword") and true or false)
    end
 end)
