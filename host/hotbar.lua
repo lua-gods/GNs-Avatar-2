@@ -1,6 +1,7 @@
 local gnui = require("libraries.gnui")
 local screen = require("services.screenui")
 local tween = require("libraries.GNTweenLib")
+local hudSound = require("libraries.hudsound")
 
 local config = {
    unselected_scale = 1,
@@ -43,21 +44,37 @@ events.TICK:register(function ()
    selected_slot = player:getNbt().SelectedItemSlot
    if last_selected_slot ~= selected_slot then
       last_selected_slot = selected_slot
+      hudSound("minecraft:entity.player.attack.sweep",5,0.005)
       for i = 1, 9, 1 do
          local item = host:getSlot("hotbar."..(i-1))
          slot_tasks[i]:item(item)
          local slot = slot_containers[i]
-         slot:setDimensions(o*20,0,20+o*20,20)
+         local h = (i-1 == selected_slot and -10 or 0)
+         local d = vectors.vec4(o*20,h,20+o*20,20+h)
+         local scale = slot.Part:getScale()
+         local dim = slot.Dimensions:copy()
          if selected_slot == i-1 then
-            slot.Part:scale(config.selected_scale,config.selected_scale)
+            tween.tweenFunction(0.1,"outBack",function (y)
+               slot:setDimensions(
+                  math.lerp(dim.x,d.x,y),
+                  math.lerp(dim.y,d.y,y),
+                  math.lerp(dim.z,d.z,y),
+                  math.lerp(dim.w,d.w,y)
+               )
+               slot.Part:scale(math.lerp(scale.x,config.selected_scale,y),math.lerp(scale.y,config.selected_scale,y))
+            end,nil,"hotbarslot"..i)
             o = o + config.selected_scale
          else
             o = o + config.unselected_scale
-            if selected_slot > i then
-               slot.Part:scale(config.unselected_scale,config.unselected_scale)
-            else
-               slot.Part:scale(config.unselected_scale,config.unselected_scale)
-            end
+            tween.tweenFunction(0.1,"outBack",function (y)
+               slot:setDimensions(
+                  math.lerp(dim.x,d.x,y),
+                  math.lerp(dim.y,d.y,y),
+                  math.lerp(dim.z,d.z,y),
+                  math.lerp(dim.w,d.w,y)
+               )
+               slot.Part:scale(math.lerp(scale.x,config.unselected_scale,y),math.lerp(scale.y,config.unselected_scale,y))
+            end,nil,"hotbarslot"..i)
          end
       end
    end
