@@ -20,7 +20,7 @@ if not host:isHost() then return end
 
 ---@class CommandQuery
 ---@field func function
----@field args table<integer,CommandQuery.argumentType|function>
+---@field args table<integer,CommandQuery.argumentType|function|string[]>
 
 
 local PREFIX = "$" -- every message with this at the start will get canceled from being sent in chat reguardless if one exists or not
@@ -58,10 +58,12 @@ events.CHAT_SEND_MESSAGE:register(function (message)
       end
       words[#words+1] = word
       host:appendChatHistory(message)
-      for _, func in pairs(commands) do
-         local success, result = pcall(func,words)
-         if not success then
-            print("§c"..result)
+      for name, query in pairs(commands) do
+         if name == words[1] then
+            local success, result = pcall(query.func,words)
+            if not success then
+               print("§c"..result)
+            end
          end
       end
       return ""
@@ -96,21 +98,43 @@ end)
 
 -- makes chat yellow to indicate its not gonna be sent in chat.
 
+local function update(text)
+   text = text:sub(2,-1)
+   local compose = {}
+   for key, value in pairs(commands) do
+      if (key):find(text) then
+         compose[#compose+1] = {text = key.."\n"}
+      end
+   end
+   if #compose > 0 then
+      host:setChatMessage(1,toJson(compose))
+   else
+      host:setChatMessage(1," ")
+   end
+end
 
+local ltext = ""
 events.WORLD_TICK:register(function ()
    local text = host:getChatText()
    if text and text:sub(1,#PREFIX) == PREFIX then
       if not commanding then
          host:setChatColor(1,1,0)
          commanding = true
-         print("$ Checkpoint \n[name:string?]")
+         printJson('{"text":" "}')
+         ltext = ""
          new_message = -1
       end
    else
       if commanding then
          host:setChatColor(1,1,1)
-         host:setChatMessage(1,nil)
+         host:setChatMessage(1+new_message,nil)
          commanding = false
+      end
+   end
+   if ltext ~= text then
+      if commanding and new_message == 0 then
+         ltext = text
+         update(text)
       end
    end
 end)
@@ -118,7 +142,7 @@ end)
 ---Registers a command that will part take in checking if the message contains the words to trigger it.
 ---@param func fun(words : table<any,string>)
 function lib.register(func)
-   commands[#commands+1] = func
+   --commands[#commands+1] = func
    return #commands
 end
 

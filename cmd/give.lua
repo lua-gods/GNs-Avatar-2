@@ -3,7 +3,9 @@ local t = {
    func = function ()
       
    end,
-   args = {}
+   args = {
+      {}
+   }
 }
 ---| "INT"
 ---| "NUMBER"

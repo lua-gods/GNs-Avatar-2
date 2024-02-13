@@ -74,8 +74,6 @@ function container.new(preset,force_debug)
    
    -->==========[ Internals ]==========<--
    local debug_container 
-   local debug_margin    
-   local debug_padding   
    local debug_cursor
    if core.debug_visible or force_debug then
       debug_container = sprite.new():setModelpart(new.Part):setTexture(debug_texture):setBorderThickness(1,1,1,1):setRenderType("EMISSIVE_SOLID"):setScale(core.debug_scale):setColor(1,1,1):excludeMiddle(true)

@@ -12,7 +12,5 @@ local t = {
 ---| "XPOS"
 ---| "YPOS"
 ---| "ZPOS"
----| function -- custom
----| table -- string list
 
 return t

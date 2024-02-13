@@ -6,8 +6,7 @@ events.ON_PLAY_SOUND:register(function (id, pos, volume, pitch, loop, category, 
       i = i % 4 + 1
       sounds:playSound("step"..i,pos,0.1,1)
       return true
-   elseif id == "minecraft:block.bell.use" then
-      sounds:playSound("bell"..math.random(1,3),pos,1,1)
+   elseif id == "minecraft:block.water.ambient" then
       return true
    end
 end)

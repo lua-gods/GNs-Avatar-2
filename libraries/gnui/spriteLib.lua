@@ -190,11 +190,11 @@ end
 ---Sets the UV region of the sprite.
 ---@param x number
 ---@param y number
----@param width number
----@param height number
+---@param x2 number
+---@param y2 number
 ---@return Sprite
-function sprite:setUV(x,y,width,height)
-   self.UV = vectors.vec4(x,y,width,height)
+function sprite:setUV(x,y,x2,y2)
+   self.UV = vectors.vec4(x,y,x2,y2)
    self.BORDER_THICKNESS_CHANGED:invoke(self.BorderThickness)
    return self
 end
