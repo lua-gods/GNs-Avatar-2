@@ -106,12 +106,13 @@ function sprite:setPos(xpos,y,depth)
 end
 
 ---Tints the Sprite multiplicatively
----@param rgb number|Vector3
----@param g number?
----@param b number?
+---@overload fun(rgb : Vector3): Sprite
+---@param r number
+---@param g number
+---@param b number
 ---@return Sprite
-function sprite:setColor(rgb,g,b)
-   self.Color = utils.figureOutVec3(rgb,g,b)
+function sprite:setColor(r,g,b)
+   self.Color = utils.figureOutVec3(r,g,b)
    self.DIMENSIONS_CHANGED:invoke(self,self.Position,self.Size)
    return self
 end
@@ -188,13 +189,14 @@ function sprite:setBorderThickness(left,top,right,bottom)
 end
 
 ---Sets the UV region of the sprite.
+---@overload fun(self : Sprite, vec4 : Vector4): Sprite
 ---@param x number
 ---@param y number
 ---@param x2 number
 ---@param y2 number
 ---@return Sprite
 function sprite:setUV(x,y,x2,y2)
-   self.UV = vectors.vec4(x,y,x2,y2)
+   self.UV = utils.figureOutVec4(x,y,x2,y2)
    self.BORDER_THICKNESS_CHANGED:invoke(self.BorderThickness)
    return self
 end

@@ -222,20 +222,25 @@ end
 
 ---Sets the dimensions of this container.  
 ---x,y is top left
----z,w is bottom right
----@param dimx Vector4|number
+---z,w is bottom right  
+--- if Z or W is missing, they will use X and Y instead
+---@overload fun(self : GNUI.container, vec4 : Vector4): GNUI.container
+---@param x number
 ---@param y number?
 ---@param z number?
 ---@param w number?
-function container:setDimensions(dimx,y,z,w)
-   local new = utils.figureOutVec4(dimx,y,z,w)
+---@return GNUI.container
+function container:setDimensions(x,y,z,w)
+   local new = utils.figureOutVec4(x,y,z or x,w or y)
    self.Dimensions = new
    self.DIMENSIONS_CHANGED:invoke(self.Dimensions)
+   return self
 end
 
 ---Sets the top left offset from the origin anchor of its parent.
 ---@param xpos number|Vector2
 ---@param y number?
+---@return GNUI.container
 function container:setTopLeft(xpos,y)
    self.Dimensions.xy = utils.figureOutVec2(xpos,y)
    self.DIMENSIONS_CHANGED:invoke(self.Dimensions)
@@ -245,6 +250,7 @@ end
 ---Sets the bottom right offset from the origin anchor of its parent.
 ---@param xsize number|Vector2
 ---@param y number?
+---@return GNUI.container
 function container:setBottomRight(xsize,y)
    self.Dimensions.zw = utils.figureOutVec2(xsize,y)
    self.DIMENSIONS_CHANGED:invoke(self.Dimensions)
@@ -254,6 +260,7 @@ end
 ---Shifts the container based on the top left.
 ---@param xpos number|Vector2
 ---@param y number?
+---@return GNUI.container
 function container:offsetTopLeft(xpos,y)
    local old,new = self.Dimensions.xy,utils.figureOutVec2(xpos,y)
    local delta = new-old
@@ -265,6 +272,7 @@ end
 ---Shifts the container based on the bottom right.
 ---@param zpos number|Vector2
 ---@param w number?
+---@return GNUI.container
 function container:offsetBottomRight(zpos,w)
    local old,new = self.Dimensions.xy+self.Dimensions.zw,utils.figureOutVec2(zpos,w)
    local delta = new-old
@@ -425,13 +433,15 @@ end
 
 ---Sets the anchor for all sides.  
 --- x 0 <-> 1 = left <-> right  
---- y 0 <-> 1 = top <-> bottom
----@param left number|Vector4
----@param top number?
+--- y 0 <-> 1 = top <-> bottom  
+---if right and bottom are not given, they will use left and top instead.
+---@overload fun(self : GNUI.container, vec4): GNUI.container
+---@param left number
+---@param top number
 ---@param right number?
 ---@param bottom number?
 function container:setAnchor(left,top,right,bottom)
-   self.Anchor = utils.figureOutVec4(left,top,right,bottom)
+   self.Anchor = utils.figureOutVec4(left,top,right or left,bottom or top)
    self.DIMENSIONS_CHANGED:invoke(self.Dimensions)
    return self
 end

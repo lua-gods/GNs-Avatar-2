@@ -13,7 +13,7 @@ local properties = {
          "chat.type.emote",
          "chat.type.announcement"
       },
-      override = "%s §8:§r %s",
+      override = "%s §8 : §r %s",
       play = {{id="minecraft:entity.item.pickup",pitch=0.6,volume=0.08}}
    },
    {
@@ -37,7 +37,7 @@ local properties = {
       when = {
          "multiplayer.player.joined",
       },
-      override = "%s §ejoined the game",
+      override = "§e%s §ejoined the game",
       play = {{id="minecraft:block.barrel.open",pitch=0.9,volume=1},}
    },
    {

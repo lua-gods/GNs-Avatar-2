@@ -24,6 +24,7 @@ local selected_overlay = gnui.newContainer()
 :setSprite(gnui.newSprite():setTexture(textures["textures.ui"]):setRenderType("TRANSLUCENT_CULL"):setUV(20,16,39,35))
 selected_overlay:setDimensions(1,1,100,100)
 selected_overlay.Part:scale(config.selected_scale,config.selected_scale)
+selected_overlay:setZ(100)
 
 for i = 1, 9, 1 do
    local e = i - 9/2 - 1
@@ -33,13 +34,14 @@ for i = 1, 9, 1 do
    slot_tasks[i] = slot.Part:newItem("item"):displayMode("GUI"):pos(-10,-10,-16)
    hotbar:addChild(slot)
    slot_containers[i] = slot
-   local task = slot.Part:newText("count"):setText("58"):pos(-8,-14,-100):setShadow(true)
-   slot_counts[i] = {task = task}
+   local task = slot.Part:newText("count"):setText(tostring(math.random(1,16))):pos(-20,-12,-100):setShadow(true):setAlignment("RIGHT")
+   slot_counts[i] = {task = task,count = 0}
 end
 
 hotbar:addChild(selected_overlay)
+hotbar:setDimensions(0,20 * -config.unselected_scale)
 
-hotbar:setAnchor(0.5,0.5,0.5,0.5)
+hotbar:setAnchor(0.5,1)
 screen:addChild(hotbar)
 
 
@@ -50,6 +52,17 @@ events.TICK:register(function ()
 
    for i = 1, 9, 1 do
       local item = host:getSlot("hotbar."..(i-1))
+      local item_count = item:getCount()
+      if slot_counts[i].count ~= item_count then
+         if item_count ~= 1 then
+            slot_counts[i].task:setText(tostring(item_count)):setVisible(true)
+         else
+            slot_counts[i].task:setVisible(false)
+         end
+      end
+      if item.id == "minecraft:air" then
+         slot_counts[i].task:setVisible(false)
+      end
       slot_tasks[i]:item(item)
    end
 
@@ -62,7 +75,7 @@ events.TICK:register(function ()
          local item = host:getSlot("hotbar."..(i-1))
          slot_tasks[i]:item(item)
          local slot = slot_containers[i]
-         local h = (i-1 == selected_slot and -10 or 0)
+         local h = (i-1 == selected_slot and -19 * (config.selected_scale - config.unselected_scale) or 0)
          local d = vectors.vec4(o*20,h,20+o*20,20+h)
          local scale = slot.Part:getScale()
          local dim = slot.Dimensions:copy()
