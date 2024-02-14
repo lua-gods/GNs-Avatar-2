@@ -17,6 +17,13 @@ slot_sprite:setRenderType("TRANSLUCENT_CULL")
 
 local slot_tasks = {} --[[@type table<integer,ItemTask>]]
 local slot_containers = {} --[[@type table<integer,GNUI.container>]]
+local slot_counts = {}
+
+
+local selected_overlay = gnui.newContainer()
+:setSprite(gnui.newSprite():setTexture(textures["textures.ui"]):setRenderType("TRANSLUCENT_CULL"):setUV(20,16,39,35))
+selected_overlay:setDimensions(1,1,100,100)
+selected_overlay.Part:scale(config.selected_scale,config.selected_scale)
 
 for i = 1, 9, 1 do
    local e = i - 9/2 - 1
@@ -26,12 +33,18 @@ for i = 1, 9, 1 do
    slot_tasks[i] = slot.Part:newItem("item"):displayMode("GUI"):pos(-10,-10,-16)
    hotbar:addChild(slot)
    slot_containers[i] = slot
+   local task = slot.Part:newText("count"):setText("58"):pos(-8,-14,-100):setShadow(true)
+   slot_counts[i] = {task = task}
 end
+
+hotbar:addChild(selected_overlay)
+
 hotbar:setAnchor(0.5,0.5,0.5,0.5)
 screen:addChild(hotbar)
 
+
 local selected_slot = 0
-local last_selected_slot = 0
+local last_selected_slot = -1
 
 events.TICK:register(function ()
 
@@ -40,7 +53,7 @@ events.TICK:register(function ()
       slot_tasks[i]:item(item)
    end
 
-   local o = 0
+   local o = -9/2 + (config.unselected_scale - config.selected_scale) * 0.5
    selected_slot = player:getNbt().SelectedItemSlot
    if last_selected_slot ~= selected_slot then
       last_selected_slot = selected_slot
@@ -54,6 +67,16 @@ events.TICK:register(function ()
          local scale = slot.Part:getScale()
          local dim = slot.Dimensions:copy()
          if selected_slot == i-1 then
+            local sel_dim = selected_overlay.Dimensions:copy()
+            tween.tweenFunction(0.1,"outQuart",function (y)
+               selected_overlay:setDimensions(
+                  math.lerp(sel_dim.x,d.x,y),
+                  math.lerp(sel_dim.y,d.y,y),
+                  math.lerp(sel_dim.z,d.z,y),
+                  math.lerp(sel_dim.w,d.w,y)
+               )
+            end,nil,"selectedhotbar")
+            
             tween.tweenFunction(0.1,"outBack",function (y)
                slot:setDimensions(
                   math.lerp(dim.x,d.x,y),
