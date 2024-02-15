@@ -6,7 +6,7 @@ local parseChat = require("libraries.chatHandler")
 
 local HISTORY_SIZE = 10
 
-local window = gnui.newContainer():setAnchor(0,0,1,1):setDimensions(0,0,0,-40)
+local window = gnui.newContainer():setAnchor(0,0,1,0):setDimensions(0,0,0,HISTORY_SIZE * 10)
 screen:addChild(window)
 
 local chatline = {}
@@ -51,21 +51,12 @@ events.CHAT_RECEIVE_MESSAGE:register(function (message, json_text)
       end
    end
    tween.tweenFunction(0.2,"inOutCubic",function (y)
-      window:setDimensions(0,0+10-y*10,0,-40+10-y*10)
+      window:setDimensions(0,0,0,HISTORY_SIZE * 10 + 10-y*10)
    end,nil,"chatnewmessage")
    newMessage = newMessage + 1
 end)
 
-local chat_open = false
-
 events.WORLD_RENDER:register(function (delta)
-   local chat = host:isChatOpen()
-   if chat ~= chat_open then
-      window:setVisible(host:isChatOpen())
-      chat_open = host:isChatOpen()
-      if chat_open then
-      end
-   end
    for i = newMessage, 1, -1 do
       if host:getChatMessage(i) then
          local json = parseJson(parseChat(host:getChatMessage(i).json))

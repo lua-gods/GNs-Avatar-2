@@ -78,8 +78,8 @@ end
 
 local function parseChatMessage(json_text)
    local json = type(json_text) == "string" and parseJson(json_text) or json_text
-   if json.with and json.translate then
-      local translation = client.getTranslatedString(json.translate)
+   if json.with then
+      local translation = client.getTranslatedString(json.translate) or "%s"
       local raw_override = false
       local found = false
       for _, query in pairs(properties) do

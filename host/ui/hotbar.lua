@@ -39,7 +39,7 @@ for i = 1, 9, 1 do
 end
 
 hotbar:addChild(selected_overlay)
-hotbar:setDimensions(0,20 * -config.unselected_scale)
+hotbar:setDimensions(0,35 * -config.unselected_scale)
 
 hotbar:setAnchor(0.5,1)
 screen:addChild(hotbar)
@@ -49,7 +49,6 @@ local selected_slot = 0
 local last_selected_slot = -1
 
 events.TICK:register(function ()
-
    for i = 1, 9, 1 do
       local item = host:getSlot("hotbar."..(i-1))
       local item_count = item:getCount()
@@ -115,3 +114,36 @@ events.TICK:register(function ()
       end
    end
 end)
+
+
+
+
+local healthbar = gnui.newContainer():setSprite(gnui.newSprite():setTexture(textures["textures.ui"]):setUV(0,11,2,13):setBorderThickness(1,1,1,1))
+local heath = gnui.newContainer():setSprite(gnui.newSprite():setTexture(textures["textures.ui"]):setUV(0,14,0,14)):setDimensions(1,1,-1,-1)
+local preheath = gnui.newContainer():setSprite(gnui.newSprite():setTexture(textures["textures.ui"]):setUV(1,14,1,14)):setDimensions(1,1,-1,-1)
+local postheath = gnui.newContainer():setSprite(gnui.newSprite():setTexture(textures["textures.ui"]):setUV(2,14,2,14):setRenderType("TRANSLUCENT")):setDimensions(1,1,-1,-1)
+healthbar:setDimensions(-94,-18,0,-11)
+
+local lh = 0
+local ph = 0
+local time_since_damage = 99
+preheath:setAnchor(0,0,0,1)
+events.TICK:register(function ()
+   time_since_damage = time_since_damage+ 1
+   local h = math.ceil(player:getHealth()) / player:getMaxHealth()
+   if h ~= lh then
+      lh = h
+      time_since_damage = 0
+      heath:setAnchor(0,0,h,1)
+   end
+   if time_since_damage > 10 then
+      ph = h
+      preheath:setAnchor(0,0,h,1)
+   end
+   postheath:setAnchor(math.min(h - ph,0) + h,0,h,1):setVisible(h - ph < 0)
+end)
+
+healthbar:addChild(preheath)
+healthbar:addChild(heath)
+healthbar:addChild(postheath)
+hotbar:addChild(healthbar)
