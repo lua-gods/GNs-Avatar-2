@@ -1,3 +1,6 @@
+if client.compareVersions("0.1.3-pre.5+1.20.1-9623a67",client:getFiguraVersion()) < 0 then
+   return
+end
 local tween = require("libraries.GNTweenLib")
 
 ---@class Skull.StorageLabel
