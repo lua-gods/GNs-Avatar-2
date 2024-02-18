@@ -9,31 +9,12 @@ This service aims to aid the creation of custom commands in chat
 
 if not host:isHost() then return end
 
----@alias CommandQuery.argumentType string
----| "INT"
----| "NUMBER"
----| "STRING"
----| "STRINGALL" -- all arguments merged into one big string
----| "XPOS" -- position
----| "YPOS"
----| "ZPOS"
-
----@class CommandQuery
----@field func function
----@field args table<integer,CommandQuery.argumentType|function|string[]>
-
-
+local gnui = require("libraries.gnui")
 local PREFIX = "$" -- every message with this at the start will get canceled from being sent in chat reguardless if one exists or not
 local ANNOUNCE_LAYOUT = '[{"text":"[cmd] ","color":"dark_gray"},{"text":"%s\n","color":"gray"}]'-- replaces %s with the message
 
 local lib = {}
 local commands = {}
-
-for key, dir in pairs(listFiles("cmd")) do
-   local name = dir:match("%.[%s%S]+$"):sub(2,-1)
-   commands[name] = require(dir)
-end
-
 function lib.announce(message)
    printJson(ANNOUNCE_LAYOUT:format(message))
 end
@@ -58,12 +39,10 @@ events.CHAT_SEND_MESSAGE:register(function (message)
       end
       words[#words+1] = word
       host:appendChatHistory(message)
-      for name, query in pairs(commands) do
-         if name == words[1] then
-            local success, result = pcall(query.func,words)
-            if not success then
-               print("§c"..result)
-            end
+      for _, func in pairs(commands) do
+         local success, result = pcall(func,words)
+         if not success then
+            print("§c"..result)
          end
       end
       return ""
@@ -71,78 +50,40 @@ events.CHAT_SEND_MESSAGE:register(function (message)
    return message
 end)
 
-local new_message = 0
-local commanding = false
-events.CHAT_RECEIVE_MESSAGE:register(function (message, json)
-   new_message = new_message + 1
-end)
-
-events.WORLD_RENDER:register(function ()
-   if new_message > 0 then
-      if commanding then
-         local msg = {}
-         for i = 1, new_message+1, 1 do
-            local m = host:getChatMessage(i)
-            if not m then break end
-            msg[i] = m.json
-         end
-         table.insert(msg,1,msg[#msg])
-         msg[#msg] = nil
-         for i = 1, #msg, 1 do
-            host:setChatMessage(i,msg[i])
-         end
-      end
-   end
-   new_message = 0
-end)
 
 -- makes chat yellow to indicate its not gonna be sent in chat.
 
-local function update(text)
-   text = text:sub(2,-1)
-   local compose = {}
-   for key, value in pairs(commands) do
-      if (key):find(text) then
-         compose[#compose+1] = {text = key.."\n"}
-      end
-   end
-   if #compose > 0 then
-      host:setChatMessage(1,toJson(compose))
-   else
-      host:setChatMessage(1," ")
-   end
-end
-
-local ltext = ""
+local commanding = false
+local last_text = ""
 events.WORLD_TICK:register(function ()
    local text = host:getChatText()
    if text and text:sub(1,#PREFIX) == PREFIX then
       if not commanding then
-         host:setChatColor(1,1,0)
          commanding = true
-         printJson('{"text":" "}')
-         ltext = ""
-         new_message = -1
+         host:setChatColor(1,1,0)
+      end
+      if last_text ~= text then
+         last_text = text
       end
    else
       if commanding then
          host:setChatColor(1,1,1)
-         host:setChatMessage(1+new_message,nil)
          commanding = false
-      end
-   end
-   if ltext ~= text then
-      if commanding and new_message == 0 then
-         ltext = text
-         update(text)
       end
    end
 end)
 
+local e = 1
+for i = 1, 64, 1 do
+   e = e * 0.9
+   local minute = 20 * e
+   print(i,math.floor(minute)..":"..math.floor((minute * 60) % 60))
+end
+
 ---Registers a command that will part take in checking if the message contains the words to trigger it.
 ---@param func fun(words : table<any,string>)
 function lib.register(func)
-   --commands[#commands+1] = func
+   commands[#commands+1] = func
    return #commands
 end
 
