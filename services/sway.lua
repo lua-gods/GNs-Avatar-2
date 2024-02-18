@@ -1,0 +1,13 @@
+--events.WORLD_RENDER:register(function (delta)
+--   if player:isLoaded() then
+--      local c = client:getSystemTime() / 1000
+--      local r = player:getRot()
+--      local mat = matrices.mat4(
+--         vectors.vec4(1,0,0,0),
+--         vectors.vec4(0,1,0,0),
+--         vectors.vec4(0,math.tan(-math.rad(r.x)),1,0),
+--         vectors.vec4(0,0,0,1)
+--      )
+--      renderer:setCameraMatrix(mat):setCameraRot(0,r.y,0)
+--   end
+--end)
