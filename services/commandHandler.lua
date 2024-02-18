@@ -73,13 +73,6 @@ events.WORLD_TICK:register(function ()
    end
 end)
 
-local e = 1
-for i = 1, 64, 1 do
-   e = e * 0.9
-   local minute = 20 * e
-   print(i,math.floor(minute)..":"..math.floor((minute * 60) % 60))
-end
-
 ---Registers a command that will part take in checking if the message contains the words to trigger it.
 ---@param func fun(words : table<any,string>)
 function lib.register(func)
