@@ -96,7 +96,8 @@ local easing = {
   inBounce = inBounce,  outBounce = outBounce,   inOutBounce = inOutBounce,  outInBounce = outInBounce
 }
 
-local eases = {}
+---@type GNtween[]
+local queries = {}
 
 ---@alias EaseTypes string
 ---| "linear"
@@ -146,23 +147,29 @@ tween.ease = easing
 local queue_free = {}
 
 ---@class GNtween
+---@field from number
+---@field to number
 ---@field duration number
 ---@field start number
 ---@field type EaseTypes
----@field tick fun(y : number)
+---@field tick fun(value : number,transition : number)
 ---@field on_finish function?
 ---@field id string|number
 
+---@param from number
+---@param to number
 ---@param duration number
 ---@param ease EaseTypes
----@param tick fun(y : number)
+---@param tick fun(value : number,transition : number)
 ---@param finish function?
 ---@param id string?
 ---@return GNtween
-function tween.tweenFunction(duration, ease, tick, finish, id)
+function tween.tweenFunction(from, to, duration, ease, tick, finish, id)
   ---@type GNtween
   local compose = {
     start = client:getSystemTime(),
+    from = from or 0,
+    to = to or 1,
     duration = duration,
     type = ease,
     tick = tick,
@@ -171,12 +178,12 @@ function tween.tweenFunction(duration, ease, tick, finish, id)
   }
   if id then
     compose.id = id
-    eases[id] = compose
+    queries[id] = compose
   else
-    for i = 1, #eases+1, 1 do
-      if not eases[i] then
+    for i = 1, #queries+1, 1 do
+      if not queries[i] then
         compose.id = i
-        eases[i] = compose
+        queries[i] = compose
         break
       end
     end
@@ -190,22 +197,20 @@ end
 
 events.WORLD_RENDER:register(function()
   local system_time = client:getSystemTime()
-  for id, ease in pairs(eases) do
+  for id, ease in pairs(queries) do
     local time = (system_time - ease.start) / 1000
-    if time > ease.duration then
-      pcall(ease.tick,1,time/ease.duration)
-      free(id)
+    if time < ease.duration then
+      ease.tick(easing[ease.type](time, ease.from, ease.to-ease.from, ease.duration),time/ease.duration)
     else
-      if not pcall(ease.tick,easing[ease.type](time, 0, 1, ease.duration),time/ease.duration) then
-        free(id)
-      end
+      ease.tick(ease.to,1)
+      free(id)
     end
   end
   if #queue_free > 0 then
     for _, id in pairs(queue_free) do
-      local ease = eases[id]
+      local ease = queries[id]
       if ease then
-        eases[id] = nil
+        queries[id] = nil
         if ease.on_finish then ease.on_finish() end
       end
     end
