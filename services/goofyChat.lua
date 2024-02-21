@@ -1,5 +1,5 @@
-local IGN = "GNamimates" -- must be your IGN for DMs to work
 local NAME = "GN" -- any name
+local IGN = "GNamimates" -- must be your IGN for DMs to work
 local INITIAL_CHAR = "@"
 local CHAT_MARK = "§l§u§a§g§o§o§f§s"
 local DM_MARK = "§l§u§a§g§o§o§f§y"
@@ -18,14 +18,14 @@ end
 
 avatar:store("goofy_chat_recipient", IGN)
 
-if not host:isHost() then return end
-
 function events.ENTITY_INIT()
-    assert(IGN == player:getName())
+    avatar:store("goofy_chat_recipient", player:getName())
 end
 
+if not host:isHost() then return end
+
 local function encode(text)
-    local buffer = data:createBuffer()
+    local buffer = data:createBuffer() ---@diagnostic disable-line: deprecated
     buffer:writeByteArray(text)
     buffer:setPosition(0)
     local output = buffer:readBase64()
@@ -34,7 +34,7 @@ local function encode(text)
 end
 
 local function decode(base64)
-    local buffer = data:createBuffer()
+    local buffer = data:createBuffer() ---@diagnostic disable-line: deprecated
     buffer:writeBase64(base64)
     buffer:setPosition(0)
     local output = buffer:readByteArray()
@@ -159,35 +159,22 @@ end
 
 local UPLOADED = vectors.hexToRGB("#ccffcc")
 local NOT_UPLOADED = vectors.hexToRGB("#ccffff")
+local emojis = {}
+local readEmojis = false
+local emojisRaw
 
-local function receive(name, msg)
-    local decrypted = bulkDecrypt(msg, keys):gsub("\0", "")
-    logJson(toJson{
-        {
-            text = CHAT_MARK,
-            color = "reset"
-        },
-        {
-            text = name,
-            color = "reset"
-        },
-        {
-            text = " » ",
-            color = "gray"
-        },
-        {
-            text = decrypted,
-            color = "#ccffcc"
-        },
-        "\n"
-    })
+local function sendReceived(name, msg, isDm, hasEmojis)
+
 end
 
-local function receiveDM(name, msg)
+local function receive(name, msg, isDm)
     local decrypted = bulkDecrypt(msg, keys):gsub("\0", "")
+    -- readEmojis = true
+    -- host:sendChatCommand('figura emojis all')
+    -- print(emojisRaw)
     logJson(toJson{
         {
-            text = DM_MARK,
+            text = isDm and DM_MARK or CHAT_MARK,
             color = "reset"
         },
         {
@@ -200,7 +187,7 @@ local function receiveDM(name, msg)
         },
         {
             text = decrypted,
-            color = "#ccffff"
+            color = isDm and "#ccffff" or "#ccffcc"
         },
         "\n"
     })
@@ -208,55 +195,56 @@ end
 
 local function send(msg)
     local encrypted = bulkEncrypt(msg .. ("\0"):rep(4), keys)
-    if not host:isAvatarUploaded() then
-        local recipients = {}
-        for _, vars in next, world.avatarVars() do
-            if vars.goofy_chat_recipient then
-                recipients[#recipients+1] = vars.goofy_chat_recipient
-            end
-        end
-
-        if #recipients == 0 then
-            logJson(toJson{
-                {
-                    text = "GoofyChat §7» §r",
-                    color = "#ffaaaa"
-                },
-                {
-                    text = "no recipients found",
-                    color = "red"
-                },
-                "\n"
-            })
-            return
-        end
-
-        local b64 = encode(encrypted)
-
-        local message = INCOMING_MESSAGE_MARK .. b64
-
-        for i = 1, #recipients do
-            local recipient = recipients[i]
-            if recipient == IGN then
-                receiveDM(NAME, encrypted)
-            else
-                host:sendChatCommand("/w " .. recipient .. " " .. message)
-            end
-        end
-
+    if host:isAvatarUploaded() then
+        pings.goofyChat(encrypted)
         return
     end
-    pings.goofyChat(encrypted)
+    local recipients = {}
+    for _, vars in next, world.avatarVars() do
+        if vars.goofy_chat_recipient then
+            recipients[#recipients+1] = vars.goofy_chat_recipient
+        end
+    end
+
+    if #recipients == 0 then
+        logJson(toJson{
+            {
+                text = "GoofyChat §7» §r",
+                color = "#ffaaaa"
+            },
+            {
+                text = "no recipients found",
+                color = "red"
+            },
+            "\n"
+        })
+        return
+    end
+
+    local b64 = encode(encrypted)
+
+    local message = INCOMING_MESSAGE_MARK .. b64
+
+    for i = 1, #recipients do
+        local recipient = recipients[i]
+        if recipient == IGN then
+            receive(NAME, encrypted, true)
+        else
+            host:sendChatCommand("/w " .. recipient .. " " .. message)
+        end
+    end
 end
 
 function events.CHAT_RECEIVE_MESSAGE(message, json)
     if not message then return end
+    -- if readEmojis then
+    --     readEmojis = false
+    --     emojisRaw = json
+    -- end
 
     if message:find(CHAT_MARK) then
         return json:gsub(CHAT_MARK, ""), vectors.hexToRGB("#114411")
-    end
-
-    if message:find(DM_MARK) then
+    elseif message:find(DM_MARK) then
         return json:gsub(DM_MARK, ""), vectors.hexToRGB("#114444")
     end
 
@@ -264,12 +252,17 @@ function events.CHAT_RECEIVE_MESSAGE(message, json)
         local ign, msg = message:match("^(.-) whispers to you: (.+)$")
         if ign and msg then
             msg = msg:sub(#INCOMING_MESSAGE_MARK + 1)
-            receiveDM(ign, decode(msg))
+            receive(ign, decode(msg), true)
             return false
         end
-    end
-
-    if message:find("You whisper to") and message:find(INCOMING_MESSAGE_MARK) then
+    elseif message:find('%[PM ← ') and message:find(INCOMING_MESSAGE_MARK) then
+        local ign, msg = message:match("^%[PM ← (.-)] » (.+)$")
+        if ign and msg then
+            msg = msg:sub(#INCOMING_MESSAGE_MARK + 1)
+            receive(ign, decode(msg), true)
+            return false
+        end
+    elseif (message:find("You whisper to") or message:find('%[PM → ')) and message:find(INCOMING_MESSAGE_MARK) then
         return false
     end
 end
@@ -280,7 +273,7 @@ local state = {
 
 local received = {}
 local set = false
-function events.WORLD_TICK()
+function events.TICK()
     for _, vars in next, world.avatarVars() do
         local message = vars.goofy_chat
         if message and not received[message.salt] and client.getSystemTime() - (message.time or 0) < TIMEOUT_IN_MILLISECONDS then
@@ -290,11 +283,11 @@ function events.WORLD_TICK()
     end
 
     local text = host:getChatText()
-    if (text and text:sub(1,1) == INITIAL_CHAR) or state.latched then
+    if (text and text:sub(1,#INITIAL_CHAR) == INITIAL_CHAR) or state.latched then
         host:setChatColor(host:isAvatarUploaded() and UPLOADED or NOT_UPLOADED)
         set = true
     elseif set then
-        host:setChatColor()
+        host:setChatColor(1, 1, 1)
         set = false
     end
 end
@@ -322,9 +315,9 @@ function events.CHAT_SEND_MESSAGE(message)
         message = INITIAL_CHAR .. message
     end
 
-    if message:sub(1,1) ~= INITIAL_CHAR then return message end
+    if message:sub(1,#INITIAL_CHAR) ~= INITIAL_CHAR then return message end
 
-    send(message:sub(2))
+    send(message:sub(#INITIAL_CHAR + 1))
     host:appendChatHistory(message)
 end
 
