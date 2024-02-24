@@ -43,7 +43,7 @@ function animationStateMachine:setAnimation(animation,force)
       self.current_animation = animation
       local a,b = self.current_animation,self.last_animation
       if a then a:setBlend(0):stop():play() end
-      tween.tweenFunction(self.blend_time,"linear",function (t)
+      tween.tweenFunction(0,1,self.blend_time,"linear",function (t)
          if a then a:setBlend(t) end
          if b then b:setBlend(1-t) end
       end,function ()

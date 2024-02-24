@@ -2,6 +2,14 @@ if not host:isHost() then return end
 
 local chpos,chrot
 
+local horn_proxy = {
+   feet = "73ede7e6-8404-44c0-a692-18f22cf17e66", -- gd defeat
+   hoho = "1fc12595-38f7-48fe-b9f1-129a04e2d783", -- gd flashbang
+   ["fire in the hole"] = "c15f44e1-5e85-46c9-a44d-50416ec0effc",
+   ["spongebob dramatic queue"] = "3b672aa8-b850-4bbc-897c-8448c032b811",
+   rah = "781874b1-d434-4586-b6be-0334b2ba50b5",
+}
+
 local command = require("services.commandHandler")
 command.register(function (words)
    if words[1] == "calc" or words[1] == "solve" or words[1] == "eval" then -- solve
@@ -47,5 +55,17 @@ command.register(function (words)
       local pos = player:getPos():floor()
       host:appendChatHistory(pos.x.." "..pos.y.." "..pos.z)
       command.announce("pos: "..pos.x.." "..pos.y.." "..pos.z)
+   elseif words[1] == "horn" and words[2] then
+      table.remove(words,1)
+      local final = table.concat(words," ")
+      if horn_proxy[final] then
+         if player:getHeldItem().id == "minecraft:goat_horn" then
+            host:sendChatCommand("/audioplayer goathorn "..horn_proxy[final])
+         else
+            command.announce("hold a goat horn")
+         end
+      else
+         command.announce("no proxy for that key")
+      end
    end
 end)

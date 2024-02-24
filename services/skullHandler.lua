@@ -30,7 +30,7 @@ local inviskull = models:newPart("inviskull","SKULL"):newBlock("placeholder"):bl
 
 
 local config = {
-   expire = 40, -- seconds
+   expire = 1, -- seconds
 }
 
 local api = {
@@ -138,6 +138,7 @@ events.WORLD_TICK:register(function()
    for id, skull in pairs(skulls) do
       if not (world.getBlockState(skull.pos).id:find("player") and systime - skull.last_seen < config.expire) then
          api.EXIT:invoke(skulls[id])
+         print(id, "expired")
          worldPart:removeChild(skull.model_block)
          skulls[id] = nil
       end

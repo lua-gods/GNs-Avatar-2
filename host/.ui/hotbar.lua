@@ -80,7 +80,7 @@ events.TICK:register(function ()
          local dim = slot.Dimensions:copy()
          if selected_slot == i-1 then
             local sel_dim = selected_overlay.Dimensions:copy()
-            tween.tweenFunction(0.1,"outQuart",function (y)
+            tween.tweenFunction(0,1,0.1,"outQuart",function (y)
                selected_overlay:setDimensions(
                   math.lerp(sel_dim.x,d.x,y),
                   math.lerp(sel_dim.y,d.y,y),
@@ -89,7 +89,7 @@ events.TICK:register(function ()
                )
             end,nil,"selectedhotbar")
             
-            tween.tweenFunction(0.1,"outBack",function (y)
+            tween.tweenFunction(0,1,0.1,"outBack",function (y)
                slot:setDimensions(
                   math.lerp(dim.x,d.x,y),
                   math.lerp(dim.y,d.y,y),
@@ -101,7 +101,7 @@ events.TICK:register(function ()
             o = o + config.selected_scale
          else
             o = o + config.unselected_scale
-            tween.tweenFunction(0.1,"outBack",function (y)
+            tween.tweenFunction(0,1,0.1,"outBack",function (y)
                slot:setDimensions(
                   math.lerp(dim.x,d.x,y),
                   math.lerp(dim.y,d.y,y),

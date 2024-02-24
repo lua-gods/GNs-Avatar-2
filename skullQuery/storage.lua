@@ -80,34 +80,36 @@ local function new(skull,events)
          -- sounds:playSound("minecraft:block.wooden_button.click_off",vectors.vec3(selected.x,selected.y,0)+PROJECTOR_ORIGIN,1,1)
          -- text
          selected.title:setVisible(true)
-         tween.tweenFunction(0.25,"outBack",function(x)
+         tween.tweenFunction(0,1,0.25,"outBack",function(x)
             local r = math.lerp(HOVER_SIZE.x,HOVER_SIZE.y,x)*s
             selected.icon:setScale(r,r,r):setPos(0,x*0.1,0)
             selected.t = x
          end,nil,pos:toString()..'icon')
          -- icon
-         tween.tweenFunction(0.25,"outCubic",function(x)
+         tween.tweenFunction(0,1,0.25,"outCubic",function(x)
             local r, r2 = x * s * 0.3, (x * 0.5 + 0.5) * s * 0.3
             selected.title:setScale(r2, r, r2):setPos(0,0-0.25 + x * 0.1,-0.1)
          end,nil,pos:toString()..'text')
       end
-      if lpos then
+      if lpos and labels[lpos:toString()] then
          local lselected = labels[lpos:toString()]
          -- icon
-         tween.tweenFunction(0.5,"outBack",function(x)
+         tween.tweenFunction(0,1,0.5,"outBack",function(x)
             local r = math.lerp(HOVER_SIZE.x,HOVER_SIZE.y,1-x)*s
             lselected.icon:setScale(r,r,r):setPos(0,(1-x)*0.1,0)
             lselected.t = 1-x
          end,nil,lpos:toString()..'icon')
          -- text
-         tween.tweenFunction(0.25,"outCubic",function(x)
-            local r, r2 = (1-x) * s * 0.3, ((1-x) * 0.5 + 0.5) * s * 0.3
-            lselected.title:setScale(r2, r, r2):setPos(0,0-0.25 + (1-x) * 0.1,-0.1)
-         end,function ()
-            if lselected then
-               lselected.title:setVisible(false)
-            end
-         end,lpos:toString()..'text')
+         if lselected.title then
+            tween.tweenFunction(0,1,0.25,"outCubic",function(x)
+               local r, r2 = (1-x) * s * 0.3, ((1-x) * 0.5 + 0.5) * s * 0.3
+               lselected.title:setScale(r2, r, r2):setPos(0,0-0.25 + (1-x) * 0.1,-0.1)
+            end,function ()
+               if lselected then
+                  lselected.title:setVisible(false)
+               end
+            end,lpos:toString()..'text')
+         end
       end
    end
 
