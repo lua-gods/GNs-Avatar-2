@@ -1,7 +1,8 @@
 local model = models.player
 local was_close = false
 events.RENDER:register(function (dt,ctx)
-   if ctx == "RENDER" then
+   if ctx == "RENDER" and player:isLoaded() then
+      local prot = player:getRot()
       local ppos = player:getPos()
       local cpos = client:getCameraPos()
       local distance = cpos-vectors.vec3(ppos.x,math.clamp(cpos.y,ppos.y,ppos.y+2),ppos.z)
@@ -23,8 +24,15 @@ events.RENDER:register(function (dt,ctx)
             model:setPrimaryRenderType("CUTOUT_CULL"):setVisible(true)
          end
       end
+      local mat = matrices.mat3()
+      local crot = client:getCameraPos()-player:getPos()
+      mat
+      :rotateZ(32)
+      :translate(0,-crot.y + math.atan2(crot.z,crot.x) + prot.x / 90)
+      models.player.base.Torso.Head.Glass:setUVMatrix(mat)
    end
 end)
+models.player.base.Torso.Head.Glass:setPrimaryRenderType("EYES"):setColor(0.4,0.4,0.4)
 
 if host:isHost() then
    events.RENDER:register(function (delta, context)
@@ -33,4 +41,3 @@ if host:isHost() then
       end
    end)
 end
-   

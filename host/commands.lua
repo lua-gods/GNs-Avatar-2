@@ -6,8 +6,9 @@ local horn_proxy = {
    feet = "73ede7e6-8404-44c0-a692-18f22cf17e66", -- gd defeat
    hoho = "1fc12595-38f7-48fe-b9f1-129a04e2d783", -- gd flashbang
    ["fire in the hole"] = "c15f44e1-5e85-46c9-a44d-50416ec0effc",
-   ["spongebob dramatic queue"] = "3b672aa8-b850-4bbc-897c-8448c032b811",
+   ["spongebob dramatic queue"] = "c6447916-520e-4b2f-82ef-3c4a0c694276",
    rah = "781874b1-d434-4586-b6be-0334b2ba50b5",
+   ["taco bell"] = "75fe2138-8de0-4927-8dc5-6cdebb7feb16",
 }
 
 local command = require("services.commandHandler")
