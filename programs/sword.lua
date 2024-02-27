@@ -67,7 +67,7 @@ events.WORLD_RENDER:register(function (dt)
    if player:isLoaded() then
       local meta = models.sword.metadata:getAnimPos()
       local mat = models.sword.Roll.Pole.Handle:partToWorldMatrix()
-      sword_trail:setLeads(mat:apply(0,0,1),mat:apply(0,0,-24),meta.y)
+      sword_trail:setLeads(mat:apply(0,0,1),mat:apply(0,0,-25),meta.x)
 
       local r = player:getBodyYaw(dt)
       local sneak = player:isSneaking()
@@ -79,7 +79,7 @@ events.WORLD_RENDER:register(function (dt)
    end
 end)
 
-events.ITEM_RENDER:register(function (item, mode, pos, rot, scale, lefthanded)
+events.ITEM_RENDER:register(function ()
    if is_holding_sword then
       return sword.Item
    end

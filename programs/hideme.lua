@@ -24,12 +24,8 @@ events.RENDER:register(function (dt,ctx)
             model:setPrimaryRenderType("CUTOUT_CULL"):setVisible(true)
          end
       end
-      local mat = matrices.mat3()
       local crot = client:getCameraPos()-player:getPos()
-      mat
-      :rotateZ(32)
-      :translate(0,-crot.y + math.atan2(crot.z,crot.x) + prot.x / 90)
-      models.player.base.Torso.Head.Glass:setUVMatrix(mat)
+      models.player.base.Torso.Head.Glass:setUV(0, math.atan2(crot.z,crot.x) + prot.x / 90)
    end
 end)
 models.player.base.Torso.Head.Glass:setPrimaryRenderType("EYES"):setColor(0.4,0.4,0.4)
