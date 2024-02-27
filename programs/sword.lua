@@ -93,7 +93,7 @@ events.RENDER:register(function (delta, context)
          sword:setOpacity(weary):setVisible(true)
       end
    else
-      sword:setVisible(true):setOpacity(1)
+      sword:setVisible(context == "RENDER"):setOpacity(1)
    end
    vanilla_model.RIGHT_ARM:setOffsetRot(is_holding_sword and -15 or 0,0,0)
    local meta = models.sword.metadata:getAnimPos()
