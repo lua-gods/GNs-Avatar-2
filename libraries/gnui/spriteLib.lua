@@ -41,7 +41,7 @@ function sprite.new(obj)
    new.Scale = new.Scale or 1
    new.DIMENSIONS_CHANGED = eventLib.new()
    new.RenderTasks = {}
-   new.RenderType = new.RenderType or "EMISSIVE_SOLID"
+   new.RenderType = new.RenderType or "CUTOUT_EMISSIVE_SOLID"
    new.BorderThickness = new.BorderThickness or vectors.vec4(0,0,0,0)
    new.BORDER_THICKNESS_CHANGED = eventLib.new()
    new.ExcludeMiddle = new.ExcludeMiddle or false
@@ -53,11 +53,6 @@ function sprite.new(obj)
    
    new.TEXTURE_CHANGED:register(function ()
       new:_updateRenderTasks()
-   end,core.internal_events_name)
-
-   new.MODELPART_CHANGED:register(function ()
-      new:_deleteRenderTasks()
-      new:_buildRenderTasks()
    end,core.internal_events_name)
 
    new.BORDER_THICKNESS_CHANGED:register(function ()
@@ -76,7 +71,11 @@ end
 ---@param part ModelPart
 ---@return Sprite
 function sprite:setModelpart(part)
+   if self.Modelpart then
+      self.Modelpart:_deleteRenderTasks()
+   end
    self.Modelpart = part
+   self:_buildRenderTasks()
    self.MODELPART_CHANGED:invoke(self.Modelpart)
    return self
 end
@@ -189,6 +188,7 @@ function sprite:setBorderThickness(left,top,right,bottom)
 end
 
 ---Sets the UV region of the sprite.
+--- if x2 and y2 are missing, they will use x and y as a substitute
 ---@overload fun(self : Sprite, vec4 : Vector4): Sprite
 ---@param x number
 ---@param y number
@@ -196,7 +196,7 @@ end
 ---@param y2 number
 ---@return Sprite
 function sprite:setUV(x,y,x2,y2)
-   self.UV = utils.figureOutVec4(x,y,x2,y2)
+   self.UV = utils.figureOutVec4(x,y,x2 or x,y2 or y)
    self.BORDER_THICKNESS_CHANGED:invoke(self.BorderThickness)
    return self
 end
@@ -219,7 +219,7 @@ function sprite:excludeMiddle(toggle)
    return self
 end
 
-function sprite:duplicate()
+function sprite:copy()
    local copy = {}
    for key, value in pairs(self) do
       if type(value):find("Vector") then

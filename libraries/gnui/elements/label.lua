@@ -77,17 +77,24 @@ function label.new(preset)
       if not new.Parent then
          new:_deleteRenderTasks()
       end
+      new.TEXT_CHANGED:invoke(new.Text)
    end,core.internal_events_name.."_txt")
    setmetatable(new,label)
    return new
 end
 
-local overflow = require("libraries.debug.overflowPrint")
-
----@param text string
+---@param text string|table
 ---@return GNUI.Label
 function label:setText(text)
-   self.Text = text or ""
+   local t = type(text)
+   if t == "table" then
+      if not text[1] then -- convert to array
+         text = {text}
+      end
+      self.Text = text
+   else
+      self.Text = text or ""
+   end
    self.TEXT_CHANGED:invoke(self.Text)
    return self
 end
@@ -132,7 +139,7 @@ local function flattenComponents(json)
    local lines = {}
    local content = {}
    local content_length = 0
-   local l,o = 0,0
+   local l = 0
    if json.extra then
       json = {json}
    end
@@ -141,31 +148,31 @@ local function flattenComponents(json)
          local end_line = select(2,string.gsub(comp.text,"\n",""))
          local i = 0
          for line in string.gmatch(comp.text,"[^\n]*") do -- separate each line
+            content = {}
             content_length = 0
             for word in string.gmatch(line,"[%s]*[%S]+[%s]*") do -- split words
+               i = i + 1
                local prop = {}
                -- only append used data in labels
                prop.font = comp.font
                prop.bold = comp.bold
                prop.italic = comp.italic
                prop.color = comp.color
-               l,o = 0,0
+               l = 0
                prop.text = word
                if prop.font then
                   l = client.getTextWidth(toJson(prop))
                else
-                  l,o = getlen(prop)
+                  l = getlen(prop)
                end
                prop.text = word
                prop.length = l
-               prop.offset = o
                content_length = content_length + l
                content[#content+1] = prop
             end
             if i ~= end_line then -- last line
                lines[#lines+1] = {content = content,length = content_length}
             end
-            i = i + 1
          end
       end
       if comp.extra then
@@ -177,7 +184,6 @@ local function flattenComponents(json)
          end
       end
    end
-   lines[#lines+1] = {content = content,length = content_length}
    return lines
 end
 
@@ -187,7 +193,6 @@ local function parseText(from)
    local t = type(from)
    if t == "table" then
       lines = flattenComponents(from)
-      
    elseif t == "string" then
       for line in string.gmatch(from,"[^\n]*") do -- separate each line
          local compose = {}
@@ -234,20 +239,21 @@ end
 function label:_updateRenderTasks()
    local i = 0
    local size = self.ContainmentRect.xy - self.ContainmentRect.zw -- inverted for optimization
-   local pos = vectors.vec2()
+   local pos = vectors.vec2(0,self.LineHeight)
    if #self.TextData == 0 then return end
-   local longest = 0
-   for key, lines in pairs(self.TextData) do
-      longest = math.max(lines.length,longest)
-   end
+   local offset = vectors.vec2(0,(size.y / self.FontScale)  * self.Align.y + #self.TextData * self.LineHeight * self.Align.y)
    for _, line in pairs(self.TextData) do
+      pos.x = 0
+      pos.y = pos.y - self.LineHeight
+      offset.x = (size.x / self.FontScale) * self.Align.x + line.length * self.Align.x
       for c, component in pairs(line.content) do
          i = i + 1
          local task = self.RenderTasks[i]
-         local offset = size.x * self.Align.x + line.length * self.Align.x / 4 + 71 * self.Align.x -- why do I have to do this... TODO: know what tf this means
-         if pos.x - component.length > size.x then
+         if (pos.x - component.length > size.x / self.FontScale) or c == 1 then
             if self._TextChanged then
-               task:setPos(pos.xy_:add(offset,0))
+               task
+               :setPos(pos.xy_:add(offset.x,offset.y) * self.FontScale)
+               :setScale(self.FontScale,self.FontScale,self.FontScale)
             end
          else
             task:setVisible(false)
