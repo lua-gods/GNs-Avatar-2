@@ -46,6 +46,7 @@ local function new(gnui,screen,events,skull)
       if next > #memory then
          return
       end
+      lock = true
       buttons[memory[next]](true)
       if next + 1 > #memory then
          lock = false
@@ -62,31 +63,34 @@ local function new(gnui,screen,events,skull)
 
    local function checkwin()
       
-      next = 0
-      loop_cooldown = true
-
+      
       local win = true
       for key, value in pairs(guess) do
          if value ~= memory[key] then
             win = false
          end
       end
-      guess = {}
       if win then
-         sound("minecraft:block.note_block.harp",0.5)
-         sound("minecraft:block.note_block.harp",0.75)
-         sound("minecraft:block.note_block.harp",1)
-         sound("minecraft:block.note_block.harp",1.25)
-         lock = false
-         for key, press in pairs(buttons) do
-            press(true,true)
+         if #guess == #memory then
+            guess = {}
+            next = 0
+            loop_cooldown = true
+            sound("minecraft:block.note_block.harp",0.5)
+            sound("minecraft:block.note_block.harp",0.75)
+            sound("minecraft:block.note_block.harp",1)
+            sound("minecraft:block.note_block.harp",1.25)
+            lock = false
+            for key, press in pairs(buttons) do
+               press(true,true)
+            end
+            lock = true
+            showcase(true)
          end
-         lock = true
-         showcase(true)
       else
          level = 0
          playing = false
          memory = {}
+         guess = {}
          sound("minecraft:block.note_block.harp",0.25)
          sound("minecraft:block.bell.use",0.5)
          sound("minecraft:block.note_block.harp",0.5)
@@ -161,7 +165,7 @@ local function new(gnui,screen,events,skull)
          end
          if not loop_cooldown then
             if level < 30 then
-               if time % 20 == 10 or time % 20 == 20 then
+               if time % 20 == 10 or time % 20 == 0 then
                   nexty()
                end
                if (time % 20 == 5 or time % 20 == 15) and level >= 10 then
@@ -177,7 +181,7 @@ local function new(gnui,screen,events,skull)
             loop_cooldown = false
          end
          if time % 20 == 0 then
-            if #guess >= #memory then
+            if level ~= 0 then
                checkwin()
             end
          end
