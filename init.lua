@@ -23,6 +23,26 @@ for key, script in pairs(listFiles("programs",true)) do
    require(script)
 end
 
+local t = require("libraries.tableUtils")
+
+for key, metatable in pairs(figuraMetatables) do
+   figuraMetatables[key] = t.makeReadOnly(metatable,type(metatable) == "table" and getmetatable(metatable) or nil)
+end
+
+
+local function loopTable(table,i)
+   table = t.makeReadOnly(table,getmetatable(table))
+   if i > 50 then
+      return
+   end
+   for key, value in pairs(table) do
+      if type(value) == "table" then
+         loopTable(value,i+1)
+      end
+   end
+end
+loopTable(_G, 1)
+
 if not host:isHost() then return end
 -- hosts are just programs but only runs on the host
 for key, script in pairs(listFiles("host",true)) do
