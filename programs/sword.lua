@@ -67,7 +67,7 @@ events.WORLD_RENDER:register(function (dt)
    if player:isLoaded() then
       local meta = models.sword.metadata:getAnimPos()
       local mat = models.sword.Roll.Pole.Handle:partToWorldMatrix()
-      sword_trail:setLeads(mat:apply(0,0,1),mat:apply(0,0,-25),meta.x)
+      sword_trail:setLeads (mat:apply(0,0,1),mat:apply(0,0,-25),meta.x)
 
       local r = player:getBodyYaw(dt)
       local sneak = player:isSneaking()
