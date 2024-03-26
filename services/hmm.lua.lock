@@ -1,0 +1,73 @@
+local origin = vectors.vec3(8180928, 65, 8182000)
+
+local range = vectors.vec2(128,128)
+
+local map = textures:newTexture("map",range.x,range.y)
+
+local gnui = require("libraries.gnui")
+local screen = require("services.screenui")
+
+local display = gnui.newContainer()
+display:setSprite(gnui.newSprite():setTexture(map))
+
+display:setDimensions(-128,0+32,0,128+32)
+display:setAnchor(1,0)
+
+screen:addChild(display)
+
+local bhl,bhu = world.getBuildHeight()
+
+local division = 2
+local x = -1
+local z = 0
+events.WORLD_TICK:register(function ()
+   for i = 1, 100, 1 do
+      if avatar:getCurrentInstructions() > 50000 then
+         break
+      end
+      x = x + 1
+      if x >= division then
+         x = 0
+         z = z + 1
+         if z >= division then
+            z = 0
+            division = division * 2
+            --map:fill(0,0,range.x,range.y,vectors.vec3())
+         end
+      end
+      if x % 2 == 1 or z % 2 == 1 or division == 2 then
+         local dx = range.x / division
+         local dz = range.y / division
+   
+         local y = world.getHeight(
+            x * dx + origin.x,
+            z * dz + origin.z,
+            "WORLD_SURFACE")
+         local p = vectors.vec3(
+            x * dx + origin.x,
+            y-1,
+            z * dz + origin.z)
+         
+         --local p = vectors.vec3(x+origin.x,y-1,z+origin.z)
+         --local g = math.map(y,bhl,bhu,0,1)
+         --map:setPixel(x,z,vectors.vec4(g,g,g,1))
+         local b = world.getBlockState(
+            x * dx + origin.x,
+            y-1,
+            z * dz + origin.z)
+         --local biom = world.getBiome(p):getGrassColor()
+         map:fill(
+            x * dx,
+            z * dz,
+            dx,
+            dz,
+            b:getMapColor())
+   
+   
+         map:update()
+         if division > 128 then
+            events.WORLD_TICK:remove("t")
+         end
+      end
+   end
+end,"t")
