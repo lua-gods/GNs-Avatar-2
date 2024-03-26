@@ -3,7 +3,7 @@ if not host:isHost() then return end
 local gnui = require("libraries.gnui")
 local screen = require("services.screenui")
 local tween = require("libraries.GNTweenLib")
-local eventLib = require("libraries.eventHandler")
+local eventLib = require("libraries.eventLib")
 
 local conf = {
    edge_select_size = 10,

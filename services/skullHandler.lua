@@ -23,7 +23,7 @@ instead of individually rendering each one,saving performance.
 
 ---@type table<any,WorldSkull>
 local skulls = {}
-local eventLib = require("libraries.eventHandler")
+local eventLib = require("libraries.eventLib")
 
 local worldPart = models:newPart("worldPart","SKULL")
 local inviskull = models:newPart("inviskull","SKULL"):newBlock("placeholder"):block("dirt"):scale(0,0,0)

@@ -2,10 +2,10 @@ local skull_handler = require("services.skullHandler")
 local eventLib = require("libraries.eventLib")
 
 ---@class SkullEvents
----@field INIT EventLib
----@field TICK EventLib
----@field FRAME EventLib
----@field EXIT EventLib
+---@field INIT eventLib
+---@field TICK eventLib
+---@field FRAME eventLib
+---@field EXIT eventLib
 
 local queries = listFiles("skullQuery")
 local last_resort = "skullQuery.default"

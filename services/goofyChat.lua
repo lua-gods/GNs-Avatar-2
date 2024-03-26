@@ -6,6 +6,7 @@ local DM_MARK = "§l§u§a§g§o§o§f§y"
 local INCOMING_MESSAGE_MARK = "G!"
 local TIMEOUT_IN_MILLISECONDS = 10 * 1000
 
+local tableUtils = require("libraries.tableUtils")
 function pings.goofyChat(message)
     avatar:store("goofy_chat", {
         message = message,
