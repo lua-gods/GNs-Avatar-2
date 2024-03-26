@@ -261,6 +261,7 @@ local horn_proxy = {
    ["spongebob dramatic queue"] = "c6447916-520e-4b2f-82ef-3c4a0c694276",
    rah = "781874b1-d434-4586-b6be-0334b2ba50b5",
    ["taco bell"] = "75fe2138-8de0-4927-8dc5-6cdebb7feb16",
+   crystal = "2e234b3a-28cc-45bc-b26e-61d57d8bc4a9"
 }
 
 local command = require("services.commandHandler")
