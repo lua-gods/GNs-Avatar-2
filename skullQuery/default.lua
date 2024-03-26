@@ -17,7 +17,7 @@ local function new(skull,events)
    -- check for head
    local function isMyHead(bl)
       local data = bl:getEntityData()
-      return data and data.SkullOwner and data.SkullOwner.Id and client:intUUIDToString(table.unpack(data.SkullOwner.Id)) == myUuid
+      return data and data.SkullOwner and data.SkullOwner.Id and client.intUUIDToString(table.unpack(data.SkullOwner.Id)) == myUuid
    end
    
    local pos = skull.pos
