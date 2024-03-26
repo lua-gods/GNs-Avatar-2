@@ -12,7 +12,7 @@ local function new(skull,events)
    local block = world.getBlockState(skull.pos:copy():sub(0,1,0))
    local model = models.plushie.Hat:copy("unique_wow")
    local data = block:getEntityData()
-   local owner = data and data.SkullOwner and data.SkullOwner.Id and client:intUUIDToString(table.unpack(data.SkullOwner.Id))
+   local owner = data and data.SkullOwner and data.SkullOwner.Id and client.intUUIDToString(table.unpack(data.SkullOwner.Id))
    skull.model_block:addChild(model)
    model:pos(8,-18,8)
    if owner then
