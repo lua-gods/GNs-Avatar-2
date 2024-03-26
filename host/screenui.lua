@@ -2,11 +2,8 @@ if not host:isHost() then return end
 local gnui = require("libraries.gnui")
 
 local screen = gnui.newContainer()
-models:addChild(screen.Part)
-screen:setTopLeft(0,2) -- IDKY WHY
-screen.Part:setParentType("HUD")
---window:setSprite(panel_texture)
---screen.Part:rot(0,80,0)
+models:addChild(screen.ModelPart)
+screen.ModelPart:setParentType("HUD")
 
 local screen_size = vectors.vec2(0,0)
 events.WORLD_RENDER:register(function (delta)
