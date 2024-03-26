@@ -1,25 +1,25 @@
 
 local default_texture = textures:newTexture("1x1white",1,1):setPixel(0,0,vectors.vec3(1,1,1))
-local eventLib = require("libraries.eventHandler")
+local eventLib = require("libraries.eventLib")
 local utils = require("libraries.gnui.utils")
 local core = require("libraries.gnui.core")
 
 
 ---@class Sprite
 ---@field Texture Texture
----@field TEXTURE_CHANGED EventLib
+---@field TEXTURE_CHANGED eventLib
 ---@field Modelpart ModelPart?
----@field MODELPART_CHANGED EventLib
+---@field MODELPART_CHANGED eventLib
 ---@field UV Vector4
 ---@field Size Vector2
 ---@field Position Vector3
 ---@field Color Vector3
 ---@field Scale number
----@field DIMENSIONS_CHANGED EventLib
+---@field DIMENSIONS_CHANGED eventLib
 ---@field RenderTasks table<any,SpriteTask>
 ---@field RenderType ModelPart.renderType
 ---@field BorderThickness Vector4
----@field BORDER_THICKNESS_CHANGED EventLib
+---@field BORDER_THICKNESS_CHANGED eventLib
 ---@field ExcludeMiddle boolean
 ---@field Visible boolean
 ---@field id integer
@@ -52,6 +52,8 @@ function sprite.new(obj)
    sprite_next_free = sprite_next_free + 1
    
    new.TEXTURE_CHANGED:register(function ()
+      new:_deleteRenderTasks()
+      new:_buildRenderTasks()
       new:_updateRenderTasks()
    end,core.internal_events_name)
 
@@ -105,7 +107,7 @@ function sprite:setPos(xpos,y,depth)
 end
 
 ---Tints the Sprite multiplicatively
----@overload fun(rgb : Vector3): Sprite
+---@overload fun(self : self, rgb : Vector3): Sprite
 ---@param r number
 ---@param g number
 ---@param b number
@@ -197,7 +199,7 @@ end
 ---@return Sprite
 function sprite:setUV(x,y,x2,y2)
    self.UV = utils.figureOutVec4(x,y,x2 or x,y2 or y)
-   self.BORDER_THICKNESS_CHANGED:invoke(self.BorderThickness)
+   self.DIMENSIONS_CHANGED:invoke(self.BorderThickness)
    return self
 end
 
@@ -246,20 +248,21 @@ end
 function sprite:_buildRenderTasks()
    if not self.Modelpart then return self end
    local b = self.BorderThickness
+   local d = self.Texture:getDimensions()
    self.is_ninepatch = not (b.x == 0 and b.y == 0 and b.z == 0 and b.w == 0)
    if not self.is_ninepatch then -- not 9-Patch
-      self.RenderTasks[1] = self.Modelpart:newSprite("patch"..self.id)
+      self.RenderTasks[1] = self.Modelpart:newSprite("patch"..self.id):setTexture(self.Texture,d.x,d.y)
    else
       self.RenderTasks = {
-         self.Modelpart:newSprite("patch_tl"..self.id),
-         self.Modelpart:newSprite("patch_t"..self.id),
-         self.Modelpart:newSprite("patch_tr"..self.id),
-         self.Modelpart:newSprite("patch_ml"..self.id),
-         self.Modelpart:newSprite("patch_m"..self.id),
-         self.Modelpart:newSprite("patch_mr"..self.id),
-         self.Modelpart:newSprite("patch_bl"..self.id),
-         self.Modelpart:newSprite("patch_b"..self.id),
-         self.Modelpart:newSprite("patch_br"..self.id)
+         self.Modelpart:newSprite("patch_tl"..self.id):setTexture(self.Texture,d.x,d.y),
+         self.Modelpart:newSprite("patch_t" ..self.id):setTexture(self.Texture,d.x,d.y),
+         self.Modelpart:newSprite("patch_tr"..self.id):setTexture(self.Texture,d.x,d.y),
+         self.Modelpart:newSprite("patch_ml"..self.id):setTexture(self.Texture,d.x,d.y),
+         self.Modelpart:newSprite("patch_m" ..self.id):setTexture(self.Texture,d.x,d.y),
+         self.Modelpart:newSprite("patch_mr"..self.id):setTexture(self.Texture,d.x,d.y),
+         self.Modelpart:newSprite("patch_bl"..self.id):setTexture(self.Texture,d.x,d.y),
+         self.Modelpart:newSprite("patch_b" ..self.id):setTexture(self.Texture,d.x,d.y),
+         self.Modelpart:newSprite("patch_br"..self.id):setTexture(self.Texture,d.x,d.y),
       }
    end
    self:_updateRenderTasks()
@@ -271,7 +274,6 @@ function sprite:_updateRenderTasks()
    local uv = self.UV:copy():add(0,0,1,1)
    if not self.is_ninepatch then
       self.RenderTasks[1]
-      :setTexture(self.Texture)
       :setPos(self.Position)
       :setScale(self.Size.x/res.x,self.Size.y/res.y)
       :setColor(self.Color)
@@ -291,7 +293,6 @@ function sprite:_updateRenderTasks()
       local uvsize = vectors.vec2(uv.z-uv.x,uv.w-uv.y)
       for _, task in pairs(self.RenderTasks) do
          task
-         :setTexture(self.Texture)
          :setColor(self.Color)
          :setRenderType(self.RenderType)
       end
