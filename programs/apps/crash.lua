@@ -6,6 +6,7 @@
 local function new(gnui,screen,events,skull)
    models:deeznuts()
 end
+
 avatar:store("gnui.app.crash",{
    update = client:getSystemTime(),
    name   = "Crash",

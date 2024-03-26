@@ -6,6 +6,7 @@
 local function new(gnui,screen,events,skull)
    
 end
+
 avatar:store("gnui.app.ee",{
    update = client:getSystemTime(),
    name   = "Not Calcul",
