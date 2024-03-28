@@ -1,0 +1,29 @@
+local vel = vectors.vec3()
+local lvel = vectors.vec3()
+local lspring = vectors.vec3()
+local spring = vectors.vec3()
+local spring_vel = vectors.vec3()
+events.TICK:register(function ()
+   vel = player:getVelocity()
+   local momentum = vel - lvel
+   lvel = vel
+   spring_vel = spring_vel * 0.9 + momentum * 0.3 - spring * 0.3
+   lspring = spring
+   spring = spring + spring_vel
+end)
+
+events.WORLD_RENDER:register(function (dt)
+   if lspring and spring then
+      local mat
+      local lmat = matrices.mat4():rotateY(-client:getCameraRot().y):invert()
+      local velocity = lmat:apply(math.lerp(lspring,spring,dt))
+      mat = matrices.mat4()
+      mat.v23 =  velocity.z
+      mat.v22 =  velocity.y+1
+      mat.v11 =  (1/(velocity.y+1))
+      --mat.v33 = math.abs(velocity.z) + 1
+      --mat.v11 =  math.abs(velocity.x) + 1
+      mat.v21 =  velocity.x
+      renderer:setCameraMatrix(mat)
+   end
+end)

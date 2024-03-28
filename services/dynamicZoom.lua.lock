@@ -1,0 +1,13 @@
+events.TICK:register(function ()
+   local o = player:getPos():add(0,player:getEyeHeight())
+---@diagnostic disable-next-line: missing-parameter
+   local block,pos = raycast:block(o,o+player:getLookDir()*100)
+---@diagnostic disable-next-line: missing-parameter
+   local entity,epos = raycast:entity(o,o+player:getLookDir()*100,function (entity)
+      return entity ~= player
+   end)
+   if entity then
+      pos = epos
+   end
+   renderer:setFOV(math.min(5/(pos-o):length(),1))
+end)
