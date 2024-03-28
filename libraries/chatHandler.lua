@@ -13,7 +13,7 @@ local properties = {
          "chat.type.emote",
          "chat.type.announcement"
       },
-      override = "%s §8 : §r %s",
+      override = "%s §8: §r%s",
       play = {{id="minecraft:entity.item.pickup",pitch=0.6,volume=0.08}}
    },
    {
@@ -56,9 +56,9 @@ local properties = {
 }
 
 local function fragment(text,keyword)
-   local init = 0
+   local init = 1
    local slice = {}
-   slice[1] = 0
+   slice[1] = 1
    for i = 1, 100, 1 do
       local a,b = string.find(text,keyword,init)
       if not b then break end
@@ -78,17 +78,20 @@ end
 
 local function parseChatMessage(json_text)
    local json = type(json_text) == "string" and parseJson(json_text) or json_text
-   if json.with then
+   if json.translate then
       local translation = client.getTranslatedString(json.translate) or "%s"
       local raw_override = false
-      local found = false
+      local overriden_translation = false
+      
+      -- play sounds and override translation
+      local found_sound = false
       for _, query in pairs(properties) do
          if query.when then
             for _, pattern in pairs(query.when) do
                if json.translate:find(pattern) then -- same context
                   for key, soundata in pairs(query.play) do
                      sounds[soundata.id]:pos(client:getCameraPos():add(client:getCameraDir())):pitch(soundata.pitch or 1):volume(soundata.volume or 1):play()
-                     found = true
+                     found_sound = true
                   end
                   if query.override then
                      if query.raw_override then
@@ -97,27 +100,78 @@ local function parseChatMessage(json_text)
                      else
                         translation = query.override
                      end
+                     overriden_translation = true
                   end
                   break
                end
             end
          end
-         if found then
+         if found_sound then
             break
          end
       end
+
+
       local compose = {} --[[@type table<any,any> why]]
-      if translation == "chat.type.text" then
-         compose[#compose+1] = {text=""}
+      compose[#compose+1] = ""
+
+      if not overriden_translation and client.getTranslatedString(translation) == translation then -- no translation found
+         translation = json.fallback
       end
+
+      if not json.with then
+         compose[1] = json.fallback
+      end
+      
       -- convert plain text translation to raw json text translation
       if not raw_override then
-         for word,place in string.gmatch(translation .. "%s" ,"([^%%s]*)(%%s*)") do
-            if #word > 0 then
-               compose[#compose+1] = {text = word}
+         do
+            local last_next = 0
+            local suspects = {
+               "%1$s",
+               "%2$s",
+               "%3$s",
+            }
+            local accumulated = ""
+            local i = 0
+            for _ = 1, #translation, 1 do
+               i = i + 1
+               local what_sus = ""
+               local found_sus = false
+               if translation:sub(i,i+1) == "%s" then -- convert %s to %1$s
+                  
+                  if #accumulated:sub(#what_sus,-1) > 0 then
+                     compose[#compose+1] = accumulated:sub(#what_sus,-1)
+                  end
+                  accumulated = ""
+                  
+                  last_next = last_next + 1
+                  what_sus = "%"..(last_next).."$s"
+                  i = i + 1
+                  found_sus = true
+               else
+                  for key, sus in pairs(suspects) do
+                     if translation:sub(i,i+#sus-1) == sus then  -- if already converted
+                        found_sus = true
+                        what_sus = sus 
+                        i = i + #what_sus-1
+                     end
+                     break
+                  end
+               end
+
+               if found_sus then
+                  if #accumulated:sub(#what_sus,-1) > 0 then
+                     compose[#compose+1] = accumulated:sub(#what_sus,-1)
+                  end
+                  accumulated = ""
+                  compose[#compose+1] = what_sus
+               else
+                  accumulated = accumulated .. translation:sub(i,i)
+               end
             end
-            if #place > 0 then
-               compose[#compose+1] = "%s"
+            if #accumulated > 0 then
+               compose[#compose+1] = accumulated
             end
          end
       else
@@ -127,7 +181,7 @@ local function parseChatMessage(json_text)
       -- replace all placeholders with json.with
       local placeholder_found = 0
       for i = 1, #compose, 1 do 
-         if compose[i] == "%s" then
+         if compose[i]:match("%%%d+$s") then
             placeholder_found = placeholder_found + 1
             compose[i] = json.with[placeholder_found]
             if #json.with == placeholder_found then
@@ -171,7 +225,52 @@ local function parseChatMessage(json_text)
             end
          end
       end
-      --printTable(compose,3)
+
+      -- debug mode
+      
+      if true then
+         table.insert(compose,2,{
+            text = "[json]",
+            color = "#00ff00",
+            hoverEvent = {
+               action = "show_text",
+               contents = printTable(compose,10,true)
+               :gsub("\t"," ")
+               :gsub("%[%d+%] = table: ","")
+               :gsub("^table: ","")
+               :gsub("%[\"",'"')
+               :gsub("\"]","'")
+               :gsub("}[ \n]+{","}{")
+            }
+         })
+
+         table.insert(compose,2,{
+            text = "[t]",
+            color = "#ffaa00",
+            hoverEvent = {
+               action = "show_text",
+               contents = json.translate
+            }
+         })
+         table.insert(compose,2,{
+            text = "[t]",
+            color = "#ffcc00",
+            hoverEvent = {
+               action = "show_text",
+               contents = client.getTranslatedString(json.translate)
+            }
+         })
+
+
+         table.insert(compose,2,{
+            text = "[pre]",
+            color = "#ff0000",
+            hoverEvent = {
+               action = "show_text",
+               contents = toJson(json)
+            }
+         })
+      end
       return toJson(compose)
    else
       return toJson(json)
