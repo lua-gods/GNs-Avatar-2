@@ -2,23 +2,34 @@
 
 local gnui = require("libraries.gnui")
 local eventLib = require("libraries.eventLib")
+local tween = require("libraries.GNTweenLib")
+
 
 local default_display_sprite = gnui.newSprite():setTexture(textures["textures.ui"]):setUV(0,0,4,4):setBorderThickness(2,2,2,2)
+local default_display_sprite_borderless = gnui.newSprite():setTexture(textures["textures.ui"]):setUV(1,10,3,12):setBorderThickness(1,1,1,1)
 local default_element_sprite = gnui.newSprite():setTexture(textures["textures.ui"]):setUV(5,2,13,4):setBorderThickness(3,1,3,1)
 local default_element_hover_sprite = gnui.newSprite():setTexture(textures["textures.ui"]):setUV(6,1)
 local default_element_pressed_sprite = gnui.newSprite():setTexture(textures["textures.ui"]):setUV(6,1):setColor(0,0,0)
+local generic_ninepatch_srite = gnui.newSprite():setTexture(textures["textures.ui"]):setUV(1,6,3,8):setBorderThickness(1,1,1,1)
+local generic_ninepatch_srite_border = gnui.newSprite():setTexture(textures["textures.ui"]):setUV(0,14,4,18):setBorderThickness(2,2,2,2)
 
+
+---@alias panel.any panel.element | panel.button | panel.toggle
 
 ---@class panel.element
+---@field id integer
 ---@field index integer
 ---@field display GNUI.container|GNUI.container
 ---@field parent panel.page?
 ---@field is_hovering boolean
 ---@field is_pressed boolean
----@field INPUT_CHANGED eventLib # 1. pressed 2. hovered
+---@field PRESS_CHANGED eventLib
+---@field HOVER_CHANGED eventLib
+---@field KEY_PRESSED eventLib
+---@field SCROLLED eventLib
 ---@field _press_handler fun(self : panel.element, pressed : boolean, hovering : boolean)?
 ---@field _capture_cursor boolean 
----@field _is_toggle boolean
+---@field package cache table
 local element = {}
 element.__index = function (t,i)
    return rawget(t,i) or element[i]
@@ -26,33 +37,39 @@ end
 element.__type = "panel.element"
 
 
+local next_free = 0
 ---@param preset panel.element?
 ---@return panel.element
 function element.new(preset)
    preset = preset or {}
    local new = {}
-   new.INPUT_CHANGED = eventLib.new()
+   new.PRESS_CHANGED = eventLib.new()
+   new.HOVER_CHANGED = eventLib.new()
+   new.KEY_PRESSED = eventLib.new()
+   new.SCROLLED = eventLib.new()
+
+   new.id = next_free
+   next_free = next_free + 1
    new.is_hovering = preset.is_hovering or false
    new.is_pressed =  preset.is_pressed or false
    new._capture_cursor = preset._capture_cursor or false
-   new._is_toggle = preset._is_toggle or false
+   new.cache = {}
+   new._press_handler = function (self,pressed,hovering)
+      new.is_hovering = hovering
+      new.is_pressed = pressed and hovering
+   end
    
-   
-   local normal_sprite = default_element_sprite:copy()
-   local hover_sprite = default_element_hover_sprite:copy()
-   local pressed_sprite = default_element_pressed_sprite:copy()
-   local container = gnui.newContainer():setSprite(normal_sprite):setAnchor(0,0,1,0)
-   new.INPUT_CHANGED:register(function ()
+   new.cache.normal_sprite = default_element_sprite:copy()
+   new.cache.hover_sprite = default_element_hover_sprite:copy()
+   new.cache.pressed_sprite = default_element_pressed_sprite:copy()
+   local container = gnui.newContainer():setSprite(new.cache.normal_sprite):setAnchor(0,0,1,0)
+   new.HOVER_CHANGED:register(function ()
       if new.is_hovering then
-         if new.is_pressed then
-            container:setSprite(pressed_sprite)
-         else
-            container:setSprite(hover_sprite)
-         end
+         container:setSprite(new.cache.hover_sprite)
       else
-         container:setSprite(normal_sprite)
+         container:setSprite(new.cache.normal_sprite)
       end
-   end)
+   end,"_display")
    container:setDimensions(0,0,0,12)
    new.display = container
 
@@ -66,6 +83,9 @@ function element.new(preset)
    setmetatable(new,element)
    return new
 end
+
+
+
 
 
 ---@param text string|table
@@ -101,6 +121,115 @@ function element:setIconText(text,is_emoji)
    return self
 end
 
+
+
+
+---@class panel.button : panel.element
+---@field PRESSED eventLib
+---@field RELEASED eventLib
+local button = {}
+button.__index = function (t,i)
+   return rawget(t,i) or button[i] or element[i]
+end
+button.__type = "panel.button"
+
+---@param preset panel.any?
+---@return panel.button
+function button.new(preset)
+   ---@type panel.button
+   ---@diagnostic disable-next-line: assign-type-mismatch
+   local new = element.new(preset)
+   new.PRESSED = eventLib.new()
+   new.RELEASED = eventLib.new()
+
+   local function display_changed()
+      if new.is_hovering then
+         if new.is_pressed then
+            new.display:setSprite(new.cache.pressed_sprite)
+         else
+            new.display:setSprite(new.cache.hover_sprite)
+         end
+      else
+         new.display:setSprite(new.cache.normal_sprite)
+      end
+   end
+
+   new.HOVER_CHANGED:register(display_changed,"_display")
+   new.PRESS_CHANGED:register(display_changed,"_display")
+   new.PRESS_CHANGED:register(function ()
+      if new.is_pressed then
+         new.PRESSED:invoke()
+      else
+         new.RELEASED:invoke()
+      end
+   end,"_internal")
+   return setmetatable(new,button)
+end
+
+
+
+
+
+---@class panel.toggle : panel.button
+---@field toggle boolean
+---@field TOGGLED eventLib
+local toggle = {}
+toggle.__index = function (t,i)
+   return rawget(t,i) or toggle[i] or button[i] or element[i]
+end
+toggle.__type = "panel.toggle"
+
+local function _toggle_slider(x,slider,handle)
+   slider:setColor(math.lerp(vectors.vec3(1,0.5,0.5),vectors.vec3(0.5,1,0.5),math.clamp(x,0,1)))
+   local o = x * 6
+   handle:setDimensions(-10-7 + o,-5,-10 + o,5)
+end
+
+---@param preset panel.any?
+function toggle.new(preset)
+   ---@type panel.toggle
+   ---@diagnostic disable-next-line: assign-type-mismatch
+   local new = button.new(preset)
+   new.toggle = false
+   new.TOGGLED = eventLib.new()
+   
+   local slider_sprite = generic_ninepatch_srite_border:copy():setOpacity(1)
+   local switch_slider = gnui.newContainer():setSprite(slider_sprite)
+   switch_slider:setAnchor(1,0.5):setDimensions(-4-13,-4,-4,4)
+   new.display:addChild(switch_slider)
+
+   local switch_handle = gnui.newContainer():setSprite(generic_ninepatch_srite_border:copy():setRenderType("EMISSIVE_SOLID"))
+   switch_handle:setAnchor(1,0.5):setDimensions(-10-7,-5,-10,5)
+   new.display:addChild(switch_handle)
+
+   new.PRESSED:register(function ()
+      new.toggle = not new.toggle
+      new.TOGGLED:invoke()
+   end,"_toggle")
+
+   
+   
+   new.TOGGLED:register(function ()
+      if new.toggle then
+         tween.tweenFunction(new.cache.toggle_slider_slide,1,0.5,"outElastic",function (value, transition)
+            _toggle_slider(value,slider_sprite,switch_handle)
+            new.cache.toggle_slider_slide = value
+         end,nil,new.id)
+      else
+         tween.tweenFunction(new.cache.toggle_slider_slide,0,0.5,"outElastic",function (value, transition)
+            _toggle_slider(value,slider_sprite,switch_handle)
+            new.cache.toggle_slider_slide = value
+         end,nil,new.id)
+      end
+   end,"_internal")
+
+   return setmetatable(new,toggle)
+end
+
+
+
+
+
 ---@class panel.page
 ---@field display panel.display
 ---@field elements panel.element[]
@@ -133,28 +262,25 @@ end
 ---@return self
 function page:setSelected(x, relative)
    if #self.elements == 0 then return self end
-   local last_selected = self.selected
+   self.last_selected = self.selected
 
    if not (self.selected and self.selected._capture_cursor) then -- only move when the cursor is not captured
       self.selected_index = math.clamp((relative and self.selected_index or 0) - x, 1, #self.elements)
       self.selected = self.elements[self.selected_index]
    end
-   if last_selected ~= self.selected then -- moved
-      self.last_selected = last_selected
+   if self.last_selected ~= self.selected then -- moved
       if self.last_selected then
-         self.last_selected.is_hovering = false
-         if self.last_selected.INPUT_CHANGED then
-            self.last_selected.is_pressed = false
-            self.last_selected.INPUT_CHANGED:invoke(false,false)
+         if self.last_selected._press_handler then
+            self.last_selected:_press_handler(self.pressed,false)
          end
+         self.last_selected.HOVER_CHANGED:invoke()
       end
-
+      
       if self.selected then
-         self.selected.is_hovering = true
-         if self.selected.INPUT_CHANGED then
-            self.selected.is_pressed = self.pressed
-            self.selected.INPUT_CHANGED:invoke(self.pressed,true)
+         if self.selected._press_handler then
+            self.selected:_press_handler(self.pressed,true)
          end
+         self.selected.HOVER_CHANGED:invoke()
       end
    end
    return self
@@ -167,8 +293,7 @@ function page:press()
       if self.selected._press_handler then
          self.selected:_press_handler(self.pressed,true)
       end
-      self.selected.is_pressed = true
-      self.selected.INPUT_CHANGED:invoke(self.selected.is_pressed,self.selected.is_hovering)
+      self.selected.PRESS_CHANGED:invoke()
    end
    return self
 end
@@ -176,17 +301,16 @@ end
 ---@return panel.page
 function page:release()
    self.pressed = false
-   if self.selected and self.selected.INPUT_CHANGED then
+   if self.selected then
       if self.selected._press_handler then
          self.selected:_press_handler(self.pressed,true)
       end
-      self.selected.is_pressed = false
-      self.selected.INPUT_CHANGED:invoke(self.selected.is_pressed,self.selected.is_hovering)
+      self.selected.PRESS_CHANGED:invoke()
    end
    return self
 end
 
----@param ... panel.element
+---@param ... panel.any
 ---@return panel.page
 function page:addElement(...)
    for _,e in pairs({...}) do
@@ -290,6 +414,8 @@ end
 
 return {
    newElement = element.new,
+   newButton = button.new,
+   newToggle = toggle.new,
    newPage = page.new,
-   newContainer = display.new
+   newContainer = display.new,
 }

@@ -162,7 +162,7 @@ local queue_free = {}
 ---@param ease EaseTypes
 ---@param tick fun(value : number,transition : number)
 ---@param finish function?
----@param id string?
+---@param id any?
 ---@return GNtween
 function tween.tweenFunction(from, to, duration, ease, tick, finish, id)
   ---@type GNtween

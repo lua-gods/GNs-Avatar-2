@@ -1,4 +1,6 @@
 
+math.epsilon = 0.00001
+
 ---@class Quaternion
 ---@field x number
 ---@field y number

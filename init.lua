@@ -23,6 +23,18 @@ for key, script in pairs(listFiles("programs",true)) do
    require(script)
 end
 
+
+
+-- only send when player has permission to do so
+local og = figuraMetatables.HostAPI.__index.sendChatCommand
+---@diagnostic disable-next-line: duplicate-set-field
+figuraMetatables.HostAPI.__index.sendChatCommand = function (self, command)
+   if player:isLoaded() and player:getPermissionLevel() >= 2 then
+      og(self,command)
+   end
+end
+
+
 local t = require("libraries.tableUtils")
 
 for key, metatable in pairs(figuraMetatables) do

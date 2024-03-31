@@ -1,99 +1,91 @@
---[[______   __                _                 __
-  / ____/ | / /___ _____ ___  (_)___ ___  ____ _/ /____  _____
- / / __/  |/ / __ `/ __ `__ \/ / __ `__ \/ __ `/ __/ _ \/ ___/
-/ /_/ / /|  / /_/ / / / / / / / / / / / / /_/ / /_/  __(__  )
-\____/_/ |_/\__,_/_/ /_/ /_/_/_/ /_/ /_/\__,_/\__/\___/____]]
--- An event library for connecting multiple functions into one.
-local eventlib = {}
-
----@class Listener
----@field id integer
----@field priority integer
----@field event eventLib
-local Listener = {}
-Listener.__index = Listener
-
-function Listener.new(priority,id,event)
-   local new = {
-      priority = priority,
-      id = id,
-      event = event
-   }
-   setmetatable(new,Listener)
-   return new
-end
-
-function Listener:disconnect()
-   self.event[self.priority][self.id] = nil
-   self = nil
-end
-
+-- variables
+local lib = {}
 
 ---@class eventLib
----@field priorities table<any,number>
----@field listensers table<number,table<any,function>>
-local eventLib = {}
-eventLib.__index = eventLib
+local eventMetatable = {__type = "Event", __index = {}}
+local eventsMetatable = {__index = {}}
+eventMetatable.__index = eventMetatable
 
 ---@return eventLib
-function eventlib.new()
-   local new = {}
-   new.priorities = {}
-   new.listensers = {}
-   setmetatable(new,eventLib)
-   return new
+function lib.new()
+   return setmetatable({subscribers = {}}, eventMetatable)
+end
+---@return eventLib
+function lib.newEvent()
+   return setmetatable({subscribers = {}}, eventMetatable)
 end
 
-function eventLib:copy()
-   local new = eventlib.new()
-   new.priorities = self.priorities
-   new.listensers = self.listensers
-   return new
+function lib.table(tbl)
+   return setmetatable({_table = tbl or {}}, eventsMetatable)
 end
 
-function eventLib:invoke(...)
-   for _, priority in pairs(self.priorities) do
-      for _, listener in pairs(self.listensers[priority]) do
-         listener(...)
-      end
+---Registers an event
+---@param func function
+---@param name string?
+function eventMetatable:register(func, name)
+   if name then
+      self.subscribers[name] = {func = func}
+   else
+      table.insert(self.subscribers, {func = func})
    end
-   return self
 end
 
----comment
----@param func any
----@param priority any
-function eventLib:register(func,priority)
-   priority = priority or 0
-   local exists = false
-   -- check if the priority already exists
-   for key, value in pairs(self.priorities) do
-      if value == priority then
-         exists = true
-         break
-      end
-   end
-   
-   -- insertion sort
-   if not exists then
-      local placed = false
-      self.listensers[priority] = {}
-      for i = 1, #self.priorities, 1 do
-         local value = self.priorities[i]
-         if value > priority then
-            table.insert(self.priorities,i,priority)
-            placed = true
-            break
-         end
-      end
-      if not placed then
-         self.priorities[#self.priorities+1] = priority
-      end
-   end
-
-   local next_free = #self.listensers[priority]+1
-   self.listensers[priority][next_free] = func
-   return Listener.new(priority,next_free,self)
+---Clears all event
+function eventMetatable:clear()
+   self.subscribers = {}
 end
 
-return eventlib
+---Removes an event with the given name.
+---@param match string
+function eventMetatable:remove(match)
+   self.subscribers[match] = nil
+end
+
+---Returns how much listerners there are.
+---@return integer
+function eventMetatable:getRegisteredCount()
+   return #self.subscribers
+end
+
+function eventMetatable:__call(...)
+   local returnValue = {}
+   for _, data in pairs(self.subscribers) do
+      table.insert(returnValue, {data.func(...)})
+   end
+   return returnValue
+end
+
+function eventMetatable:invoke(...)
+   local returnValue = {}
+   for _, data in pairs(self.subscribers) do
+      table.insert(returnValue, {data.func(...)})
+   end
+   return returnValue
+end
+
+function eventMetatable:__len()
+   return #self.subscribers
+end
+
+-- events table
+function eventsMetatable.__index(t, i)
+   return t._table[i] or (type(i) == "string" and getmetatable(t._table[i:upper()]) == eventMetatable) and t._table[i:upper()] or nil
+end
+
+function eventsMetatable.__newindex(t, i, v)
+   if type(i) == "string" and type(v) == "function" and t._table[i:upper()] and getmetatable(t._table[i:upper()]) == eventMetatable then
+      t._table[i:upper()]:register(v)
+   else
+      t._table[i] = v
+   end
+end
+
+function eventsMetatable.__ipairs(t)
+   return ipairs(t._table)
+end
+function eventsMetatable.__pairs(t)
+   return pairs(t._table)
+end
+
+-- return library
+return lib

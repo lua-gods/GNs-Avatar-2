@@ -14,6 +14,7 @@ local core = require("libraries.gnui.core")
 ---@field Size Vector2
 ---@field Position Vector3
 ---@field Color Vector3
+---@field Alpha number
 ---@field Scale number
 ---@field DIMENSIONS_CHANGED eventLib
 ---@field RenderTasks table<any,SpriteTask>
@@ -29,26 +30,28 @@ sprite.__index = sprite
 local sprite_next_free = 0
 ---@return Sprite
 function sprite.new(obj)
-   local new = obj or {}
+   obj = obj or {}
+   local new = {}
    setmetatable(new,sprite)
-   new.Texture = new.Texture or default_texture
+   new.Texture = obj.Texture or default_texture
    new.TEXTURE_CHANGED = eventLib.new()
    new.MODELPART_CHANGED = eventLib.new()
-   new.Position = new.Position or vectors.vec3()
-   new.UV = new.UV or vectors.vec4(0,0,1,1)
-   new.Size = new.Size or vectors.vec2(16,16)
-   new.Color = new.Color or vectors.vec3(1,1,1)
-   new.Scale = new.Scale or 1
+   new.Position = obj.Position or vectors.vec3()
+   new.UV = obj.UV or vectors.vec4(0,0,1,1)
+   new.Size = obj.Size or vectors.vec2(16,16)
+   new.Alpha = obj.Alpha or 1
+   new.Color = obj.Color or vectors.vec3(1,1,1)
+   new.Scale = obj.Scale or 1
    new.DIMENSIONS_CHANGED = eventLib.new()
    new.RenderTasks = {}
-   new.RenderType = new.RenderType or "CUTOUT_EMISSIVE_SOLID"
-   new.BorderThickness = new.BorderThickness or vectors.vec4(0,0,0,0)
+   new.RenderType = obj.RenderType or "CUTOUT_EMISSIVE_SOLID"
+   new.BorderThickness = obj.BorderThickness or vectors.vec4(0,0,0,0)
    new.BORDER_THICKNESS_CHANGED = eventLib.new()
-   new.ExcludeMiddle = new.ExcludeMiddle or false
+   new.ExcludeMiddle = obj.ExcludeMiddle or false
    new.Cursor = vectors.vec2()
    new.CURSOR_CHANGED = eventLib.new()
    new.Visible = true
-   new.id = new.id or sprite_next_free
+   new.id = sprite_next_free
    sprite_next_free = sprite_next_free + 1
    
    new.TEXTURE_CHANGED:register(function ()
@@ -114,6 +117,15 @@ end
 ---@return Sprite
 function sprite:setColor(r,g,b)
    self.Color = utils.figureOutVec3(r,g,b)
+   self.DIMENSIONS_CHANGED:invoke(self,self.Position,self.Size)
+   return self
+end
+
+
+---@param a number
+---@return Sprite
+function sprite:setOpacity(a)
+   self.Alpha = math.clamp(a or 1,0,1)
    self.DIMENSIONS_CHANGED:invoke(self,self.Position,self.Size)
    return self
 end
@@ -276,7 +288,7 @@ function sprite:_updateRenderTasks()
       self.RenderTasks[1]
       :setPos(self.Position)
       :setScale(self.Size.x/res.x,self.Size.y/res.y)
-      :setColor(self.Color)
+      :setColor(self.Color:augmented(self.Alpha))
       :setRenderType(self.RenderType)
       :setUVPixels(
          uv.x,
@@ -293,7 +305,7 @@ function sprite:_updateRenderTasks()
       local uvsize = vectors.vec2(uv.z-uv.x,uv.w-uv.y)
       for _, task in pairs(self.RenderTasks) do
          task
-         :setColor(self.Color)
+         :setColor(self.Color:augmented(self.Alpha))
          :setRenderType(self.RenderType)
       end
       self.RenderTasks[1]

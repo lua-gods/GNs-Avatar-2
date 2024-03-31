@@ -54,11 +54,35 @@ escape:onPress(function ()
    end
 end)
 
-for i = 1, 16, 1 do
+for i = 1, 5, 1 do
    local e = panels.newElement()
    page:addElement(e)
    e:setIconText(":folder:",true)
    e:setText("Example"..i)
+end
+
+do
+   local e = panels.newButton()
+   page:addElement(e)
+   e:setIconItem("apple")
+   e:setText("Give Apple")
+   e.PRESSED:register(function ()
+      host:sendChatCommand("/give @s apple")
+   end)
+end
+
+do
+   local e = panels.newToggle()
+   page:addElement(e)
+   e:setIconItem("apple")
+   e:setText("Toggle button")
+   e.TOGGLED:register(function ()
+      if e.toggle then
+         host:sendChatCommand("/give @s apple")
+      else
+         host:sendChatCommand("/clear @s apple 1")
+      end
+   end)
 end
 
 display:setPage(page)
@@ -68,6 +92,5 @@ events.MOUSE_SCROLL:register(function (dir)
       return true
    end
 end)
-
 
 screen:addChild(display.display)
