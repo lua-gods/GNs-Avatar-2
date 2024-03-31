@@ -2,6 +2,7 @@
 local eventLib = require("libraries.eventLib")
 
 local container = require("libraries.gnui.elements.container")
+local element = require("libraries.gnui.elements.element")
 local core = require("libraries.gnui.core")
 
 ---Calculates text length along with its spaces as well.  
@@ -27,7 +28,7 @@ end
 ---| "OUTLINE"
 ---| "SHADOW"
 
----@class GNUI.Label : GNUI.container 
+---@class GNUI.Label : GNUI.container
 ---@field Text string|table               # The text that will be displayed on the label, for raw json, pass a table instead of a string json.
 ---@field TextData table                  # Baked data of the text.
 ---@field TextEffect TextEffect           # Determins the effects applied to the label.
@@ -41,7 +42,7 @@ end
 ---@field TEXT_CHANGED eventLib           # Triggered when the text is changed.
 local label = {}
 label.__index = function (t,i)
-   return label[i] or container[i]
+   return rawget(t,i) or label[i] or container[i] or element[i]
 end
 label.__type = "GNUI.element.container.label"
 

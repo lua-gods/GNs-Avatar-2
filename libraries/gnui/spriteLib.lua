@@ -74,7 +74,7 @@ end
 ---@return Sprite
 function sprite:setModelpart(part)
    if self.Modelpart then
-      self.Modelpart:_deleteRenderTasks()
+      self:_deleteRenderTasks()
    end
    self.Modelpart = part
    self:_buildRenderTasks()
@@ -251,18 +251,18 @@ function sprite:_buildRenderTasks()
    local d = self.Texture:getDimensions()
    self.is_ninepatch = not (b.x == 0 and b.y == 0 and b.z == 0 and b.w == 0)
    if not self.is_ninepatch then -- not 9-Patch
-      self.RenderTasks[1] = self.Modelpart:newSprite("patch"..self.id):setTexture(self.Texture,d.x,d.y)
+      self.RenderTasks[1] = self.Modelpart:newSprite(self.id.."patch"):setTexture(self.Texture,d.x,d.y)
    else
       self.RenderTasks = {
-         self.Modelpart:newSprite("patch_tl"..self.id):setTexture(self.Texture,d.x,d.y),
-         self.Modelpart:newSprite("patch_t" ..self.id):setTexture(self.Texture,d.x,d.y),
-         self.Modelpart:newSprite("patch_tr"..self.id):setTexture(self.Texture,d.x,d.y),
-         self.Modelpart:newSprite("patch_ml"..self.id):setTexture(self.Texture,d.x,d.y),
-         self.Modelpart:newSprite("patch_m" ..self.id):setTexture(self.Texture,d.x,d.y),
-         self.Modelpart:newSprite("patch_mr"..self.id):setTexture(self.Texture,d.x,d.y),
-         self.Modelpart:newSprite("patch_bl"..self.id):setTexture(self.Texture,d.x,d.y),
-         self.Modelpart:newSprite("patch_b" ..self.id):setTexture(self.Texture,d.x,d.y),
-         self.Modelpart:newSprite("patch_br"..self.id):setTexture(self.Texture,d.x,d.y),
+         self.Modelpart:newSprite(self.id.."patch_tl" ):setTexture(self.Texture,d.x,d.y),
+         self.Modelpart:newSprite(self.id.."patch_t"  ):setTexture(self.Texture,d.x,d.y),
+         self.Modelpart:newSprite(self.id.."patch_tr" ):setTexture(self.Texture,d.x,d.y),
+         self.Modelpart:newSprite(self.id.."patch_ml" ):setTexture(self.Texture,d.x,d.y),
+         self.Modelpart:newSprite(self.id.."patch_m"  ):setTexture(self.Texture,d.x,d.y),
+         self.Modelpart:newSprite(self.id.."patch_mr" ):setTexture(self.Texture,d.x,d.y),
+         self.Modelpart:newSprite(self.id.."patch_bl" ):setTexture(self.Texture,d.x,d.y),
+         self.Modelpart:newSprite(self.id.."patch_b"  ):setTexture(self.Texture,d.x,d.y),
+         self.Modelpart:newSprite(self.id.."patch_br" ):setTexture(self.Texture,d.x,d.y),
       }
    end
    self:_updateRenderTasks()

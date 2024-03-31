@@ -105,7 +105,7 @@ local queries = {}
 ---| "outQuad"
 ---| "inOutQuad"
 ---| "outInQuad"
----| "inCubic "
+---| "inCubic"
 ---| "outCubic"
 ---| "inOutCubic"
 ---| "outInCubic"

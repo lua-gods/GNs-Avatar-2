@@ -28,7 +28,7 @@ local core = require("libraries.gnui.core")
 ---@field ModelPart ModelPart         # The `ModelPart` used to handle where to display debug features and the sprite.
 local container = {}
 container.__index = function (t,i)
-   return container[i] or element[i]
+   return rawget(t,i) or container[i] or element[i]
 end
 container.__type = "GNUI.element.container"
 
@@ -193,8 +193,10 @@ function container.new(preset,force_debug)
    end,core.debug_event_name)
 
    new.PARENT_CHANGED:register(function ()
-      if new.Parent then new.ModelPart:moveTo(new.Parent.ModelPart)
-      else new.ModelPart:getParent():removeChild(new.ModelPart)
+      if new.Parent then 
+         new.ModelPart:moveTo(new.Parent.ModelPart)
+      else 
+         new.ModelPart:getParent():removeChild(new.ModelPart)
       end
       new.DIMENSIONS_CHANGED:invoke(new.Dimensions)
    end)
@@ -212,8 +214,8 @@ function container:setSprite(sprite_obj)
       self.Sprite:_deleteRenderTasks()
       self.Sprite = nil
    end
+   sprite_obj:setModelpart(self.ModelPart)
    self.Sprite = sprite_obj
-   self.Sprite:setModelpart(self.ModelPart)
    self.SPRITE_CHANGED:invoke()
    self.DIMENSIONS_CHANGED:invoke()
    return self
@@ -251,6 +253,20 @@ function container:setDimensions(x,y,w,t)
    ---@cast self GNUI.container
    local new = utils.figureOutVec4(x,y,w or x,t or y)
    self.Dimensions = new
+   self.DIMENSIONS_CHANGED:invoke(self.Dimensions)
+   return self
+end
+
+---@generic self
+---@param self self
+---@overload fun(self : self, vec2 : Vector4): GNUI.container
+---@param x number
+---@param y number?
+---@return self
+function container:offsetDimensions(x,y)
+   ---@cast self GNUI.container
+   local new = utils.figureOutVec2(x,y)
+   self.Dimensions:add(new.x,new.y,new.x,new.y)
    self.DIMENSIONS_CHANGED:invoke(self.Dimensions)
    return self
 end
@@ -323,7 +339,7 @@ end
 
 ---Sets the Cursor position relative to the top left of the container.  
 ---Returns true if the cursor is hovering over the container.  
----@overload fun(vec2 : Vector2, press : boolean?): GNUI.container
+---@overload fun(self: GNUI.container, vec2 : Vector2, press : boolean?): GNUI.container
 ---@overload fun(press : boolean): GNUI.container
 ---@overload fun(): GNUI.container
 ---@param x number?
