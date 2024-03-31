@@ -210,14 +210,17 @@ end
 ---@param sprite_obj Sprite
 ---@return self
 function container:setSprite(sprite_obj)
+   ---@cast self self
    if self.Sprite then
       self.Sprite:_deleteRenderTasks()
       self.Sprite = nil
    end
-   sprite_obj:setModelpart(self.ModelPart)
-   self.Sprite = sprite_obj
-   self.SPRITE_CHANGED:invoke()
-   self.DIMENSIONS_CHANGED:invoke()
+   if sprite_obj then
+      self.Sprite = sprite_obj
+      sprite_obj:setModelpart(self.ModelPart)
+      self.SPRITE_CHANGED:invoke()
+      self.DIMENSIONS_CHANGED:invoke()
+   end
    return self
 end
 
