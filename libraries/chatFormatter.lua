@@ -4,17 +4,32 @@
 / /_/ / /|  / /_/ / / / / / / / / / / / / /_/ / /_/  __(__  )
 \____/_/ |_/\__,_/_/ /_/ /_/_/_/ /_/ /_/\__,_/\__/\___/____]]
 --[[ A Service script that adds tweaks to chat ]]
-if not host:isHost() then return end
+if not host:isHost() then error("Script made to run on host only") end
 
+local chat = {}
+
+---@type {when:string[],play:{id:Minecraft.soundID,pitch:number,volume:number}[],override:string}[]
 local properties = {
    { -- talk
       when = {
          "chat.type.text",
-         "chat.type.emote",
-         "chat.type.announcement"
       },
       override = "%s §8: §r%s",
       play = {{id="minecraft:entity.item.pickup",pitch=0.6,volume=0.08}}
+   },
+   { -- /me
+      when = {
+         "chat.type.emote",
+      },
+      override = "* %s %s",
+      play = {{id="minecraft:entity.item.pickup",pitch=0.55,volume=0.08}}
+   },
+   { -- /say
+      when = {
+         "chat.type.announcement"
+      },
+      override = "[%s] §8: §r%s",
+      play = {{id="minecraft:entity.item.pickup",pitch=0.55,volume=0.08}}
    },
    {
       when = {
@@ -80,8 +95,6 @@ local function parseChatMessage(json_text)
    local json = type(json_text) == "string" and parseJson(json_text) or json_text
    if json.translate then
       local translation = client.getTranslatedString(json.translate) or "%s"
-      local raw_override = false
-      local overriden_translation = false
       
       -- play sounds and override translation
       local found_sound = false
@@ -94,13 +107,7 @@ local function parseChatMessage(json_text)
                      found_sound = true
                   end
                   if query.override then
-                     if query.raw_override then
-                        translation = query.raw_override
-                        raw_override = true
-                     else
-                        translation = query.override
-                     end
-                     overriden_translation = true
+                     translation = query.override
                   end
                   break
                end
@@ -115,67 +122,59 @@ local function parseChatMessage(json_text)
       local compose = {} --[[@type table<any,any> why]]
       compose[#compose+1] = ""
 
-      if not overriden_translation and client.getTranslatedString(translation) == translation then -- no translation found
-         translation = json.fallback
-      end
+      --if not overriden_translation and client.getTranslatedString(translation) == translation then -- no translation found
+      --   translation = json.fallback
+      --end
 
       if not json.with then
          compose[1] = json.fallback
       end
       
       -- convert plain text translation to raw json text translation
-      if not raw_override then
-         do
-            local last_next = 0
-            local suspects = {
-               "%1$s",
-               "%2$s",
-               "%3$s",
-            }
-            local accumulated = ""
-            local i = 0
-            for _ = 1, #translation, 1 do
+      do
+         local last_next = 0
+         local accumulated = ""
+         local i = 0
+         for _ = 1, #translation, 1 do
+            i = i + 1
+            local what_sus = ""
+            local found_sus = false
+            if translation:sub(i,i+1) == "%s" then -- convert %s to %1$s
+               
+               if #accumulated:sub(#what_sus,-1) > 0 then
+                  compose[#compose+1] = accumulated:sub(#what_sus,-1)
+               end
+               accumulated = ""
+               
+               last_next = last_next + 1
+               what_sus = "%"..(last_next).."$s"
                i = i + 1
-               local what_sus = ""
-               local found_sus = false
-               if translation:sub(i,i+1) == "%s" then -- convert %s to %1$s
-                  
-                  if #accumulated:sub(#what_sus,-1) > 0 then
-                     compose[#compose+1] = accumulated:sub(#what_sus,-1)
-                  end
-                  accumulated = ""
-                  
-                  last_next = last_next + 1
-                  what_sus = "%"..(last_next).."$s"
-                  i = i + 1
-                  found_sus = true
-               else
-                  for key, sus in pairs(suspects) do
-                     if translation:sub(i,i+#sus-1) == sus then  -- if already converted
-                        found_sus = true
-                        what_sus = sus 
-                        i = i + #what_sus-1
-                     end
+               found_sus = true
+            else
+               for d = 1, 10, 1 do
+                  local sus = "%"..d.."$s"
+                  if translation:sub(i,i+#sus-1) == sus then  -- if already converted
+                     found_sus = true
+                     what_sus = sus 
+                     i = i + #what_sus-1
                      break
                   end
                end
-
-               if found_sus then
-                  if #accumulated:sub(#what_sus,-1) > 0 then
-                     compose[#compose+1] = accumulated:sub(#what_sus,-1)
-                  end
-                  accumulated = ""
-                  compose[#compose+1] = what_sus
-               else
-                  accumulated = accumulated .. translation:sub(i,i)
-               end
             end
-            if #accumulated > 0 then
-               compose[#compose+1] = accumulated
+
+            if found_sus then
+               if #accumulated:sub(#what_sus,-1) > 0 then
+                  compose[#compose+1] = accumulated:sub(#what_sus,-1)
+               end
+               accumulated = ""
+               compose[#compose+1] = what_sus
+            else
+               accumulated = accumulated .. translation:sub(i,i)
             end
          end
-      else
-         compose = raw_override
+         if #accumulated > 0 then
+            compose[#compose+1] = accumulated
+         end
       end
 
       -- replace all placeholders with json.with
@@ -200,7 +199,6 @@ local function parseChatMessage(json_text)
       -- replace hex codes with colored ones
       for i = 1, #compose, 1 do
          local component = compose[i]
-         local inserted = false
          local frag = fragment(component.text or "","#%x%x%x%x%x%x")
          if #frag > 1 then -- if modified
             table.remove(compose,i) -- remove last
@@ -226,9 +224,39 @@ local function parseChatMessage(json_text)
          end
       end
 
+      -- replace links with clickable links
+      for i = 1, #compose, 1 do
+         local component = compose[i]
+         local frag = fragment(component.text or "","https://[%a%d;,/?:@&=+$-_.!~*'()#]+")
+         if #frag > 1 then -- if modified
+            table.remove(compose,i) -- remove last
+            for o, txtfrag in pairs(frag) do
+               if txtfrag:find("https://[%a%d;,/?:@&=+$-_.!~*'()#]+") then
+                  table.insert(compose,i,{
+                     text = txtfrag,
+                     color = "yellow",
+                     underlined = true,
+                     clickEvent={
+                        action="suggest_command",
+                        value=txtfrag
+                     },
+                     hoverEvent={
+                        action = "show_text",
+                        contents = "Copy to Clipboard"
+                     }
+                  })
+               else
+                  component.text = txtfrag
+                  table.insert(compose,i,component)
+               end
+               i = i + 1
+            end
+         end
+      end
+      
       -- debug mode
       
-      if true then
+      if false then
          table.insert(compose,2,{
             text = "[json]",
             color = "#00ff00",
@@ -277,4 +305,4 @@ local function parseChatMessage(json_text)
    end
 end
 
-return parseChatMessage
+return parseChatMessage,properties

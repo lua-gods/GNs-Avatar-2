@@ -1,0 +1,17 @@
+---@type {pre_json:table,post_json:table,plain:string}
+local message_data = {}
+
+local new_messaege = 0
+events.CHAT_RECEIVE_MESSAGE:register(function (message, json)
+   new_messaege = new_messaege + 1
+   table.insert(message_data,1,{pre_json=parseJson(json),plain=message})
+end)
+
+events.WORLD_RENDER:register(function ()
+   for i = 1, new_messaege, 1 do
+      message_data[i].post_json = parseJson(host:getChatMessage(i).json)
+      --host:setChatMessage(i,message_data.post_json)
+   end
+   message_data = {}
+   new_messaege = 0
+end)
