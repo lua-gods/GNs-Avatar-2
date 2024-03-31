@@ -41,8 +41,8 @@ escape:onPress(function ()
          slide = x
          slideDisplay(x)
       end,nil,"panels")
+      return true
    end
-   return true
 end)
 
 for i = 1, 10, 1 do
