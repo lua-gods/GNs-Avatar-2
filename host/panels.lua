@@ -29,9 +29,18 @@ input:onPress(function ()
          slide = x
          slideDisplay(x)
       end,nil,"panels")
+   else
+      if display.page then
+         display.page:press()
+      end
    end
    return true
 end):onRelease(function ()
+   if display.focused then
+      if display.page then
+         display.page:release()
+      end
+   end
 end)
 
 escape:onPress(function ()
@@ -45,11 +54,11 @@ escape:onPress(function ()
    end
 end)
 
-for i = 1, 10, 1 do
+for i = 1, 16, 1 do
    local e = panels.newElement()
    page:addElement(e)
    e:setIconText(":folder:",true)
-   e:setText("Example "..i)
+   e:setText("Example"..i)
 end
 
 display:setPage(page)

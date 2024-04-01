@@ -6,6 +6,7 @@ local eventLib = require("libraries.eventLib")
 local default_display_sprite = gnui.newSprite():setTexture(textures["textures.ui"]):setUV(0,0,4,4):setBorderThickness(2,2,2,2)
 local default_element_sprite = gnui.newSprite():setTexture(textures["textures.ui"]):setUV(5,2,13,4):setBorderThickness(3,1,3,1)
 local default_element_hover_sprite = gnui.newSprite():setTexture(textures["textures.ui"]):setUV(6,1)
+local default_element_pressed_sprite = gnui.newSprite():setTexture(textures["textures.ui"]):setUV(6,1):setColor(0,0,0)
 
 
 ---@class panel.element
@@ -14,7 +15,7 @@ local default_element_hover_sprite = gnui.newSprite():setTexture(textures["textu
 ---@field parent panel.page?
 ---@field is_hovering boolean
 ---@field is_pressed boolean
----@field input_changed eventLib
+---@field INPUT_CHANGED eventLib # 1. pressed 2. hovered
 ---@field _press_handler fun(self : panel.element, pressed : boolean, hovering : boolean)?
 ---@field _capture_cursor boolean 
 ---@field _is_toggle boolean
@@ -30,7 +31,7 @@ element.__type = "panel.element"
 function element.new(preset)
    preset = preset or {}
    local new = {}
-   new.input_changed = eventLib.new()
+   new.INPUT_CHANGED = eventLib.new()
    new.is_hovering = preset.is_hovering or false
    new.is_pressed =  preset.is_pressed or false
    new._capture_cursor = preset._capture_cursor or false
@@ -39,10 +40,15 @@ function element.new(preset)
    
    local normal_sprite = default_element_sprite:copy()
    local hover_sprite = default_element_hover_sprite:copy()
+   local pressed_sprite = default_element_pressed_sprite:copy()
    local container = gnui.newContainer():setSprite(normal_sprite):setAnchor(0,0,1,0)
-   new.input_changed:register(function ()
+   new.INPUT_CHANGED:register(function ()
       if new.is_hovering then
-         container:setSprite(hover_sprite)
+         if new.is_pressed then
+            container:setSprite(pressed_sprite)
+         else
+            container:setSprite(hover_sprite)
+         end
       else
          container:setSprite(normal_sprite)
       end
@@ -62,10 +68,10 @@ function element.new(preset)
 end
 
 
----@param text string
+---@param text string|table
 ---@return self
 function element:setText(text)
-   self.display:getChild("label"):setText("lmao")
+   self.display:getChild("label"):setText(text)
    return self
 end
 
@@ -127,24 +133,27 @@ end
 ---@return self
 function page:setSelected(x, relative)
    if #self.elements == 0 then return self end
-   self.last_selected = self.selected
+   local last_selected = self.selected
 
    if not (self.selected and self.selected._capture_cursor) then -- only move when the cursor is not captured
       self.selected_index = math.clamp((relative and self.selected_index or 0) - x, 1, #self.elements)
       self.selected = self.elements[self.selected_index]
    end
-   if self.last_selected ~= self.selected then -- moved
+   if last_selected ~= self.selected then -- moved
+      self.last_selected = last_selected
       if self.last_selected then
          self.last_selected.is_hovering = false
-         if self.last_selected.input_changed then
-            self.last_selected.input_changed:invoke(page.pressed,false)
+         if self.last_selected.INPUT_CHANGED then
+            self.last_selected.is_pressed = false
+            self.last_selected.INPUT_CHANGED:invoke(false,false)
          end
       end
 
       if self.selected then
          self.selected.is_hovering = true
-         if self.selected.input_changed then
-            self.selected.input_changed:invoke(page.pressed,true)
+         if self.selected.INPUT_CHANGED then
+            self.selected.is_pressed = self.pressed
+            self.selected.INPUT_CHANGED:invoke(self.pressed,true)
          end
       end
    end
@@ -154,9 +163,12 @@ end
 ---@return panel.page
 function page:press()
    self.pressed = true
-   if self.selected and self.selected.input_changed then
-      self.selected:_press_handler(self.pressed,true)
-      self.selected:input_changed(self.pressed,true)
+   if self.selected then
+      if self.selected._press_handler then
+         self.selected:_press_handler(self.pressed,true)
+      end
+      self.selected.is_pressed = true
+      self.selected.INPUT_CHANGED:invoke(self.selected.is_pressed,self.selected.is_hovering)
    end
    return self
 end
@@ -164,9 +176,12 @@ end
 ---@return panel.page
 function page:release()
    self.pressed = false
-   if self.selected and self.selected.input_changed then
-      self.selected:_press_handler(self.pressed,true)
-      self.selected:input_changed(self.pressed,false)
+   if self.selected and self.selected.INPUT_CHANGED then
+      if self.selected._press_handler then
+         self.selected:_press_handler(self.pressed,true)
+      end
+      self.selected.is_pressed = false
+      self.selected.INPUT_CHANGED:invoke(self.selected.is_pressed,self.selected.is_hovering)
    end
    return self
 end
