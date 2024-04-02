@@ -35,15 +35,15 @@ figuraMetatables.HostAPI.__index.sendChatCommand = function (self, command)
 end
 
 
-local t = require("libraries.tableUtils")
+local t = require("libraries.utils")
 
 for key, metatable in pairs(figuraMetatables) do
-   figuraMetatables[key] = t.makeReadOnly(metatable,type(metatable) == "table" and getmetatable(metatable) or nil)
+   figuraMetatables[key] = t.makeTableReadOnly(metatable,type(metatable) == "table" and getmetatable(metatable) or nil)
 end
 
 
 local function loopTable(table,i)
-   table = t.makeReadOnly(table,getmetatable(table))
+   table = t.makeTableReadOnly(table,getmetatable(table))
    if i > 50 then
       return
    end

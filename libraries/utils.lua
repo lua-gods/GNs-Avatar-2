@@ -59,34 +59,36 @@ function utils.figureOutVec2(posx,y)
    end
 end
 
----@param posx number|Vector3
----@param y number?
----@param z number?
+---@overload fun(pos : Vector3)
+---@param x number
+---@param y number
+---@param z number
 ---@return Vector3
-function utils.figureOutVec3(posx,y,z)
-   local typa, typb, typc = type(posx), type(y), type(z)
+function utils.figureOutVec3(x,y,z)
+   local typa, typb, typc = type(x), type(y), type(z)
    
    if typa == "Vector3" and typb == "nil" and typc == "nil" then
-      return posx:copy()
+      return x:copy()
    elseif typa == "number" and typb == "number" and typc == "number" then
-      return vectors.vec3(posx,y,z)
+      return vectors.vec3(x,y,z)
    else
       error("Invalid Vector3 parameter, expected Vector3 or (number, number, number), instead got ("..typa..", "..typb..", "..typc..")")
    end
 end
 
----@param posx number|Vector4
----@param y number?
----@param z number?
----@param w number?
+---@overload fun(pos : Vector4)
+---@param x number
+---@param y number
+---@param z number
+---@param w number
 ---@return Vector4
-function utils.figureOutVec4(posx,y,z,w)
-   local typa, typb, typc, typd = type(posx), type(y), type(z), type(w)
+function utils.figureOutVec4(x,y,z,w)
+   local typa, typb, typc, typd = type(x), type(y), type(z), type(w)
    
    if typa == "Vector4" then
-      return posx:copy()
+      return x:copy()
    elseif typa == "number" and typb == "number" and typc == "number"  and typd == "number" then
-      return vectors.vec4(posx,y,z,w)
+      return vectors.vec4(x,y,z,w)
    else
       error("Invalid Vector4 parameter, expected Vector4 or (number, number, number, number), instead got ("..typa..", "..typb..", "..typc.. ", "..typd..")")
    end
@@ -110,6 +112,25 @@ function utils.deepCopy(original)
 		copy[key] = value
 	end
 	return copy
+end
+
+local t = {}
+
+---Creates a proxy table for the given table, the proxy table is read only.  
+---2nd parameter is a metatable.
+---@param tbl table
+---@param metatbl table?
+---@return table
+function utils.makeTableReadOnly(tbl,metatbl)
+   local proxy = {}
+   local mt = {
+   __index = metatbl ~= nil and (metatbl or tbl) or tbl,
+   __newindex = function ()
+   error("No modifying metatable for u :trol:", 2)
+   end
+   }
+   setmetatable(proxy, mt)
+   return proxy
 end
 
 return utils
