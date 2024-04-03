@@ -1,13 +1,13 @@
 local panels = require("libraries.panels")
 local screen = require("host.screenui")
 local tween = require("libraries.GNTweenLib")
-local slide = 1
+local slide = 0
 local gnui = require("libraries.gnui")
 
 
 
 local display_offset = gnui.newContainer():setAnchor(1,1,1,1)
-local display = panels.newContainer()
+local display = panels.newDisplay()
 local page = panels.newPage()
 
 local levitate = 0
@@ -23,7 +23,7 @@ local function slideDisplay(x,y)
    x = (x or 0) * 125
    local d = display.display.Dimensions
    display.display:setDimensions(-125 + x,d.y,-2 + x,d.w):setAnchor(1,1,1,1)
-   display_offset:setDimensions(0,-y,0,-y)
+   display_offset:setDimensions(0,-y-4,0,-y-4)
 end
 slideDisplay(slide,levitate)
 
@@ -81,6 +81,31 @@ escape:onPress(function ()
    end
 end)
 
+
+local subpage = panels.newPage()
+for i = 1, 4, 1 do
+   local e = panels.newToggle()
+   subpage:addElement(e)
+   e:setIconText(":folder:",true)
+   e:setText("Sub"..i)
+end
+
+local especial = panels.newDisplayButton()
+especial:setDisplay(panels.newDisplay():setPage(subpage))
+page:addElement(especial)
+
+local subsubpage = panels.newPage()
+for i = 1, 2, 1 do
+   local e = panels.newToggle()
+   subsubpage:addElement(e)
+   e:setIconText(":folder:",true)
+   e:setText("Sub"..i)
+end
+
+local subespecial = panels.newDisplayButton()
+subespecial:setDisplay(panels.newDisplay():setPage(subsubpage))
+subpage:addElement(subespecial)
+
 for i = 1, 5, 1 do
    local e = panels.newElement()
    page:addElement(e)
@@ -111,6 +136,7 @@ do
       end
    end)
 end
+
 
 display:setPage(page)
 events.MOUSE_SCROLL:register(function (dir)

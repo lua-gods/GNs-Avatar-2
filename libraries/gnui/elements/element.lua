@@ -148,4 +148,5 @@ function element:free()
    self.ON_FREE:invoke()
    self = nil
 end
+
 return element

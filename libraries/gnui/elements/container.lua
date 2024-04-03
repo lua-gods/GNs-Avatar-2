@@ -207,7 +207,7 @@ end
 ---note: the object dosent get applied directly, its duplicated and the clone is used instead of the original.
 ---@generic self
 ---@param self self
----@param sprite_obj Sprite
+---@param sprite_obj Sprite?
 ---@return self
 function container:setSprite(sprite_obj)
    ---@cast self self
@@ -218,9 +218,9 @@ function container:setSprite(sprite_obj)
    if sprite_obj then
       self.Sprite = sprite_obj
       sprite_obj:setModelpart(self.ModelPart)
-      self.SPRITE_CHANGED:invoke()
-      self.DIMENSIONS_CHANGED:invoke()
    end
+   self.DIMENSIONS_CHANGED:invoke()
+   self.SPRITE_CHANGED:invoke()
    return self
 end
 

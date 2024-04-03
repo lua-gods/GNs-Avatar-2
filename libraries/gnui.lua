@@ -17,7 +17,6 @@ local api = {}
 local utils = require("libraries.gnui.utils")
 local sprite = require("libraries.gnui.spriteLib")
 
-local element = require("libraries.gnui.elements.element")
 local container = require("libraries.gnui.elements.container")
 local label = require("libraries.gnui.elements.label")
 
