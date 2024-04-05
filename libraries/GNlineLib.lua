@@ -25,18 +25,16 @@ local function figureOutVec3(x,y,z)
    end
 end
 
----@class line
+---@class line # A straight path from point A to B
 ---@field id integer
----@field a Vector3?
----@field b Vector3?
----@field dir Vector3?
----@field length number
----@field width number
----@field color Vector4
----@field alpha number
----@field depth number
----@field package _queue_update boolean
----@field package _distance_to_camera number
+---@field a Vector3? # First end of the line
+---@field b Vector3? # Second end of the line
+---@field dir Vector3? # The difference between the first and second ends position
+---@field length number # The distance between the first and second ends
+---@field width number # The width of the line in meters
+---@field color Vector4 # The color of the line in RGBA
+---@field depth number # The offset depth of the line. 0 is normal, 0.5 is farther and -0.5 is closer
+---@field package _queue_update boolean # Whether or not the line should be updated in the next frame
 ---@field model SpriteTask
 local line = {}
 line.__index = line
@@ -53,9 +51,7 @@ function line.new(preset)
    new.b = preset.b or vectors.vec3()
    new.width = preset.width or 0.125
    new.color = preset.color or vectors.vec3(1,1,1)
-   new.alpha = preset.alpha or 1
    new.depth = preset.depth or 1
-   new._distance_to_camera = math.huge
    new.model = default_model:newSprite("line"..next_free):setTexture(default_texture,1,1):setRenderType("CUTOUT_EMISSIVE_SOLID")
    new.id = next_free
    lines[next_free] = new
@@ -161,6 +157,14 @@ function line:setDepth(z)
    return self
 end
 
+---Frees the line from memory.
+function line:free()
+   lines[self.id] = nil
+   self.model:remove()
+   self._queue_update = false
+   self = nil
+end
+
 ---Queues itself to be updated in the next frame.
 ---@return line
 function line:update()
@@ -205,8 +209,10 @@ events.WORLD_RENDER:register(function ()
    end
    for i = 1, #queue_update, 1 do
       local l = queue_update[i]
-      l:immediateUpdate()
-      l._queue_update = false
+      if l._queue_update then
+         l:immediateUpdate()
+         l._queue_update = false
+      end
    end
    queue_update = {}
 end)
