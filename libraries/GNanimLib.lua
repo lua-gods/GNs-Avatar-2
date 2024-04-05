@@ -1,8 +1,9 @@
---[[______   __                _                 __
-  / ____/ | / /___ _____ ___  (_)___ ___  ____ _/ /____  _____
- / / __/  |/ / __ `/ __ `__ \/ / __ `__ \/ __ `/ __/ _ \/ ___/
-/ /_/ / /|  / /_/ / / / / / / / / / / / / /_/ / /_/  __(__  )
-\____/_/ |_/\__,_/_/ /_/ /_/_/_/ /_/ /_/\__,_/\__/\___/____]]
+--[[______   __
+  / ____/ | / / By: GNamimates
+ / / __/  |/ / GNanimLib v2.0.0
+/ /_/ / /|  / Allows you to play animations with ease.
+\____/_/ |_/ https://github.com/lua-gods/GNs-Avatar-2/tree/main/libraries/GNanimLib.lua]]
+
 local tween = require("libraries.GNTweenLib")
 
 ---@class animationStateMachine
