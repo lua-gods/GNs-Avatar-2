@@ -33,7 +33,7 @@ InputEventKey.__index = InputEventKey
 InputEventKey.__type = "InputEventKey"
 
 ---@class InputEventMouseButton
----@field button_index Minecraft.mouseid
+---@field button_index Minecraft.mouseID
 ---@field state Event.Press.state
 ---@field modifiers Event.Press.modifiers
 local InputEventMouseButton = {}
