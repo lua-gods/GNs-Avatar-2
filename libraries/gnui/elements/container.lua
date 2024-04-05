@@ -77,8 +77,8 @@ function container.new(preset,force_debug)
       debug_cursor_y   = sprite.new():setModelpart(new.ModelPart):setTexture(debug_texture):setUV(0,0,0,0):setRenderType("EMISSIVE_SOLID"):setSize(1,1):setColor(0,1,0)
    end
 
-   new.VISIBILITY_CHANGED:register(function ()
-      new.DIMENSIONS_CHANGED:invoke()
+   new.VISIBILITY_CHANGED:register(function (v)
+      new.DIMENSIONS_CHANGED:invoke(new.Dimensions)
    end)
    new.DIMENSIONS_CHANGED:register(function ()
       local last_size = new.ContainmentRect.zw - new.ContainmentRect.xy
@@ -114,18 +114,21 @@ function container.new(preset,force_debug)
       end
       for _, child in pairs(new.Children) do
          if child.DIMENSIONS_CHANGED then
-            child.DIMENSIONS_CHANGED:invoke(child.DIMENSIONS_CHANGED)
+            child.DIMENSIONS_CHANGED:invoke(child.Dimensions)
          end
       end
 
       local size = new.ContainmentRect.zw - new.ContainmentRect.xy
       local size_changed = false
-      if last_size ~= new.ContainmentRect.zw - new.ContainmentRect.xy then
+      if last_size ~= size then
          new.SIZE_CHANGED:invoke(size)
          size_changed = true
       end
 
-      local visible = new.Visible and (not new.isClipping) and (not clipping)
+      local visible = new.isVisible
+      if new.ClipOnParent then
+         visible = visible and not clipping
+      end
       new.ModelPart:setVisible(visible)
       if visible then
          new.ModelPart

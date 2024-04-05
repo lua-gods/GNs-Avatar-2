@@ -6,15 +6,15 @@ local utils = require("libraries.gnui.utils")
 local element_next_free = 0
 ---@class GNUI.element
 ---@field name string
----@field id integer                                       # A unique integer for this element. (next-free based)
----@field Visible boolean                                  # `true` to see
+---@field id integer          # A unique integer for this element. (next-free based)
+---@field isVisible boolean   # `true` to see
 ---@field Parent GNUI.any           
 ---@field Children table<any,GNUI.any>  
----@field ChildIndex integer                               # the element's place order on its parent
----@field VISIBILITY_CHANGED eventLib                      # on change of visibility
----@field CHILDREN_CHANGED table                           # when the order of the children changes.
----@field PARENT_CHANGED table                             # when the parent changes
----@field ON_FREE eventLib                                 # when the element is wiped from history.
+---@field ChildIndex integer          # the element's place order on its parent
+---@field VISIBILITY_CHANGED eventLib # on change of visibility
+---@field CHILDREN_CHANGED table      # when the order of the children changes.
+---@field PARENT_CHANGED table        # when the parent changes
+---@field ON_FREE eventLib            # when the element is wiped from history.
 local element = {}
 element.__index = element
 element.__type = "GNUI.element"
@@ -26,7 +26,7 @@ element.__type = "GNUI.element"
 function element.new(preset)
    local new = preset or {}
    new.id = element_next_free
-   new.Visible            = true
+   new.isVisible          = true
    new.VISIBILITY_CHANGED = eventLib.new()
    new.Children           = {}
    new.ChildIndex         = 0
@@ -45,8 +45,8 @@ end
 function element:setVisible(visible)
    ---@cast self GNUI.element
    if self.isVisible ~= visible then
-      self.VISIBILITY_CHANGED:invoke(visible)
       self.isVisible = visible
+      self.VISIBILITY_CHANGED:invoke(visible)
    end
    return self
 end
