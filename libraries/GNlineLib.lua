@@ -1,68 +1,63 @@
---[[______   __                _                 __
-  / ____/ | / /___ _____ ___  (_)___ ___  ____ _/ /____  _____
- / / __/  |/ / __ `/ __ `__ \/ / __ `__ \/ __ `/ __/ _ \/ ___/
-/ /_/ / /|  / /_/ / / / / / / / / / / / / /_/ / /_/  __(__  )
-\____/_/ |_/\__,_/_/ /_/ /_/_/_/ /_/ /_/\__,_/\__/\___/____]]
+--[[______   __
+  / ____/ | / / By: GNamimates
+ / / __/  |/ / GNlineLib v2.0.1
+/ /_/ / /|  / Allows you to draw lines in the world at ease.
+\____/_/ |_/ https://github.com/lua-gods/GNs-Avatar-2/tree/main/libraries/GNlineLib.lua]]
+
+local default_model = models:newPart("gnlinelibline","WORLD"):scale(16,16,16)
+local default_texture = textures["1x1white"] or textures:newTexture("1x1white",1,1):setPixel(0,0,vectors.vec3(1,1,1))
+local lines = {} ---@type line[]
+local queue_update = {} ---@type line[]
+
+local cpos = client:getCameraPos()
+
 ---@overload fun(pos : Vector3)
 ---@param x number
 ---@param y number
 ---@param z number
 ---@return Vector3
 local function figureOutVec3(x,y,z)
-   local typa, typb, typc = type(x), type(y), type(z)
-   if typa == "Vector3" and typb == "nil" and typc == "nil" then
+   local typa = type(x)
+   if typa == "Vector3" then
       return x:copy()
-   elseif typa == "number" and typb == "number" and typc == "number" then
+   elseif typa == "number" then
       return vectors.vec3(x,y,z)
-   else
-      error("Invalid Vector3 parameter, expected Vector3 or (number, number, number), instead got ("..typa..", "..typb..", "..typc..")")
    end
-end
-
----@param v Vector3
----@param n Vector3
----@return Vector3
-local function flat(v, n)
-   n = n:normalize()
-   return v - (n * v:dot(n))
-end
-
----Creates a proxy table for the given table, the proxy table is read only.  
----2nd parameter is a metatable.
----@param tbl table
----@param metatbl table?
----@return table
-local function makeTableReadOnly(tbl,metatbl)
-   local proxy = {}
-   local mt = {
-   __index = metatbl ~= nil and (metatbl or tbl) or tbl,
-   __newindex = function ()
-   error("No modifying metatable for u :trol:", 2)
-   end
-   }
-   setmetatable(proxy, mt)
-   return proxy
 end
 
 ---@class line
----@field from Vector3?
----@field to Vector3?
----@field dir Vector?
+---@field id integer
+---@field a Vector3?
+---@field b Vector3?
+---@field dir Vector3?
+---@field length number
 ---@field width number
----@field color Vector3
+---@field color Vector4
 ---@field alpha number
+---@field depth number
+---@field package _queue_update boolean
+---@field package _distance_to_camera number
+---@field model SpriteTask
 local line = {}
 line.__index = line
+line.__type = "gn.line"
 
 ---@param preset line?
 ---@return line
 function line.new(preset)
+   preset = preset or {}
+   local next_free = #lines+1 
    local new = setmetatable({},line)
-   new.from = preset.from
-   new.to = preset.to
-   new.width = preset.width or 0.1
+   new.a = preset.a or vectors.vec3()
+   new.b = preset.b or vectors.vec3()
+   new.width = preset.width or 0.125
    new.color = preset.color or vectors.vec3(1,1,1)
    new.alpha = preset.alpha or 1
+   new.depth = preset.depth or 1
+   new._distance_to_camera = math.huge
+   new.model = default_model:newSprite("line"..next_free):setTexture(default_texture,1,1):setRenderType("CUTOUT_EMISSIVE_SOLID")
+   new.id = next_free
+   lines[next_free] = new
    return new
 end
 
@@ -73,14 +68,15 @@ end
 ---@param x2 number
 ---@param y2 number
 ---@param z2 number
-function line:setBothEnds(x1,y1,z1,x2,y2,z2)
+function line:setAB(x1,y1,z1,x2,y2,z2)
    if type(x1) == "Vector3" and type(x2) == "Vector3" then
-      self.from = x1:copy()
-      self.to = x2:copy()
+      self.a = x1:copy()
+      self.b = x2:copy()
    else
-      self.from = vectors.vec3(x1,y1,z1)
-      self.to = vectors.vec3(x2,y2,z2)
+      self.a = vectors.vec3(x1,y1,z1)
+      self.b = vectors.vec3(x2,y2,z2)
    end
+   self:update()
    return self
 end
 
@@ -88,8 +84,9 @@ end
 ---@param x number
 ---@param y number
 ---@param z number
-function line:setFrom(x,y,z)
-   self.from = figureOutVec3(x,y,z)
+function line:setA(x,y,z)
+   self.a = figureOutVec3(x,y,z)
+   self:update()
    return self
 end
 
@@ -97,11 +94,103 @@ end
 ---@param x number
 ---@param y number
 ---@param z number
-function line:setTo(x,y,z)
-   self.to = figureOutVec3(x,y,z)
+function line:setB(x,y,z)
+   self.b = figureOutVec3(x,y,z)
+   self:update()
    return self
 end
 
 function line:setWidth(w)
    self.width = w
+   self:update()
 end
+
+---@param render_type ModelPart.renderType
+---@return line
+function line:setRenderType(render_type)
+   self.model:setRenderType(render_type)
+   return self
+end
+
+---@overload fun(self : line, rgb : Vector3): line
+---@overload fun(self : line, rgb : Vector4): line
+---@overload fun(self : line, string): line
+---@param r number
+---@param g number
+---@param b number
+---@Param a number
+function line:setColor(r,g,b,a)
+   local rt,yt,bt = type(r),type(g),type(b)
+   if rt == "number" and yt == "number" and bt == "number" then
+      self.color = vectors.vec4(r,g,b,a or 1)
+   elseif rt == "Vector3" then
+      self.color = r:augmented()
+   elseif rt == "Vector4" then
+      self.color = r
+   elseif rt == "string" and rt:find("#%x%x%x%x%x%x") then
+      self.color = vectors.hexToRGB(r):augmented(1)
+   else
+      error("Invalid Color parameter, expected Vector3, (number, number, number) or Hexcode, instead got ("..rt..", "..yt..", "..bt..")")
+   end
+   self.model:setColor(self.color)
+   return self
+end
+
+---@param z number
+function line:setDepth(z)
+   self.depth = z
+   return self
+end
+
+function line:update()
+   ---insertion sort
+   if not self._queue_update then
+      queue_update[#queue_update+1] = self
+      self._queue_update = true
+   end
+   return self
+end
+
+function line:immediateUpdate()
+   local offset = cpos - self.a
+   local a,b = self.a,self.b
+   local dir = (b - a)
+   self.dir = dir
+   local l = dir:length()
+   self.length = l
+   local w = self.width
+   local d = dir:normalized()
+   local p = (offset - d * offset:copy():dot(d)):normalize()
+   local c = p:copy():cross(d) * w
+   local mat = matrices.mat4(
+      (p:cross(d) * w):augmented(0),
+      (-d * (l + w * 0.5)):augmented(0),
+      p:augmented(0),
+      (a + c * 0.5):augmented()
+   )
+   self.model:setMatrix(mat * self.depth)
+end
+
+events.WORLD_RENDER:register(function ()
+   local c = client:getCameraPos()
+   if c ~= cpos then
+      cpos = c
+      for key, l in pairs(lines) do
+         l:update()
+      end
+   end
+   for i = 1, #queue_update, 1 do
+      local l = queue_update[i]
+      l:immediateUpdate()
+      l._queue_update = false
+   end
+   queue_update = {}
+
+end)
+
+return {
+   new = line.new,
+   default_model = default_model,
+   default_texture = default_texture,
+   _VERSION = "2.0.1"
+}
