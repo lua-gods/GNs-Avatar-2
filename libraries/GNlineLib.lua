@@ -63,7 +63,7 @@ function line.new(preset)
 end
 
 ---Sets both points of the line.
----@overload fun(self : line, from : Vector3, to :Vector3)
+---@overload fun(self : line, from : Vector3, to :Vector3): line
 ---@param x1 number
 ---@param y1 number
 ---@param z1 number
@@ -84,7 +84,7 @@ function line:setAB(x1,y1,z1,x2,y2,z2)
 end
 
 ---Sets the first point of the line.
----@overload fun(self: line ,pos : Vector3)
+---@overload fun(self: line ,pos : Vector3): line
 ---@param x number
 ---@param y number
 ---@param z number
@@ -96,7 +96,7 @@ function line:setA(x,y,z)
 end
 
 ---Sets the second point of the line.
----@overload fun(self: line ,pos : Vector3)
+---@overload fun(self: line ,pos : Vector3): line
 ---@param x number
 ---@param y number
 ---@param z number
@@ -129,7 +129,7 @@ end
 ---Sets the color of the line.
 ---@overload fun(self : line, rgb : Vector3): line
 ---@overload fun(self : line, rgb : Vector4): line
----@overload fun(self : line, string): line
+---@overload fun(self : line, string : string): line
 ---@param r number
 ---@param g number
 ---@param b number
