@@ -42,6 +42,7 @@ local line = {}
 line.__index = line
 line.__type = "gn.line"
 
+---Creates a new line.
 ---@param preset line?
 ---@return line
 function line.new(preset)
@@ -61,6 +62,7 @@ function line.new(preset)
    return new
 end
 
+---Sets both points of the line.
 ---@overload fun(self : line, from : Vector3, to :Vector3)
 ---@param x1 number
 ---@param y1 number
@@ -68,6 +70,7 @@ end
 ---@param x2 number
 ---@param y2 number
 ---@param z2 number
+---@return line
 function line:setAB(x1,y1,z1,x2,y2,z2)
    if type(x1) == "Vector3" and type(x2) == "Vector3" then
       self.a = x1:copy()
@@ -80,31 +83,42 @@ function line:setAB(x1,y1,z1,x2,y2,z2)
    return self
 end
 
+---Sets the first point of the line.
 ---@overload fun(self: line ,pos : Vector3)
 ---@param x number
 ---@param y number
 ---@param z number
+---@return line
 function line:setA(x,y,z)
    self.a = figureOutVec3(x,y,z)
    self:update()
    return self
 end
 
+---Sets the second point of the line.
 ---@overload fun(self: line ,pos : Vector3)
 ---@param x number
 ---@param y number
 ---@param z number
+---@return line
 function line:setB(x,y,z)
    self.b = figureOutVec3(x,y,z)
    self:update()
    return self
 end
 
+---Sets the width of the line.  
+---Note: This is in minecraft blocks/meters.
+---@param w number
+---@return line
 function line:setWidth(w)
    self.width = w
    self:update()
+   return self
 end
 
+---Sets the render type of the line.  
+---by default this is "CUTOUT_EMISSIVE_SOLID".
 ---@param render_type ModelPart.renderType
 ---@return line
 function line:setRenderType(render_type)
@@ -112,13 +126,15 @@ function line:setRenderType(render_type)
    return self
 end
 
+---Sets the color of the line.
 ---@overload fun(self : line, rgb : Vector3): line
 ---@overload fun(self : line, rgb : Vector4): line
 ---@overload fun(self : line, string): line
 ---@param r number
 ---@param g number
 ---@param b number
----@Param a number
+---@param a number
+---@return line
 function line:setColor(r,g,b,a)
    local rt,yt,bt = type(r),type(g),type(b)
    if rt == "number" and yt == "number" and bt == "number" then
@@ -136,12 +152,17 @@ function line:setColor(r,g,b,a)
    return self
 end
 
+---Sets the depth of the line.  
+---Note: this is an offset to the depth of the object. meaning 0 is normal, `0.5` is farther and `-0.5` is closer
 ---@param z number
+---@return line
 function line:setDepth(z)
-   self.depth = z
+   self.depth = 1 + z
    return self
 end
 
+---Queues itself to be updated in the next frame.
+---@return line
 function line:update()
    ---insertion sort
    if not self._queue_update then
@@ -151,6 +172,8 @@ function line:update()
    return self
 end
 
+---Immediately updates the line without queuing it.
+---@return line
 function line:immediateUpdate()
    local offset = cpos - self.a
    local a,b = self.a,self.b
@@ -169,13 +192,14 @@ function line:immediateUpdate()
       (a + c * 0.5):augmented()
    )
    self.model:setMatrix(mat * self.depth)
+   return self
 end
 
 events.WORLD_RENDER:register(function ()
    local c = client:getCameraPos()
    if c ~= cpos then
       cpos = c
-      for key, l in pairs(lines) do
+      for _, l in pairs(lines) do
          l:update()
       end
    end
@@ -185,7 +209,6 @@ events.WORLD_RENDER:register(function ()
       l._queue_update = false
    end
    queue_update = {}
-
 end)
 
 return {
