@@ -13,4 +13,5 @@ return {
    newDisplayButton = require("libraries.panels.elements.displayButton").new,
    newPage = require("libraries.panels.page").new,
    newDisplay = require("libraries.panels.display").new,
+   newTextEdit = require("libraries.panels.elements.textInput").new
 }
