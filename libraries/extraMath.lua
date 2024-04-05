@@ -23,8 +23,8 @@ function meth.superSine(value,seed,depth,presistence,lacunarity)
    for _ = 1, depth, 1 do
       max = max + 1 * w
       result = result + math.sin(value * lun * (math.random() * math.pi * depth) + math.random() * math.pi * depth) * w
-      lun = lun * lacunarity
-      w = w * presistence
+      lun = lun * (lacunarity or 1.5)
+      w = w * (presistence or 0.75)
    end
    math.randomseed(client.getSystemTime())
    return result / depth / max
