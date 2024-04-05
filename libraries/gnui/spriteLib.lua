@@ -1,5 +1,5 @@
 
-local default_texture = textures:newTexture("1x1white",1,1):setPixel(0,0,vectors.vec3(1,1,1))
+local default_texture = textures["1x1white"] or textures:newTexture("1x1white",1,1):setPixel(0,0,vectors.vec3(1,1,1))
 local eventLib = require("libraries.eventLib")
 local utils = require("libraries.gnui.utils")
 local core = require("libraries.gnui.core")
