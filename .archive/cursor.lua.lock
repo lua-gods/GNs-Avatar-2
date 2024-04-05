@@ -1,0 +1,86 @@
+local selection = models:newPart("cursor_selection","WORLD"):scale(16,16,16):newBlock("display"):scale(1/16,1/16,1/16)
+
+
+-- mouse to world space (ty GN <3, and now also by Auria <3)
+local function screenToWorldSpace(distance, pos, fov, fovErr)
+   local mat = matrices.mat4()
+   local rot = client:getCameraRot()
+   local win_size = client:getWindowSize()
+   local mpos = (pos / win_size - vec(0.5, 0.5)) * vec(win_size.x/win_size.y,1)
+   local fov = math.tan(math.rad(fov/2))*2 * fovErr
+   if renderer:getCameraMatrix() then mat:multiply(renderer:getCameraMatrix()) end
+   mat:translate(mpos.x*-fov*distance,mpos.y*-fov*distance,0)
+   mat:rotate(rot.x, -rot.y, rot.z)
+   mat:translate(client:getCameraPos())
+   local pos = (mat * vectors.vec4(0, 0, distance, 1)).xyz
+   return pos
+end
+
+local function mouseToWorldSpace(dist)
+   local fov = client.getFOV()
+
+   local mousePos = client:getMousePos()
+   local win = client:getWindowSize()
+   local pos = vectors.worldToScreenSpace(screenToWorldSpace(dist, mousePos, fov, 1)).xy
+   local mousePos2 = (mousePos / win * 2 - 1)
+   local fovErr =  mousePos2:length() / pos:length()
+
+   return screenToWorldSpace(dist, mousePos, fov, fovErr)
+end
+
+local history = {}
+local draw = keybinds:newKeybind("cursor","key.mouse.right",true)
+draw.press = function ()
+   history = {}
+end
+local erase = keybinds:newKeybind("cursore","key.mouse.left",true)
+erase.press = function ()
+   history = {}
+end
+
+local side2dir = {
+   up = vectors.vec3(0,1,0),
+   down = vectors.vec3(0,-1,0),
+   north = vectors.vec3(0,0,-1),
+   south = vectors.vec3(0,0,1),
+   east = vectors.vec3(1,0,0),
+   west = vectors.vec3(-1,0,0)
+}
+
+events.WORLD_TICK:register(function ()
+   if host:isChatOpen() then
+      local from = mouseToWorldSpace(1)
+      local to = mouseToWorldSpace(100)
+      local block, pos, side = raycast:block(from,to)
+      
+      local place_block_pos = (pos + side2dir[side] * 0.5):floor()
+      local break_block_pos = (pos - side2dir[side] * 0.5):floor()
+      selection:visible(false)
+      if not history[block:getPos():toString()] then
+         local held_item = player:getHeldItem()
+         if held_item:isBlockItem() then
+            local held_block = held_item:getBlockstate()
+            selection:pos(place_block_pos):block(held_block):visible(true)
+            if draw:isPressed() then
+               history[place_block_pos:toString()] = true
+               host:sendChatCommand(string.format("/setblock %i %i %i %s", place_block_pos.x, place_block_pos.y, place_block_pos.z, held_item.id))
+            elseif erase:isPressed() then
+               host:sendChatCommand(string.format("/setblock %i %i %i air destroy", place_block_pos.x, place_block_pos.y, place_block_pos.z))
+            end
+         end
+         selection:visible(true)
+      end
+      if not history[place_block_pos:toString()] then
+         local held_item = player:getHeldItem()
+         if held_item:isBlockItem() then
+            if erase:isPressed() then
+               history[break_block_pos:toString()] = true
+               host:sendChatCommand(string.format("/setblock %i %i %i air destroy", break_block_pos.x, break_block_pos.y, break_block_pos.z))
+            end
+         end
+         selection:visible(true)
+      end
+   else
+      selection:visible(false)
+   end
+end)

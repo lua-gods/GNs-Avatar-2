@@ -1,0 +1,28 @@
+local player_model = models.player
+
+events.RENDER:register(function (delta, ctx, matrix)
+   if ctx == "RENDER" then
+      local ppos = player:getPos()
+      local bpos = ppos:floor()
+      local pdiff = ppos - bpos 
+      local light_samples = {
+         world.getSkyLightLevel(bpos),
+         world.getSkyLightLevel(bpos + vectors.vec3(1,0,0)),
+         world.getSkyLightLevel(bpos + vectors.vec3(0,0,1)),
+         world.getSkyLightLevel(bpos + vectors.vec3(1,0,1)),
+
+         world.getSkyLightLevel(bpos + vectors.vec3(0,1,0)),
+         world.getSkyLightLevel(bpos + vectors.vec3(1,1,0)),
+         world.getSkyLightLevel(bpos + vectors.vec3(0,1,1)),
+         world.getSkyLightLevel(bpos + vectors.vec3(1,1,1)),
+      }
+      local true_light = math.lerp(
+         math.lerp(light_samples[1],light_samples[2],pdiff.x),
+         math.lerp(light_samples[3],light_samples[4],pdiff.x),
+         pdiff.z
+      )
+      host:setActionbar(string.format("Light: %.2fl",true_light))
+      true_light = math.map(true_light,0,15,0.1,1)
+      player_model:setColor(true_light,true_light,true_light):setLight(15,15)
+   end
+end)
