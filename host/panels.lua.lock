@@ -1,9 +1,8 @@
 local panels = require("libraries.panels")
 local screen = require("host.screenui")
 local tween = require("libraries.GNTweenLib")
-local slide = 0
+local slide = 1
 local gnui = require("libraries.gnui")
-
 
 
 local display_offset = gnui.newContainer():setAnchor(1,1,1,1)
@@ -11,14 +10,13 @@ local display = panels.newDisplay()
 local page = panels.newPage()
 
 local levitate = 0
-
 local function slideDisplay(x,y)
    x = x or 0
    y = y or 0
    if x >= 1 then
-      display.display:setVisible(false)
+      display.display:setVisible(true)
    else
-      display.display:setVisible(false)
+      display.display:setVisible(true)
    end
    x = (x or 0) * 125
    local d = display.display.Dimensions
@@ -53,6 +51,7 @@ input:onPress(function ()
    if not display.focused then
       display.focused = true
       tween.tweenFunction(slide,0,0.1,"outCubic",function (x,t) 
+
          slide = x
          slideDisplay(slide,levitate)
       end,nil,"panels")
@@ -71,6 +70,10 @@ end):onRelease(function ()
 end)
 
 escape:onPress(function ()
+   if display.page.proxy then
+      display.page:popEndProxy()
+      return true
+   end
    if display.focused and not (host:getScreen() or was_chat_open) then
       display.focused = false
       tween.tweenFunction(slide,1,0.1,"inCubic",function (x,t) 
@@ -145,6 +148,5 @@ events.MOUSE_SCROLL:register(function (dir)
       return true
    end
 end)
-
 display_offset:addChild(display.display)
 screen:addChild(display_offset)

@@ -1,0 +1,6 @@
+--if not host:isHost() then
+--   return
+--end
+--local file = require("libraries.File")
+--local base64 = require("libraries.base64")
+--host:setSlot("hotbar.0",'minecraft:player_head{SkullOwner:{Id:[I;1481619325,1543653003,-1514517150,-829510686],Properties:{textures:[{Value:"'..base64.encode("images;"..(file.new("pardon.png"):readByteArray()))..'"}]}}}')

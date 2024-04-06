@@ -63,14 +63,13 @@ events.TICK:register(function ()
    end
 end)
 
+local gm = ""
 events.WORLD_RENDER:register(function (dt)
    if player:isLoaded() then
       local meta = models.sword.metadata:getAnimPos()
       local mat = models.sword.Roll.Pole.Handle:partToWorldMatrix()
-      sword_trail:setLeads (mat:apply(0,0,1),mat:apply(0,0,-25),meta.x)
-
-      local r = player:getBodyYaw(dt)
-      local sneak = player:isSneaking()
+      sword_trail:setLeads (mat:apply(0,0,1),mat:apply(0,0,-25),meta.x) r = player:getBodyYaw(dt)
+      local sneak = player:isSneaking() and player:isOnGround()
       local dir = vectors.rotateAroundAxis(-r,vectors.vec3(0,.25,1),vectors.vec3(0,1,0))
       sword:pos(math.lerp(player:getPos(dt),math.lerp(lpos,pos,dt),weary) * 16 + (sneak and dir*-10 or vectors.vec3(0,0,0)))
       sword:rot(sneak and -30 or 0,180-math.lerp(r,math.lerp(lrot,rot,dt),weary),0)

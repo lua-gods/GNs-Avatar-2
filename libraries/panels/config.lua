@@ -1,4 +1,5 @@
 local gnui = require("libraries.gnui")
+local screen = require("host.screenui")
 
 local config = {
    default_display_sprite = gnui.newSprite():setTexture(textures["textures.ui"]):setUV(0,0,4,4):setBorderThickness(2,2,2,2),
@@ -11,6 +12,5 @@ local config = {
    generic_ninepatch_srite = gnui.newSprite():setTexture(textures["textures.ui"]):setUV(1,6,3,8):setBorderThickness(1,1,1,1),
    generic_ninepatch_srite_border = gnui.newSprite():setTexture(textures["textures.ui"]):setUV(0,14,4,18):setBorderThickness(2,2,2,2),
 }
-
 
 return config

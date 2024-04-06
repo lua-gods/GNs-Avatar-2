@@ -52,7 +52,7 @@ function line.new(preset)
    new.width = preset.width or 0.125
    new.color = preset.color or vectors.vec3(1,1,1)
    new.depth = preset.depth or 1
-   new.model = default_model:newSprite("line"..next_free):setTexture(default_texture,1,1):setRenderType("CUTOUT_EMISSIVE_SOLID")
+   new.model = default_model:newSprite("line"..next_free):setTexture(default_texture,1,1):setRenderType("SOLID")
    new.id = next_free
    lines[next_free] = new
    return new

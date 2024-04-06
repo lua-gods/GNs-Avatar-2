@@ -4,7 +4,7 @@ local eventLib = require("libraries.eventLib")
 local gnui = require("libraries.gnui")
 
 
----@alias panel.display.direction "LEFT" | "UP" | "RIGHT" | "DOWN" 
+---@alias panel.display.direction "HORIZONTAL" | "VERTICAL"
 
 ---@class panel.display
 ---@field page panel.page?
@@ -24,7 +24,7 @@ function display.new(preset)
    preset = preset or {}
    local new = {}
    new.page = preset.page
-   new.direction = "DOWN"
+   new.direction = "VERTICAL"
    new.margin = 1
    new.display = gnui.newContainer():setSprite(config.default_display_sprite:copy())
    new.container = gnui.newContainer():setAnchor(0,0,1,1):setDimensions(2,2,-2,-2)
@@ -48,6 +48,13 @@ function display:setPage(p)
    return self
 end
 
+---@param d panel.display.direction
+function display:setDirection(d)
+   self.direction = d
+   self:updateDisplays()
+   return self
+end
+
 ---@package
 function display:detachDisplays()
    if self.page then
@@ -60,12 +67,14 @@ end
 ---@package
 function display:updateDisplays()
    if self.page then
-      if self.direction == "DOWN" then
+      if self.direction == "VERTICAL" then
          local l = 0
          for _, e in pairs(self.page.elements) do
             self.container:addChild(e.display)
             e.display:setAnchor(0,0,1,0)
-            e.display:offsetDimensions(0,l)
+            local size = (e.display.ContainmentRect.w-e.display.ContainmentRect.y)
+            local d = e.display.Dimensions
+            e.display:setDimensions(d.x,l,d.z,l+size)
             l = l + (e.display.ContainmentRect.w-e.display.ContainmentRect.y)
          end
          local d = self.display.Dimensions
@@ -73,31 +82,33 @@ function display:updateDisplays()
          l = l + offset - 1
          self.display:setDimensions(d.x,d.w-l,d.z,d.w)
 
-      elseif self.direction == "UP" then
+      elseif false then -- unused inverted vertical
          local l = 0
          for _, e in pairs(self.page.elements) do
             self.container:addChild(e.display)
             e.display:setAnchor(0,1,1,1)
-            l = l - (e.display.ContainmentRect.w-e.display.ContainmentRect.y)
-            e.display:offsetDimensions(0,l)
+            local size = (e.display.ContainmentRect.w-e.display.ContainmentRect.y)
+            local d = e.display.Dimensions
+            l = l + (e.display.ContainmentRect.w-e.display.ContainmentRect.y)
+            e.display:setDimensions(d.x,-l,d.z,-l+size)
          end
-         local offset = (self.container.Dimensions.y-self.container.Dimensions.w)
-         l = l - offset
          local d = self.display.Dimensions
-         self.display:setDimensions(d.x,d.w+l,d.z,d.w)
+         local offset = self.container.Dimensions.y-self.container.Dimensions.w
+         l = l + offset - 1
+         self.display:setDimensions(d.x,d.w-l,d.z,d.w)
          
-      elseif self.direction == "RIGHT" then
+      elseif self.direction == "HORIZONTAL" then
          local l = 1
          local c = #self.page.elements
-         for i, e in ipairs(self.page.elements) do
+         for a, e in ipairs(self.page.elements) do
+            local i = #self.page.elements-a
             self.container:addChild(e.display)
-            e.display:setAnchor((i-1)/c,0,i/c,1)
+            e.display:setAnchor(i/c,0,(i+1)/c,1)
+            e.display:setDimensions(0,0,0,0)
             l = math.max(l,e.display.ContainmentRect.w-1)
          end
-         local d = self.display.Dimensions
-         self.display:setDimensions(d.x,d.w-l-7,d.z,d.w-5)
+         self.display:setDimensions(0,-14,0,0)
       end
    end
 end
-
 return display
