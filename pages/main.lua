@@ -19,5 +19,6 @@ end
 page:addElement(table.unpack(e))
 
 page:addElement(panels.newSpinbox())
+page:addElement(panels.newVector3Button())
 
 sidebar:newPage(page,"main")

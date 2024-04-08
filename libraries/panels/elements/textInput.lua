@@ -15,6 +15,7 @@ local key2string = require("libraries.key2string")
 ---@field input_container GNUI.container
 ---@field input_display GNUI.Label
 ---@field is_editing boolean
+---@field value_color string?
 ---@field VALUE_CHANGED eventLib
 ---@field VALUE_ACCEPTED eventLib
 ---@field prefix string?
@@ -38,7 +39,6 @@ function textInput.new(preset)
    setmetatable(new,textInput)
    new.force_full = false
    new.value = ""
-   new.suffix = "km/s"
    new.editing_value = ""
    new.VALUE_CHANGED = eventLib.new()
    new.VALUE_ACCEPTED = eventLib.new()
@@ -93,25 +93,42 @@ function textInput.new(preset)
    return new
 end
 
+---@generic self
+---@param self self
+---@return self
 function textInput:press()
+   ---@cast self panels.textInput
    self.is_pressed = not self.is_pressed
    self._capture_cursor = self.is_pressed
    self.is_editing = self.is_pressed
    self:_updateDisplayType()
+   return self
 end
 
+---@generic self
+---@param self self
+---@return self
 function textInput:setAcceptedValue(value)
+   ---@cast self panels.textInput
    self.editing_value = ""
    self.value = tonumber(value)
    self:updateValueDisplay()
    self.VALUE_ACCEPTED:invoke(self.value)
+   return self
 end
 
+
+---@param is_full any
+---@generic self
+---@param self self
+---@return self
 function textInput:setForceFull(is_full)
+   ---@cast self panels.textInput
    self.force_full = is_full
    self:_updateDisplayType()
    return self
 end
+
 
 ---Note: this wont call the VALUE_CHANGED event
 ---@param value string|number
@@ -129,7 +146,7 @@ end
 function textInput:_updateDisplayType()
    if self.is_pressed or self.force_full then
       local v = self.cache._spinbox_transition
-      self.label:setVisible(#tostring(self.value) == 0)
+      self:updateValueDisplay()
       tween.tweenFunction(v ,0,0.2,"inOutCubic",function (value, transition)
          self.input_container:setAnchor(value,0,1,1)
          self.cache._spinbox_transition = value
@@ -145,11 +162,12 @@ function textInput:_updateDisplayType()
    end
 end
 
-
+---@package
 function textInput:updateValueDisplay()
    local text
    local value
    if self.is_editing then
+      self.label:setVisible(#tostring(self.value) == 0 and #tostring(self.editing_value) == 0)
       value = tostring(self.editing_value)
       text = value
       if #tostring(self.editing_value) == 0 then
@@ -158,6 +176,7 @@ function textInput:updateValueDisplay()
          self.input_display:setVisible(true)
       end
    else
+      self.label:setVisible(#tostring(self.value) == 0)
       if #tostring(self.value) == 0 then
          self.input_display:setVisible(false)
       else
@@ -167,10 +186,46 @@ function textInput:updateValueDisplay()
       text = (self.prefix or "")..value..(self.suffix or "")
    end
    if tonumber(value) then
-      self.input_display:setText({text=text}):setAlign(1,0.5)
+      self.input_display:setText({text=text,color=self.value_color or "white"}):setAlign(1,0.5)
    else
-      self.input_display:setText({text=text}):setAlign(0,0.5)
+      self.input_display:setText({text=text,color=self.value_color or "white"}):setAlign(0,0.5)
    end
+end
+
+---@param prefix string?
+---@generic self
+---@param self self
+---@return self
+function textInput:setPrefix(prefix)
+   ---@cast self panels.textInput
+   self.prefix = prefix
+   self:updateValueDisplay()
+   return self
+end
+
+---@param suffix string?
+---@generic self
+---@param self self
+---@return self
+function textInput:setSuffix(suffix)
+   ---@cast self panels.textInput
+   self.prefix = suffix
+   self:updateValueDisplay()
+   return self
+end
+
+---@param color string?
+---@generic self
+---@param self self
+---@return self
+function textInput:setValueColor(color)
+   ---@cast self panels.textInput
+   if type(color) == "Vector3" then
+      color = vectors.rgbToHex(color)
+   end
+   self.value_color = color
+   self:updateValueDisplay()
+   return self
 end
 
 return textInput

@@ -12,6 +12,7 @@ local gnui = require("libraries.gnui")
 ---@field direction panels.display.direction
 ---@field display GNUI.container
 ---@field container GNUI.container
+---@field margin number
 ---@field focused boolean
 local display = {}
 display.__index = function (t,i)
@@ -25,8 +26,8 @@ function display.new(preset)
    preset = preset or {}
    local new = {}
    new.page = preset.page
-   new.direction = "VERTICAL"
-   new.margin = 1
+   new.direction = preset.direction or "VERTICAL"
+   new.margin = preset.margin or 1
    new.page_history = {}
    new.display = gnui.newContainer():setSprite(config.default_display_sprite:copy())
    new.container = gnui.newContainer():setAnchor(0,0,1,1):setDimensions(2,2,-2,-2)

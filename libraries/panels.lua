@@ -1,18 +1,22 @@
---[[______   __                _                 __
-  / ____/ | / /___ _____ ___  (_)___ ___  ____ _/ /____  _____
- / / __/  |/ / __ `/ __ `__ \/ / __ `__ \/ __ `/ __/ _ \/ ___/
-/ /_/ / /|  / /_/ / / / / / / / / / / / / /_/ / /_/  __(__  )
-\____/_/ |_/\__,_/_/ /_/ /_/_/_/ /_/ /_/\__,_/\__/\___/____]]
+--[[______   __
+  / ____/ | / / By: GNamimates
+ / / __/  |/ / Panels Alpha
+/ /_/ / /|  / A High level extension to the GNUI library for figura for quick settings.
+\____/_/ |_/ https://github.com/lua-gods/GNs-Avatar-2/tree/main/libraries/panels.lua]]
 
----@alias panels.any panels.element | panels.button | panels.toggle | panels.display | panels.textInput
+local single = require("libraries.singleElementCollection")
+local multi = require("libraries.panels.multiElementCollection")
 
-return {
-   newElement = require("libraries.panels.element").new,
-   newButton = require("libraries.panels.elements.button").new,
-   newToggle = require("libraries.panels.elements.toggle").new,
-   newDisplayButton = require("libraries.panels.elements.displayButton").new,
-   newPage = require("libraries.panels.page").new,
-   newDisplay = require("libraries.panels.display").new,
-   newTextEdit = require("libraries.panels.elements.textInput").new,
-   newSpinbox = require("libraries.panels.elements.spinbox").new,
-}
+--- for static annotation :(
+local combined = {}
+combined.newElement = single.newElement
+combined.newButton = single.newButton
+combined.newToggle = single.newToggle
+combined.newDisplayButton = single.newDisplayButton
+combined.newPage = single.newPage
+combined.newDisplay = single.newDisplay
+combined.newTextEdit = single.newTextEdit
+combined.newSpinbox = single.newSpinbox
+combined.newVector3Button = multi.newVector3Button
+
+return combined

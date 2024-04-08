@@ -1,6 +1,3 @@
-
-local eventLib = require("libraries.eventLib")
-local config = require("libraries.panels.config")
 local element = require("libraries.panels.element")
 local button = require("libraries.panels.elements.button")
 
@@ -21,13 +18,8 @@ function displayButton.new(preset)
    ---@diagnostic disable-next-line: assign-type-mismatch
    local new = button.new(preset)
    new.display_page = preset.display_page
-   new.PRESSED:register(function ()
-
-   end,"_internal")
-   events.MOUSE_SCROLL:register(function (dir)
-      
-   end,"panels.displayButton"..new.id.."_internal")
-   return setmetatable(new,displayButton)
+   setmetatable(new,displayButton)
+   return new
 end
 
 
