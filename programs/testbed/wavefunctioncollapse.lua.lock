@@ -23,13 +23,13 @@ local function drawCube(x,y,z,dx,dy,dz)
    return lines
 end
 
-local tile_size = vectors.vec3(5,10,5)
+local tile_size = vectors.vec3(5,5,5)
 tile_size = tile_size - 1 -- subtracted for optimization
 
 local tileset = {} ---@type {id: integer, sides : {north: string, east: string, south: string, west: string},structure: table<integer,table<integer,table<integer,{block: BlockState, override : string}>>>}[]
 local tile_world = {}
-local world_origin = vectors.vec3(8179986, 113, 8183379)
-local world_size = 32 - 1
+local world_origin = vectors.vec3(8182007, 198, 8182581)
+local world_size = 8 - 1
 
 local translate = {
    facing = {
@@ -72,6 +72,8 @@ local function newTile(x,y,z)
       local sides = {
          x = "",
          X = "",
+         z = "",
+         Z = "",
          y = "",
          Y = "",
       }
@@ -80,18 +82,24 @@ local function newTile(x,y,z)
          for ty = 0, tile_size.y, 1 do
             for tz = 0, tile_size.z, 1 do
                if data[tx][ty][tz] then
-                  if ty == 0 then
+                  if ty == 0 or true then
                      if tx == 0 then
                         sides.x = sides.x .. data[tx][ty][tz].block.id:match("minecraft:(.+)") .. " "
                      end
                      if tx == tile_size.x then
                         sides.X = sides.X .. data[tx][ty][tz].block.id:match("minecraft:(.+)") .. " "
                      end
-                     if tz == tile_size.z then
-                        sides.Y = sides.Y .. data[tx][ty][tz].block.id:match("minecraft:(.+)") .. " "
-                     end
                      if tz == 0 then
+                        sides.z = sides.z .. data[tx][ty][tz].block.id:match("minecraft:(.+)") .. " "
+                     end
+                     if tz == tile_size.z then
+                        sides.Z = sides.Z .. data[tx][ty][tz].block.id:match("minecraft:(.+)") .. " "
+                     end
+                     if ty == 0 then
                         sides.y = sides.y .. data[tx][ty][tz].block.id:match("minecraft:(.+)") .. " "
+                     end
+                     if ty == tile_size.y then
+                        sides.Y = sides.Y .. data[tx][ty][tz].block.id:match("minecraft:(.+)") .. " "
                      end
                   end
                end
@@ -109,14 +117,17 @@ local function newTile(x,y,z)
    end
 end
 
-local function setTile(x,y,id)
-   if x >= 0 and x <= world_size and y >= 0 and y <= world_size then
-      if tile_world[x] == nil then
+local function setTile(x,y,z,id)
+   if x >= 0 and x <= world_size and y >= 0 and y <= world_size and z >= 0 and z <= world_size then
+      if not tile_world[x] then
          tile_world[x] = {}
       end
-      tile_world[x][y] = id
+      if not tile_world[x][y] then
+         tile_world[x][y] = {}
+      end
+      tile_world[x][y][z] = id
    
-      local pos = world_origin + vectors.vec3(x * (tile_size.x+1),0,y * (tile_size.z+1))
+      local pos = world_origin + vectors.vec3(x * (tile_size.x+1),y * (tile_size.y+1),z * (tile_size.z+1))
       local tile_data = tileset[id]
       for tx = 0, tile_size.x, 1 do
          for ty = 0, tile_size.y, 1 do
@@ -136,24 +147,32 @@ local function setTile(x,y,id)
    end
 end
 
-local function getTile(x,y)
+local function getTile(x,y,z)
    if not tile_world[x] then
       return nil
    end
-   return tileset[tile_world[x][y]]
+   if not tile_world[x][y] then
+      return nil
+   end
+   return tileset[tile_world[x][y][z]]
 end
 
 local adjacent = {
-   {x = 0, y = 1, sides = {"Y","y"}},
-   {x = 0, y = -1, sides = {"y","Y"}},
-   {x = 1, y = 0, sides = {"X","x"}},
-   {x = -1, y = 0, sides = {"x","X"}},
+   {x =  0, y =  0, z =  1, sides = {"Z","z"}},
+   {x =  0, y =  0, z = -1, sides = {"z","Z"}},
+
+   {x =  1, y =  0, z =  0, sides = {"X","x"}},
+   {x = -1, y =  0, z =  0, sides = {"x","X"}},
+
+   {x =  0, y =  1, z =  0, sides = {"Y","y"}},
+   {x =  0, y = -1, z =  0, sides = {"y","Y"}},
+   
 }
 
-local function coundAjacentTiles(x,y)
+local function coundAjacentTiles(x,y,z)
    local count = 0
    for _, offset in pairs(adjacent) do
-      if getTile(x+offset.x,y+offset.y) then
+      if getTile(x+offset.x,y+offset.y,z+offset.z) then
          count = count + 1
       end
    end
@@ -163,8 +182,10 @@ end
 local function doesAllHaveTiles()
    for x = 0, world_size, 1 do
       for y = 0, world_size, 1 do
-         if not getTile(x,y) then
-            return false
+         for z = 0, world_size, 1 do
+            if not getTile(x,y,z) then
+               return false
+            end
          end
       end
    end
@@ -173,87 +194,29 @@ end
 
 local possible_tiles = {}
 
-local function setPossibleStates(x,y,data)
+local function setPossibleStates(x,y,z,data)
    if not possible_tiles[x] then
       possible_tiles[x] = {}
    end
    if not possible_tiles[x][y] then
       possible_tiles[x][y] = {}
    end
-   possible_tiles[x][y] = data
+   if not possible_tiles[x][y][z] then
+      possible_tiles[x][y][z] = {}
+   end
+   possible_tiles[x][y][z] = data
 end
 
 
 
----@type {x: number, y: number, possible_states: table<number, boolean>[]}[][]
+---@type {x: number, y: number, z: number, possible_states: table<number, boolean>[]}[][]
 local test_results = {}
 
-local connections = {
-   --{
-   --   "smooth_stone smooth_stone white_concrete smooth_stone smooth_stone ",
-   --   "smooth_stone smooth_stone white_wool smooth_stone smooth_stone ",
-   --},
-   --{
-   --   "smooth_stone smooth_stone light_gray_concrete smooth_stone smooth_stone ",
-   --   "smooth_stone smooth_stone light_gray_wool smooth_stone smooth_stone ",
-   --},
-   {
-      "smooth_stone smooth_stone gray_concrete smooth_stone smooth_stone ",
-      "smooth_stone smooth_stone gray_wool smooth_stone smooth_stone ",
-   },
-   --{
-   --   "smooth_stone smooth_stone brown_concrete smooth_stone smooth_stone ",
-   --   "smooth_stone smooth_stone brown_wool smooth_stone smooth_stone ",
-   --},
-   {
-      "smooth_stone smooth_stone red_concrete smooth_stone smooth_stone ",
-      "smooth_stone smooth_stone red_wool smooth_stone smooth_stone ",
-   },
-   --{
-   --   "smooth_stone smooth_stone orange_concrete smooth_stone smooth_stone ",
-   --   "smooth_stone smooth_stone orange_wool smooth_stone smooth_stone ",
-   --},
-   --{
-   --   "smooth_stone smooth_stone yellow_concrete smooth_stone smooth_stone ",
-   --   "smooth_stone smooth_stone yellow_wool smooth_stone smooth_stone ",
-   --},
-   --{
-   --   "smooth_stone smooth_stone lime_concrete smooth_stone smooth_stone ",
-   --   "smooth_stone smooth_stone lime_wool smooth_stone smooth_stone ",
-   --},
-   --{
-   --   "smooth_stone smooth_stone green_concrete smooth_stone smooth_stone ",
-   --   "smooth_stone smooth_stone green_wool smooth_stone smooth_stone ",
-   --},
-   {
-      "smooth_stone smooth_stone cyan_concrete smooth_stone smooth_stone ",
-      "smooth_stone smooth_stone cyan_wool smooth_stone smooth_stone ",
-   },
-   {
-      "smooth_stone smooth_stone light_blue_concrete smooth_stone smooth_stone ",
-      "smooth_stone smooth_stone light_blue_wool smooth_stone smooth_stone ",
-   },
-   --{
-   --   "smooth_stone smooth_stone purple_concrete smooth_stone smooth_stone ",
-   --   "smooth_stone smooth_stone purple_wool smooth_stone smooth_stone ",
-   --},
-   --{
-   --   "smooth_stone smooth_stone magenta_concrete smooth_stone smooth_stone ",
-   --   "smooth_stone smooth_stone magenta_wool smooth_stone smooth_stone ",
-   --},
-   --{
-   --   "smooth_stone smooth_stone pink_concrete smooth_stone smooth_stone ",
-   --   "smooth_stone smooth_stone pink_wool smooth_stone smooth_stone ",
-   --}
-}
 
+local function updatePossibleTileStates(x,y,z)
+   local tile_data = getTile(x,y,z)
 
-
-
-local function updatePossibleTileStates(x,y)
-   local tile_data = getTile(x,y)
-
-   local ac = coundAjacentTiles(x,y)
+   local ac = coundAjacentTiles(x,y,z)
    if ac == 0 then
       return
    end
@@ -264,34 +227,12 @@ local function updatePossibleTileStates(x,y)
       end
 
       for _, offset in pairs(adjacent) do
-         local adjacent_tile = getTile(x+offset.x,y+offset.y)
+         local adjacent_tile = getTile(x+offset.x,y+offset.y,y+offset.z)
          if adjacent_tile then -- only filter when theres a tile there
             for check_id in pairs(possible_states) do -- check who are still possible
-               local not_found = true
-               for i = 1, #connections, 1 do
-                  if tileset[check_id].sides[offset.sides[1]] == connections[i][1] then
-                     not_found = false
-                     if adjacent_tile.sides[offset.sides[2]] ~= connections[i][2] then
-                        possible_states[check_id] = nil
-                        break
-                     end
-                  elseif tileset[check_id].sides[offset.sides[1]] == connections[i][2] then
-                     not_found = false
-                     if adjacent_tile.sides[offset.sides[2]] ~= connections[i][1] then
-                        possible_states[check_id] = nil
-                        break
-                     end
-                  end
+               if tileset[check_id].sides[offset.sides[1]] ~= adjacent_tile.sides[offset.sides[2]] then
+                  possible_states[check_id] = nil
                end
-               if not_found then
-                  if tileset[check_id].sides[offset.sides[1]] ~= adjacent_tile.sides[offset.sides[2]] then
-                     possible_states[check_id] = nil
-                  end
-               end
-
-               --if tileset[check_id].sides[offset.sides[1]] ~= adjacent_tile.sides[offset.sides[2]] then
-               --   possible_states[check_id] = nil
-               --end
             end
          end
       end
@@ -306,8 +247,8 @@ local function updatePossibleTileStates(x,y)
       if not test_results[psa] then
          test_results[psa] = {}
       end
-      setPossibleStates(x,y,tostring(psa))
-      test_results[psa][#test_results[psa]+1] = {x = x, y = y, possible_states = ps}
+      setPossibleStates(x,y,z,tostring(psa))
+      test_results[psa][#test_results[psa]+1] = {x = x, y = y,z = z, possible_states = ps}
    end
 end
 
@@ -316,46 +257,35 @@ local function resetPossibleTiles()
    possible_tiles = {}
 end
 
-local function updatePossibleTiles()
-   -- check for possible states on missing tiles
-   for x = 0, world_size, 1 do
-      for y = 0, world_size, 1 do
-         updatePossibleTileStates(x,y)
-      end
-   end
-   
-   
-end
-
 local function placePossibleTiles()
    -- find the one with the least amount of possible state and set it
    for i = 1, #tileset, 1 do
       if test_results[i] then -- this tile has at least one possible state
          local test_result = test_results[i][math.random(1,#test_results[i])]
          local ps = test_result.possible_states
-         setTile(test_result.x, test_result.y, ps[math.random(1,#ps)])
+         setTile(test_result.x, test_result.y,test_result.z, ps[math.random(1,#ps)])
          break
       end
    end
 end
 
 
-host:sendChatCommand(("/fill %i %i %i %i %i %i air"):format(
-   world_origin.x, 
-   world_origin.y, 
-   world_origin.z, 
-   world_origin.x + (world_size+1) * (tile_size.x+1)-1, 
-   world_origin.y + 10, 
-   world_origin.z + (world_size+1) * (tile_size.z+1)-1)
-)
 
-for i = 0, 25, 1 do
-   newTile(8179986 + i * 6, 113, 8183373)
+for i = 0, 0, 1 do
+   newTile(8182007 + i * (tile_size.x+2), 198, 8182575)
 end
 
 if true then
+   host:sendChatCommand(("/fill %i %i %i %i %i %i air"):format(
+      world_origin.x, 
+      world_origin.y, 
+      world_origin.z, 
+      world_origin.x + (world_size+1) * (tile_size.x+1)-1, 
+      world_origin.y + (world_size+1) * (tile_size.y+1)-1, 
+      world_origin.z + (world_size+1) * (tile_size.z+1)-1)
+   )
    local phase = 0
-   local x,y = 0,0
+   local x,y,z = 0,0,0
    events.WORLD_TICK:register(function ()
       local benchmark = -avatar:getCurrentInstructions()
       for i = 1, 1000, 1 do
@@ -364,7 +294,7 @@ if true then
          end
          if phase == 0 then
             resetPossibleTiles()
-            host:setActionbar("resetting")
+            host:setActionbar("calculatign")
             phase = 1
          elseif phase == 1 then
             x = x + 1
@@ -373,11 +303,14 @@ if true then
                y = y + 1
                if y >= world_size then
                   y = 0
-                  phase = 2
+                  z = z + 1
+                  if z >= world_size then
+                     z = 0
+                     phase = 2
+                  end
                end
             end
-            host:setActionbar("calculating "..x.." "..y)
-            updatePossibleTileStates(x,y)
+            updatePossibleTileStates(x,y,z)
          elseif phase == 2 then
             placePossibleTiles()
             phase = 0
@@ -390,4 +323,4 @@ if true then
 end
 
 
-setTile(math.random(0,world_size),math.random(0,world_size),math.random(1,#tileset))
+setTile(2,0,2,2)

@@ -97,7 +97,17 @@ end
 loopTable(_G, 1)
 
 if not host:isHost() then return end
+
+
 -- hosts are just programs but only runs on the host
 for key, script in pairs(listFiles("host",true)) do
    require(script)
 end
+
+local sidebar = require("host.sidebar")
+-- sidebar pages initializer
+for _, paths in pairs(listFiles("pages",true)) do
+   require(paths)
+end
+
+sidebar:setPage("main")

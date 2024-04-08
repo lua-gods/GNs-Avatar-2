@@ -3,19 +3,20 @@ local eventLib = require("libraries.eventLib")
 local config = require("libraries.panels.config")
 local element = require("libraries.panels.element")
 
----@class panel.button : panel.element
+---@class panels.button : panels.element
 ---@field PRESSED eventLib
 ---@field RELEASED eventLib
 local button = {}
 button.__index = function (t,i)
    return rawget(t,i) or button[i] or element[i]
 end
-button.__type = "panel.button"
+button.__type = "panels.button"
 
----@param preset panel.button?
----@return panel.button
+
+---@param preset panels.button?
+---@return panels.button
 function button.new(preset)
-   ---@type panel.button
+   ---@type panels.button
    ---@diagnostic disable-next-line: assign-type-mismatch
    local new = element.new(preset)
    new.PRESSED = eventLib.new()
@@ -48,5 +49,4 @@ function button.new(preset)
    end,"_internal")
    return setmetatable(new,button)
 end
-
 return button

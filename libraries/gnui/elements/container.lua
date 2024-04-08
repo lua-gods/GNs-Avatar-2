@@ -126,8 +126,10 @@ function container.new(preset,force_debug)
       end
 
       local visible = new.isVisible
-      if new.ClipOnParent then
-         visible = visible and not clipping
+      if new.ClipOnParent and visible then
+         if clipping then
+            visible = false
+         end
       end
       new.ModelPart:setVisible(visible)
       if visible then
@@ -198,7 +200,7 @@ function container.new(preset,force_debug)
    new.PARENT_CHANGED:register(function ()
       if new.Parent then 
          new.ModelPart:moveTo(new.Parent.ModelPart)
-      else 
+      else
          new.ModelPart:getParent():removeChild(new.ModelPart)
       end
       new.DIMENSIONS_CHANGED:invoke(new.Dimensions)
@@ -418,6 +420,8 @@ end
 
 ---Sets the offset of the depth for this container, a work around to fixing Z fighting issues when two elements overlap.
 ---@param depth number
+---@generic self
+---@param self self
 ---@return self
 function container:setZ(depth)
    ---@cast self GNUI.container
@@ -428,6 +432,8 @@ end
 
 ---If this container should be able to capture the cursor from its parent if obstructed.
 ---@param capture boolean
+---@generic self
+---@param self self
 ---@return self
 function container:setCanCaptureCursor(capture)
    ---@cast self GNUI.container
@@ -467,6 +473,9 @@ end
 --- 0 = top part of the container is fully anchored to the top of its parent  
 --- 1 = top part of the container is fully anchored to the bottom of its parent
 ---@param units number?
+---@generic self
+---@param self self
+---@return self
 function container:setAnchorTop(units)
    ---@cast self GNUI.container
    self.Anchor.y = units or 0
@@ -478,6 +487,9 @@ end
 --- 0 = left part of the container is fully anchored to the left of its parent  
 --- 1 = left part of the container is fully anchored to the right of its parent
 ---@param units number?
+---@generic self
+---@param self self
+---@return self
 function container:setAnchorLeft(units)
    ---@cast self GNUI.container
    self.Anchor.x = units or 0
@@ -489,6 +501,9 @@ end
 --- 0 = bottom part of the container is fully anchored to the top of its parent  
 --- 1 = bottom part of the container is fully anchored to the bottom of its parent
 ---@param units number?
+---@generic self
+---@param self self
+---@return self
 function container:setAnchorDown(units)
    ---@cast self GNUI.container
    self.Anchor.z = units or 0
@@ -500,6 +515,9 @@ end
 --- 0 = right part of the container is fully anchored to the left of its parent  
 --- 1 = right part of the container is fully anchored to the right of its parent  
 ---@param units number?
+---@generic self
+---@param self self
+---@return self
 function container:setAnchorRight(units)
    ---@cast self GNUI.container
    self.Anchor.w = units or 0
@@ -517,6 +535,9 @@ end
 ---@param top number
 ---@param right number?
 ---@param bottom number?
+---@generic self
+---@param self self
+---@return self
 function container:setAnchor(left,top,right,bottom)
    ---@cast self GNUI.container
    self.Anchor = utils.figureOutVec4(left,top,right or left,bottom or top)

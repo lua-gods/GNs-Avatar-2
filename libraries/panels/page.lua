@@ -2,32 +2,34 @@
 local eventLib = require("libraries.eventLib")
 
 
----@class panel.page
----@field display panel.display
----@field elements panel.element[]
+---@class panels.page
+---@field display panels.display
+---@field elements panels.any
 ---@field pressed boolean
 ---@field mouse_mode boolean
 ---@field selected_index integer
----@field last_selected panel.element?
----@field selected panel.element?
----@field proxy panel.page?
----@field proxied_from panel.page?
+---@field last_selected panels.element?
+---@field selected panels.element?
+---@field PRESSENCE_CHANGED eventLib
+---@field proxy panels.page?
+---@field proxied_from panels.page?
 local page = {}
 page.__index = function (t,i)
    return rawget(t,i) or page[i]
 end
 
----@return panel.page
+---@return panels.page
 function page.new()
    local new = setmetatable({},page)
    new.elements = {}
    new.mouse_mode = false
    new.pressed = false
    new.selected_index = 0
+   new.PRESSENCE_CHANGED = eventLib.new()
    return new
 end
 
----@param p panel.page
+---@param p panels.page
 function page:setProxyPage(p)
    self.proxy = p
    p.proxied_from = self
@@ -35,7 +37,7 @@ function page:setProxyPage(p)
    return self
 end
 
----@return panel.page
+---@return panels.page
 function page:detatchProxyPage()
    if self.proxy then
       self.proxy.proxied_from = nil
@@ -63,7 +65,7 @@ function page:popEndProxy()
 end
 
 ---finds the end of the proxy
----@return panel.page
+---@return panels.page
 function page:getTruePage()
    if self.proxy then
       return self.proxy:getTruePage()
@@ -79,9 +81,7 @@ end
 ---@return self
 function page:setSelected(x, relative)
    if x == 0 and relative == false then
-      if self.selected._hover_handler then
-         self.selected._hover_handler(false)
-      end
+      self.selected:unhover()
       self.selected.HOVER_CHANGED:invoke()
 
       self.selected = self.elements[1]
@@ -102,23 +102,19 @@ function page:setSelected(x, relative)
    end
    if self.last_selected ~= self.selected then -- moved
       if self.last_selected then
-         if self.last_selected._hover_handler then
-            self.last_selected._hover_handler(false)
-         end
-         self.last_selected.HOVER_CHANGED:invoke()
+         self.last_selected:unhover()
+         self.last_selected.HOVER_CHANGED:invoke(false)
       end
       
       if self.selected then
-         if self.selected._hover_handler then
-            self.selected._hover_handler(true)
-         end
-         self.selected.HOVER_CHANGED:invoke()
+         self.selected:hover()
+         self.selected.HOVER_CHANGED:invoke(true)
       end
    end
    return self
 end
 
----@return panel.page
+---@return panels.page
 function page:press()
    if self.proxy then
       self.proxy:press()
@@ -126,15 +122,13 @@ function page:press()
    end
    self.pressed = true
    if self.selected then
-      if self.selected._press_handler then
-         self.selected._press_handler(true)
-      end
+      self.selected:press()
       self.selected.PRESS_CHANGED:invoke()
    end
    return self
 end
 
----@return panel.page
+---@return panels.page
 function page:release()
    if self.proxy then
       self.proxy:release()
@@ -142,18 +136,19 @@ function page:release()
    end
    self.pressed = false
    if self.selected then
-      if self.selected._press_handler then
-         self.selected._press_handler(false)
-      end
+      self.selected:release()
       self.selected.PRESS_CHANGED:invoke()
    end
    return self
 end
 
----@param ... panel.any
----@return panel.page
+---@param ... panels.any
+---@return panels.page
 function page:addElement(...)
    for _,e in pairs({...}) do
+      if not (type(e)):find("panels.") then
+         error("bad argument #1 to 'addElement' (panels.any expected, got "..type(e)..")",2)
+      end
       local next_free = #self.elements + 1
       e.parent = self
       e.index = next_free
@@ -166,7 +161,7 @@ function page:addElement(...)
 end
 
 ---@param i integer
----@param e panel.element
+---@param e panels.element
 function page:insertElement(i,e)
    e.parent = self
    e.index = i

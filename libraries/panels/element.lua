@@ -2,13 +2,13 @@ local gnui = require("libraries.gnui")
 local eventLib = require("libraries.eventLib")
 local config = require("libraries.panels.config")
 
----@class panel.element
+---@class panels.element
 ---@field id integer
 ---@field index integer
 ---@field flat boolean
 ---@field display GNUI.container
 ---@field label GNUI.Label
----@field parent panel.page?
+---@field parent panels.page?
 ---@field is_hovering boolean
 ---@field has_icon boolean
 ---@field is_pressed boolean
@@ -16,20 +16,18 @@ local config = require("libraries.panels.config")
 ---@field HOVER_CHANGED eventLib
 ---@field KEY_PRESSED eventLib
 ---@field SCROLLED eventLib
----@field _press_handler fun(pressed : boolean)?
----@field _hover_handler fun(hovering : boolean)?
 ---@field _capture_cursor boolean 
 ---@field cache table
 local element = {}
 element.__index = function (t,i)
    return rawget(t,i) or element[i]
 end
-element.__type = "panel.element"
+element.__type = "panels.element"
 
 
 local next_free_element = 0
----@param preset panel.element?
----@return panel.element
+---@param preset panels.element?
+---@return panels.element
 function element.new(preset)
    preset = preset or {}
    local new = {}
@@ -45,12 +43,6 @@ function element.new(preset)
    new.is_pressed =  preset.is_pressed or false
    new._capture_cursor = preset._capture_cursor or false
    new.cache = {}
-   new._press_handler = function (pressed)
-      new.is_pressed = pressed and new.is_hovering
-   end
-   new._hover_handler = function (hover)
-      new.is_hovering = hover
-   end
    
    new.cache.normal_sprite = config.default_element_sprite:copy()
    new.cache.hover_sprite = config.default_element_hover_sprite:copy()
@@ -81,17 +73,50 @@ function element.new(preset)
    return new
 end
 
+function element:press()
+   if not self.is_pressed then
+      self.is_pressed = true
+      self.PRESS_CHANGED:invoke(true)
+   end
+end
+
+function element:release()
+   if self.is_pressed then
+      self.is_pressed = false
+      self.PRESS_CHANGED:invoke(false)
+   end
+end
+
+function element:hover()
+   if not self.is_hovering then
+      self.is_hovering = true
+      self.HOVER_CHANGED:invoke(true)
+   end
+end
+
+function element:unhover()
+   if self.is_hovering then
+      self.is_hovering = false
+      self.HOVER_CHANGED:invoke(false)
+   end
+end
 
 ---@param text string|table
+---@generic self
+---@param self self
 ---@return self
 function element:setText(text)
+   ---@cast self panels.element
    self.display:getChild("label"):setText(text)
    return self
 end
 
 ---@param icon Minecraft.itemID
+---@generic self
+---@param self self
 ---@return self
 function element:setIconItem(icon)
+   ---@cast self panels.element
    if not self.has_icon then
       self.label:setDimensions(12,2,-2,-2)
       self.has_icon = true
@@ -103,8 +128,11 @@ end
 
 
 ---@param icon Minecraft.blockID
+---@generic self
+---@param self self
 ---@return self
 function element:setIconBlock(icon)
+   ---@cast self panels.element
    if not self.has_icon then
       self.label:setDimensions(12,2,-2,-2)
       self.has_icon = true
@@ -115,8 +143,11 @@ function element:setIconBlock(icon)
 end
 
 ---@param text string
+---@generic self
+---@param self self
 ---@return self
 function element:setIconText(text,is_emoji)
+   ---@cast self panels.element
    if not self.has_icon then
       self.label:setDimensions(12,2,-2,-2)
       self.has_icon = true
@@ -128,8 +159,11 @@ function element:setIconText(text,is_emoji)
 end
 
 
+---@generic self
+---@param self self
 ---@return self
 function element:removeIcon()
+   ---@cast self panels.element
    if self.has_icon then
       self.label:setDimensions(2,2,-2,-2)
       self.has_icon = false

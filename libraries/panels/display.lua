@@ -4,11 +4,12 @@ local eventLib = require("libraries.eventLib")
 local gnui = require("libraries.gnui")
 
 
----@alias panel.display.direction "HORIZONTAL" | "VERTICAL"
+---@alias panels.display.direction "HORIZONTAL" | "VERTICAL"
 
----@class panel.display
----@field page panel.page?
----@field direction panel.display.direction
+---@class panels.display
+---@field page_history panels.page[]
+---@field page panels.page?
+---@field direction panels.display.direction
 ---@field display GNUI.container
 ---@field container GNUI.container
 ---@field focused boolean
@@ -16,16 +17,17 @@ local display = {}
 display.__index = function (t,i)
    return rawget(t,i) or display[i]
 end
-display.__type = "panel.container"
+display.__type = "panels.container"
 
----@param preset panel.display?
----@return panel.display
+---@param preset panels.display?
+---@return panels.display
 function display.new(preset)
    preset = preset or {}
    local new = {}
    new.page = preset.page
    new.direction = "VERTICAL"
    new.margin = 1
+   new.page_history = {}
    new.display = gnui.newContainer():setSprite(config.default_display_sprite:copy())
    new.container = gnui.newContainer():setAnchor(0,0,1,1):setDimensions(2,2,-2,-2)
    new.display:addChild(new.container)
@@ -34,9 +36,13 @@ function display.new(preset)
    return new
 end
 
----@param p panel.page
-function display:setPage(p)
+---@param p panels.page
+---@param no_history boolean?
+function display:setPage(p,no_history)
    if self.page ~= p then
+      if not no_history then
+         self.page_history[#self.page_history+1] = self.page
+      end
       if self.page then
          self.page.display = nil
          self:detachDisplays()
@@ -48,7 +54,15 @@ function display:setPage(p)
    return self
 end
 
----@param d panel.display.direction
+function display:returnPage()
+   if #self.page_history > 0 then
+      self:setPage(self.page_history[#self.page_history],true)
+      self.page_history[#self.page_history] = nil
+   end
+   return self
+end
+
+---@param d panels.display.direction
 function display:setDirection(d)
    self.direction = d
    self:updateDisplays()
@@ -59,7 +73,7 @@ end
 function display:detachDisplays()
    if self.page then
       for _, e in pairs(self.page.elements) do
-         self.display:removeChild(e.display)
+         e.display.Parent:removeChild(e.display)
       end
    end
 end

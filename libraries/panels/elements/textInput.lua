@@ -9,69 +9,102 @@ local tween = require("libraries.GNTweenLib")
 local key2string = require("libraries.key2string")
 
 
----@alias panel.textInput.displayType "HALF" | "FULL"
+---@alias panels.textInput.displayType "HALF" | "FULL"
 
----@class panel.textInput : panel.button
+---@class panels.textInput : panels.button
+---@field input_container GNUI.container
 ---@field input_display GNUI.Label
 ---@field is_editing boolean
 ---@field VALUE_CHANGED eventLib
 ---@field VALUE_ACCEPTED eventLib
----@field value string
+---@field prefix string?
+---@field suffix string?
+---@field value string|number
+---@field editing_value string|number
 ---@field force_full boolean
 local textInput = {}
 textInput.__index = function (t,i)
    return rawget(t,i) or textInput[i] or button[i] or element[i]
 end
-textInput.__type = "panel.toggle"
----@param preset panel.toggle?
+
+
+textInput.__type = "panels.toggle"
+---@param preset panels.toggle?
+---@return panels.textInput
 function textInput.new(preset)
-   ---@type panel.textInput
+   ---@type panels.textInput
    ---@diagnostic disable-next-line: assign-type-mismatch
    local new = button.new(preset)
    setmetatable(new,textInput)
    new.force_full = false
    new.value = ""
+   new.suffix = "km/s"
+   new.editing_value = ""
    new.VALUE_CHANGED = eventLib.new()
    new.VALUE_ACCEPTED = eventLib.new()
    new.cache.input_sprite = config.default_display_sprite:copy():setOpacity(0.5)
-   local input_display = gnui.newLabel():setSprite(new.cache.input_sprite):setAlign(0,0.5)
-   new.display:addChild(input_display)
+   local input_container = gnui.newContainer():setSprite(new.cache.input_sprite)
+   local input_display = gnui.newLabel():setAlign(0,0.5):setAnchor(0,0,1,1)
+   input_container:addChild(input_display)
+   new.input_container = input_container
    new.input_display = input_display
+   new.display:addChild(input_container)
+   new.PRESS_CHANGED:register(function ()
+      new:updateValueDisplay()
+   end)
    events.KEY_PRESS:register(function (key, state, modifiers)
       local k = key2string(key,modifiers)
-      if new.is_editing and new.parent and k ~= "escape" then
+      if new.is_editing and new.parent and k then
          if state == 1 then
+            local t = type(new.editing_value)
+            local value = tostring(new.editing_value)
             if #k == 1 then
-               new.value = new.value..k
+               value = value..k
             elseif k == "backspace" then
-               new.value = new.value:sub(1,-2)
-            elseif k == "enter" then
+               value = value:sub(1,-2)
+            elseif k == "enter" then -- accepted
+               if t == "number" then
+                  value = tonumber(value) or 0
+               end
                new.parent:press()
-               new.VALUE_ACCEPTED:invoke(new.value)
+               new:setAcceptedValue(value)
+            elseif k == "escape" then
+               new:press()
             end
-            new.VALUE_CHANGED:invoke(new.value)
+            if t == "number" then
+               value = tonumber(value) or 0
+            end
+            new.editing_value = value
+            new:updateValueDisplay()
          end
          return true
       end
-   end,"spinbox"..new.id)
+   end,"text_input"..new.id)
    new.VALUE_CHANGED:register(function (value)
-      new.label:setVisible(#value == 0)
+      new.label:setVisible(#tostring(value) == 0)
       if tonumber(value) then
-         new.input_display:setText({text=" "..value.. " "}):setAlign(1,0.5)
+         new.input_display:setAlign(1,0.5)
       else
-         new.input_display:setText({text=" "..value.. " "}):setAlign(0,0.5)
+         new.input_display:setAlign(0,0.5)
       end
-   end)
-   new._press_handler = function (press)
-      if press then
-         new.is_pressed = not new.is_pressed
-         new._capture_cursor = new.is_pressed
-         new.is_editing = new.is_pressed
-         new:_updateDisplayType()
-      end
-   end
+      new:updateValueDisplay()
+   end,"_internal")
    new:_updateDisplayType()
    return new
+end
+
+function textInput:press()
+   self.is_pressed = not self.is_pressed
+   self._capture_cursor = self.is_pressed
+   self.is_editing = self.is_pressed
+   self:_updateDisplayType()
+end
+
+function textInput:setAcceptedValue(value)
+   self.editing_value = ""
+   self.value = tonumber(value)
+   self:updateValueDisplay()
+   self.VALUE_ACCEPTED:invoke(self.value)
 end
 
 function textInput:setForceFull(is_full)
@@ -80,29 +113,63 @@ function textInput:setForceFull(is_full)
    return self
 end
 
----@param text string
+---Note: this wont call the VALUE_CHANGED event
+---@param value string|number
+---@generic self
+---@param self self
 ---@return self
-function textInput:setValue(text)
-   self.value = text
+function textInput:setEditingValue(value)
+   ---@cast self panels.textInput
+   self.editing_value = value
+   self:updateValueDisplay()
    return self
 end
+
 ---@package
 function textInput:_updateDisplayType()
    if self.is_pressed or self.force_full then
       local v = self.cache._spinbox_transition
-      self.label:setVisible(#self.value == 0)
+      self.label:setVisible(#tostring(self.value) == 0)
       tween.tweenFunction(v ,0,0.2,"inOutCubic",function (value, transition)
-         self.input_display:setAnchor(value,0,1,1)
+         self.input_container:setAnchor(value,0,1,1)
          self.cache._spinbox_transition = value
       end,nil,"spinbox"..self.id)
    else
       local v = self.cache._spinbox_transition
       tween.tweenFunction(v,0.5,0.2,"inOutCubic",function (value, transition)
-         self.input_display:setAnchor(value,0,1,1)
+         self.input_container:setAnchor(value,0,1,1)
          self.cache._spinbox_transition = value
       end,function ()
-         self.label:setVisible(true)
+         self:updateValueDisplay()
       end,"spinbox"..self.id)
+   end
+end
+
+
+function textInput:updateValueDisplay()
+   local text
+   local value
+   if self.is_editing then
+      value = tostring(self.editing_value)
+      text = value
+      if #tostring(self.editing_value) == 0 then
+         self.input_display:setVisible(false)
+      else
+         self.input_display:setVisible(true)
+      end
+   else
+      if #tostring(self.value) == 0 then
+         self.input_display:setVisible(false)
+      else
+         self.input_display:setVisible(true)
+      end
+      value = tostring(self.value)
+      text = (self.prefix or "")..value..(self.suffix or "")
+   end
+   if tonumber(value) then
+      self.input_display:setText({text=text}):setAlign(1,0.5)
+   else
+      self.input_display:setText({text=text}):setAlign(0,0.5)
    end
 end
 

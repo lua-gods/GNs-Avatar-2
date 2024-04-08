@@ -5,9 +5,10 @@ local slide = 1
 local gnui = require("libraries.gnui")
 
 
+local pages = {}
+
 local display_offset = gnui.newContainer():setAnchor(1,1,1,1)
 local display = panels.newDisplay()
-local page = panels.newPage()
 
 local levitate = 0
 local function slideDisplay(x,y)
@@ -70,9 +71,11 @@ end):onRelease(function ()
 end)
 
 escape:onPress(function ()
-   if display.page.proxy then
-      display.page:popEndProxy()
-      return true
+   if display.page then 
+      if display.page.proxy then
+         display.page:popEndProxy()
+         return true
+      end
    end
    if display.focused and not (host:getScreen() or was_chat_open) then
       display.focused = false
@@ -85,68 +88,38 @@ escape:onPress(function ()
 end)
 
 
-local subpage = panels.newPage()
-for i = 1, 4, 1 do
-   local e = panels.newToggle()
-   subpage:addElement(e)
-   e:setIconText(":folder:",true)
-   e:setText("Sub"..i)
-end
-
-local especial = panels.newDisplayButton()
-especial:setDisplay(panels.newDisplay():setPage(subpage))
-page:addElement(especial)
-
-local subsubpage = panels.newPage()
-for i = 1, 2, 1 do
-   local e = panels.newToggle()
-   subsubpage:addElement(e)
-   e:setIconText(":folder:",true)
-   e:setText("Sub"..i)
-end
-
-local subespecial = panels.newDisplayButton()
-subespecial:setDisplay(panels.newDisplay():setPage(subsubpage))
-subpage:addElement(subespecial)
-
-for i = 1, 5, 1 do
-   local e = panels.newElement()
-   page:addElement(e)
-   e:setIconText(":folder:",true)
-   e:setText("Example"..i)
-end
-
-do
-   local e = panels.newButton()
-   page:addElement(e)
-   e:setIconItem("apple")
-   e:setText("Give Apple")
-   e.PRESSED:register(function ()
-      host:sendChatCommand("/give @s apple")
-   end)
-end
-
-do
-   local e = panels.newToggle()
-   page:addElement(e)
-   e:setIconItem("apple")
-   e:setText("Toggle button")
-   e.TOGGLED:register(function ()
-      if e.toggle then
-         host:sendChatCommand("/give @s apple")
-      else
-         host:sendChatCommand("/clear @s apple 1")
-      end
-   end)
-end
-
-
-display:setPage(page)
 events.MOUSE_SCROLL:register(function (dir)
    if display.focused then
-      display.page:setSelected(math.floor(dir + 0.5),true)
+      if display.page then
+
+         display.page:setSelected(math.floor(dir + 0.5),true)
+      end
       return true
    end
 end)
 display_offset:addChild(display.display)
 screen:addChild(display_offset)
+
+
+
+
+local sidebar = {}
+function sidebar:newPage(page,name)
+   pages[name] = page
+   return self
+end
+
+function sidebar:setPage(page)
+   display:setPage(pages[page])
+end
+
+function sidebar.newReturnButton()
+   local btn = panels.newButton():setText({text="Return",color="#fd4343"})
+   btn.PRESSED:register(function ()
+      display:returnPage()
+   end)
+   return btn
+end
+
+
+return sidebar

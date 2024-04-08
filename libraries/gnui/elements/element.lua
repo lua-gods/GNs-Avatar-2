@@ -39,8 +39,9 @@ function element.new(preset)
 end
 
 ---Sets the visibility of the element and its children
----@generic self
 ---@param visible boolean
+---@generic self
+---@param self self
 ---@return self
 function element:setVisible(visible)
    ---@cast self GNUI.element
@@ -51,9 +52,9 @@ function element:setVisible(visible)
    return self
 end
 
+---@param name string
 ---@generic self
 ---@param self self
----@param name any
 ---@return self
 function element:setName(name)
    ---@cast self GNUI.element
@@ -81,6 +82,8 @@ function element:getChildByIndex(index)
    return self.Children[index]
 end
 
+---@generic self
+---@param self self
 ---@return self
 function element:updateChildrenOrder()
    ---@cast self GNUI.element
@@ -91,9 +94,10 @@ function element:updateChildrenOrder()
 end
 
 ---Adopts an element as its child.
----@generic self
 ---@param child GNUI.element
 ---@param index integer?
+---@generic self
+---@param self self
 ---@return self
 function element:addChild(child,index)
    ---@cast self GNUI.container
@@ -110,8 +114,9 @@ function element:addChild(child,index)
 end
 
 ---Abandons the child into the street.
----@generic self
 ---@param child GNUI.element
+---@generic self
+---@param self self
 ---@return self
 function element:removeChild(child)
    ---@cast self GNUI.container
@@ -131,8 +136,10 @@ function element:getChildren()
 end
 
 ---@generic self
+---@param self self
 ---@return self
 function element:updateChildrenIndex()
+   ---@cast self GNUI.element
    for i, child in pairs(self.Children) do
       child.ChildIndex = i
       child.DIMENSIONS_CHANGED:invoke()

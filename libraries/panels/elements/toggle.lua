@@ -9,14 +9,14 @@ local tween = require("libraries.GNTweenLib")
 
 
 
----@class panel.toggle : panel.button
+---@class panels.toggle : panels.button
 ---@field toggle boolean
 ---@field TOGGLED eventLib
 local toggle = {}
 toggle.__index = function (t,i)
    return rawget(t,i) or toggle[i] or button[i] or element[i]
 end
-toggle.__type = "panel.toggle"
+toggle.__type = "panels.toggle"
 
 local function _toggle_slider(x,t)
    t.cache.slider_sprite:setColor(math.lerp(vectors.vec3(1,0.5,0.5),vectors.vec3(0.5,1,0.5),math.clamp(x,0,1)))
@@ -24,9 +24,10 @@ local function _toggle_slider(x,t)
    t.cache.switch_handle:setDimensions(-10-7 + o,-5,-10 + o,5)
 end
 
----@param preset panel.toggle?
+---@param preset panels.toggle?
+---@return panels.toggle
 function toggle.new(preset)
-   ---@type panel.toggle
+   ---@type panels.toggle
    ---@diagnostic disable-next-line: assign-type-mismatch
    local new = button.new(preset)
    new.toggle = false
@@ -68,7 +69,11 @@ end
 
 ---@param state boolean
 ---@param instant boolean
+---@generic self
+---@param self self
+---@return self
 function toggle:setToggle(state, instant)
+   ---@cast self panels.toggle
    if self.toggle ~= state then
       self.toggle = state
       if instant then

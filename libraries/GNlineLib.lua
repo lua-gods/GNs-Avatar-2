@@ -21,6 +21,7 @@ local function figureOutVec3(x,y,z)
    if typa == "Vector3" then
       return x:copy()
    elseif typa == "number" then
+   elseif typa == "number" then
       return vectors.vec3(x,y,z)
    end
 end
@@ -39,6 +40,7 @@ end
 local line = {}
 line.__index = line
 line.__type = "gn.line"
+line.__type = "gn.line"
 
 ---Creates a new line.
 ---@param preset line?
@@ -47,6 +49,9 @@ function line.new(preset)
    preset = preset or {}
    local next_free = #lines+1 
    local new = setmetatable({},line)
+   new.a = preset.a or vectors.vec3()
+   new.b = preset.b or vectors.vec3()
+   new.width = preset.width or 0.125
    new.a = preset.a or vectors.vec3()
    new.b = preset.b or vectors.vec3()
    new.width = preset.width or 0.125
@@ -71,10 +76,15 @@ function line:setAB(x1,y1,z1,x2,y2,z2)
    if type(x1) == "Vector3" and type(x2) == "Vector3" then
       self.a = x1:copy()
       self.b = x2:copy()
+      self.a = x1:copy()
+      self.b = x2:copy()
    else
       self.a = vectors.vec3(x1,y1,z1)
       self.b = vectors.vec3(x2,y2,z2)
+      self.a = vectors.vec3(x1,y1,z1)
+      self.b = vectors.vec3(x2,y2,z2)
    end
+   self:update()
    self:update()
    return self
 end

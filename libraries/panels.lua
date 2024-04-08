@@ -4,7 +4,7 @@
 / /_/ / /|  / /_/ / / / / / / / / / / / / /_/ / /_/  __(__  )
 \____/_/ |_/\__,_/_/ /_/ /_/_/_/ /_/ /_/\__,_/\__/\___/____]]
 
----@alias panel.any panel.element | panel.button | panel.toggle
+---@alias panels.any panels.element | panels.button | panels.toggle | panels.display | panels.textInput
 
 return {
    newElement = require("libraries.panels.element").new,
@@ -13,5 +13,6 @@ return {
    newDisplayButton = require("libraries.panels.elements.displayButton").new,
    newPage = require("libraries.panels.page").new,
    newDisplay = require("libraries.panels.display").new,
-   newTextEdit = require("libraries.panels.elements.textInput").new
+   newTextEdit = require("libraries.panels.elements.textInput").new,
+   newSpinbox = require("libraries.panels.elements.spinbox").new,
 }

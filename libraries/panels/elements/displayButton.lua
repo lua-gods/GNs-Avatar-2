@@ -4,27 +4,23 @@ local config = require("libraries.panels.config")
 local element = require("libraries.panels.element")
 local button = require("libraries.panels.elements.button")
 
----@class panel.button.display : panel.button
----@field display_page panel.display
+---@class panels.button.display : panels.button
+---@field display_page panels.display
 local displayButton = {}
 displayButton.__index = function (t,i)
    return rawget(t,i) or displayButton[i] or button[i] or element[i]
 end
-displayButton.__type = "panel.button.display"
+displayButton.__type = "panels.button.display"
 
----@param preset panel.button.display?
----@return panel.button.display
+
+---@param preset panels.button.display?
+---@return panels.button.display
 function displayButton.new(preset)
    preset = preset or {}
-   ---@type panel.button.display
+   ---@type panels.button.display
    ---@diagnostic disable-next-line: assign-type-mismatch
    local new = button.new(preset)
    new.display_page = preset.display_page
-   new._press_handler = function (pressed)
-      if pressed and new.parent and new.display_page and new.display_page.page then
-         new.parent:setProxyPage(new.display_page.page)
-      end
-   end
    new.PRESSED:register(function ()
 
    end,"_internal")
@@ -34,9 +30,13 @@ function displayButton.new(preset)
    return setmetatable(new,displayButton)
 end
 
----@param d panel.display
----@return panel.button.display
+
+---@param d panels.display
+---@generic self
+---@param self self
+---@return self
 function displayButton:setDisplay(d)
+   ---@cast self panels.button.display
    if self.display_page then
       self.display_page.display.SIZE_CHANGED:remove("_button_display")
       self.display:removeChild(self.display_page.display)
@@ -52,6 +52,12 @@ function displayButton:setDisplay(d)
    return self
 end
 
+function displayButton:press()
+   if self.parent and self.display_page and self.display_page.page then
+      self.parent:setProxyPage(self.display_page.page)
+   end
+end
+
 function displayButton:updateByPage()
    local d = self.display_page
    local s = d.display.ContainmentRect.w-d.display.ContainmentRect.y
@@ -59,8 +65,8 @@ function displayButton:updateByPage()
       self.display:setDimensions(c.x,c.y,c.z,c.y+s)
 end
 
------@param d panel.display
------@return panel.button.display
+-----@param d panels.display
+-----@return panels.button.display
 --function displayButton:setDisplay(d)
 --   if self.display_page then
 --      self.display_page.display.DIMENSIONS_CHANGED:remove("_button_display")
