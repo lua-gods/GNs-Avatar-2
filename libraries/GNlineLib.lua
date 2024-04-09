@@ -21,13 +21,13 @@ local function figureOutVec3(x,y,z)
    if typa == "Vector3" then
       return x:copy()
    elseif typa == "number" then
-   elseif typa == "number" then
       return vectors.vec3(x,y,z)
    end
 end
 
 ---@class line # A straight path from point A to B
 ---@field id integer
+---@field visible boolean
 ---@field a Vector3? # First end of the line
 ---@field b Vector3? # Second end of the line
 ---@field dir Vector3? # The difference between the first and second ends position
@@ -49,15 +49,14 @@ function line.new(preset)
    preset = preset or {}
    local next_free = #lines+1 
    local new = setmetatable({},line)
+   new.visible = true
    new.a = preset.a or vectors.vec3()
    new.b = preset.b or vectors.vec3()
    new.width = preset.width or 0.125
-   new.a = preset.a or vectors.vec3()
-   new.b = preset.b or vectors.vec3()
    new.width = preset.width or 0.125
    new.color = preset.color or vectors.vec3(1,1,1)
    new.depth = preset.depth or 1
-   new.model = default_model:newSprite("line"..next_free):setTexture(default_texture,1,1):setRenderType("SOLID")
+   new.model = default_model:newSprite("line"..next_free):setTexture(default_texture,1,1):setRenderType("EMISSIVE_SOLID")
    new.id = next_free
    lines[next_free] = new
    return new
@@ -175,11 +174,21 @@ function line:free()
    self = nil
 end
 
+---@param visible boolean
+---@return line
+function line:setVisible(visible)
+   self.visible = visible
+   self.model:setVisible(visible)
+   if visible then
+      self:immediateUpdate()
+   end
+   return self
+end
+
 ---Queues itself to be updated in the next frame.
 ---@return line
 function line:update()
-   ---insertion sort
-   if not self._queue_update then
+   if not self._queue_update and self.visible then
       queue_update[#queue_update+1] = self
       self._queue_update = true
    end
@@ -189,8 +198,8 @@ end
 ---Immediately updates the line without queuing it.
 ---@return line
 function line:immediateUpdate()
-   local offset = cpos - self.a
    local a,b = self.a,self.b
+   local offset = a - cpos
    local dir = (b - a)
    self.dir = dir
    local l = dir:length()
@@ -203,9 +212,9 @@ function line:immediateUpdate()
       (p:cross(d) * w):augmented(0),
       (-d * (l + w * 0.5)):augmented(0),
       p:augmented(0),
-      (a + c * 0.5):augmented()
+      (a + c * 0.5):augmented(1)
    )
-   self.model:setMatrix(mat * self.depth)
+   self.model:setMatrix(mat)
    return self
 end
 

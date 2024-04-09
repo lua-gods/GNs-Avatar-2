@@ -2,6 +2,7 @@
 local eventLib = require("libraries.eventLib")
 local config = require("libraries.panels.config")
 local element = require("libraries.panels.element")
+local overflowPrint = require("libraries.debug.overflowPrint")
 
 ---@class panels.button : panels.element
 ---@field PRESSED eventLib

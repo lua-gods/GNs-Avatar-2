@@ -123,7 +123,6 @@ function page:press()
    self.pressed = true
    if self.selected then
       self.selected:press()
-      self.selected.PRESS_CHANGED:invoke()
    end
    return self
 end
@@ -137,7 +136,6 @@ function page:release()
    self.pressed = false
    if self.selected then
       self.selected:release()
-      self.selected.PRESS_CHANGED:invoke()
    end
    return self
 end

@@ -29,8 +29,8 @@ function spinbox.new(preset)
    ---@type panels.spinbox
    local new = textInput.new(preset)
    setmetatable(new,spinbox)
-   new.min_value = preset.min_value or 0
-   new.max_value = preset.max_value or 100
+   new.min_value = preset.min_value or -math.huge
+   new.max_value = preset.max_value or math.huge
    new.step_value = preset.step_value or 1
 
    events.MOUSE_SCROLL:register(function (dir)
@@ -61,7 +61,7 @@ end
 ---@param self self
 ---@return self
 function spinbox:setAcceptedValue(number)
-   self.editing_value = ""
+   self.editing_value = tostring(number)
    ---@cast self panels.spinbox
    if #tostring(number) > 0 then
       self.value = self:validateValue(number)
@@ -71,6 +71,18 @@ function spinbox:setAcceptedValue(number)
    self:updateValueDisplay()
    self.VALUE_ACCEPTED:invoke(self.value)
    return self
+end
+
+---@param high number
+function spinbox:setMaximumValue(high)
+   self.max_value = high
+   self:updateValueDisplay()
+end
+
+---@param low number
+function spinbox:setMinimumValue(low)
+   self.min_value = low
+   self:updateValueDisplay()
 end
 
 function spinbox:validateValue(value)

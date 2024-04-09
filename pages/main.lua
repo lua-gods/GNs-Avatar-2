@@ -1,24 +1,47 @@
 local sidebar = require("host.sidebar")
-local panels = require("libraries.panels")
-local page = panels.newPage()
+local elements = require("libraries.panels")
+local page = elements.newPage()
 
 local pages = {
-   "command_utilities"
+
+   utilities = {
+      page = require("pages.utilities"),
+      name = "Utilities"
+   },
+   showAllElements = {
+      page = require("pages.showAllElements"),
+      name = "Show All Elements"
+   },
+   commandUtilities = {
+      page = require("pages.commandUtilities"),
+      name = "Command Utilities"
+   },
 }
+
+--local folder_path = "pages"
+--for key, value in pairs(listFiles(folder_path,false)) do
+--   if value ~= folder_path..".main" then
+--      local name = value:sub(#folder_path+2,-1):gsub("%u", "_%1"):lower()
+--      local p,icon = require(value)
+--      sidebar:newPage(p,name)
+--      pages[#pages+1] = name
+--   end
+--end
 
 local e = {}
 
-for key, value in pairs(pages) do
-   local btn = panels.newButton():setText(value:gsub("_"," "))
+for key, p in pairs(pages) do
+   --local name = value:gsub("_", " ")
+   --name = name:sub(1,1):upper()..name:sub(2,-1)
+   local btn = elements.newButton():setText(p.name)
    e[#e+1] = btn
    btn.PRESSED:register(function ()
-      sidebar:setPage(value)
+      sidebar:setPage(p.page)
    end)
 end
 
+page:addElement(elements.newElement():setText({text="Just GN v5",color = "#4dd966"}):setIconText(":@gn:",true))
+page:addElement(elements.newElement():forceHeight(8))
 page:addElement(table.unpack(e))
-
-page:addElement(panels.newSpinbox())
-page:addElement(panels.newVector3Button())
 
 sidebar:newPage(page,"main")

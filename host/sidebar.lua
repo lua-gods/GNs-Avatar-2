@@ -104,13 +104,18 @@ screen:addChild(display_offset)
 
 
 local sidebar = {}
+---@param page panels.page
+---@param name string
+---@return table
 function sidebar:newPage(page,name)
    pages[name] = page
    return self
 end
 
+---@param page panels.page|string
 function sidebar:setPage(page)
-   display:setPage(pages[page])
+---@diagnostic disable-next-line: param-type-mismatch
+   display:setPage(pages[page] or page)
 end
 
 function sidebar.newReturnButton()

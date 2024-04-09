@@ -4,7 +4,7 @@ local page = panels.newPage()
 
 local pages = {}
 
-local folder_path = "pages.commands"
+local folder_path = "pages.utilities."
 for key, value in pairs(listFiles(folder_path,false)) do
    if value ~= folder_path..".main" then
       local name = value:sub(#folder_path+2,-1):gsub("%u", "_%1"):lower()
@@ -29,5 +29,4 @@ end
 
 page:addElement(table.unpack(e))
 page:addElement(sidebar.newReturnButton())
-
 return page

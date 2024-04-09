@@ -24,7 +24,7 @@ vector3Button.__type = "panels.vector3Button"
 ---@param button_preset panels.button.display?
 ---@param display_preset panels.display?
 ---@param spinbox_preset panels.spinbox?
----@return panels.button.display
+---@return panels.vector3Button
 function vector3Button.new(button_preset,display_preset,spinbox_preset)
    display_preset = display_preset or {}
    display_preset.direction = "HORIZONTAL"
@@ -43,9 +43,10 @@ function vector3Button.new(button_preset,display_preset,spinbox_preset)
    pg:addElement(btn.y_spinbox)
    pg:addElement(btn.z_spinbox)
 
-   btn.x_spinbox.VALUE_CHANGED:register(function ()
-      btn:updateVector()
-   end)
+   btn.x_spinbox.VALUE_CHANGED:register(function () btn:updateVector() end)
+   btn.y_spinbox.VALUE_CHANGED:register(function () btn:updateVector() end)
+   btn.z_spinbox.VALUE_CHANGED:register(function () btn:updateVector() end)
+
    setmetatable(btn,vector3Button)
    
    btn.VECTOR_CHANGED = eventLib.new()
@@ -53,17 +54,22 @@ function vector3Button.new(button_preset,display_preset,spinbox_preset)
 end
 
 function vector3Button:updateVector()
-   local x = tonumber(self.x_spinbox.editing_value) or self.x_spinbox.value
-   local y = tonumber(self.y_spinbox.editing_value) or self.y_spinbox.value
-   local z = tonumber(self.z_spinbox.editing_value) or self.z_spinbox.value
-   self.Vector = vectors.vec3(x,y,z)
-   self.VECTOR_CHANGED:invoke(self.Vector)
+   local x = tonumber(self.x_spinbox.editing_value) or tonumber(self.x_spinbox.value)
+   local y = tonumber(self.y_spinbox.editing_value) or tonumber(self.y_spinbox.value)
+   local z = tonumber(self.z_spinbox.editing_value) or tonumber(self.z_spinbox.value)
+   if x and y and z then
+      self.Vector = vectors.vec3(x,y,z)
+      self.VECTOR_CHANGED:invoke(self.Vector)
+   else
+      self.VECTOR_CHANGED:invoke()
+   end
 end
 
 function vector3Button:setVector(vec)
    self.x_spinbox:setAcceptedValue(vec.x)
    self.y_spinbox:setAcceptedValue(vec.y)
    self.z_spinbox:setAcceptedValue(vec.z)
+   self:updateVector()
 end
 
 return vector3Button

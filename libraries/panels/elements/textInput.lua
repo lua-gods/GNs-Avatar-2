@@ -69,13 +69,18 @@ function textInput.new(preset)
                new.parent:press()
                new:setAcceptedValue(value)
             elseif k == "escape" then
-               new:press()
+               new.parent:press()
+               new:updateValueDisplay()
+               new:setAcceptedValue(new.value)
+               new.VALUE_CHANGED:invoke()
+               return true
             end
             if t == "number" then
                value = tonumber(value) or 0
             end
             new.editing_value = value
             new:updateValueDisplay()
+            new.VALUE_CHANGED:invoke()
          end
          return true
       end
@@ -110,8 +115,9 @@ end
 ---@return self
 function textInput:setAcceptedValue(value)
    ---@cast self panels.textInput
-   self.editing_value = ""
-   self.value = tonumber(value)
+   self.is_editing = false
+   self.editing_value = tostring(value)
+   self.value = value
    self:updateValueDisplay()
    self.VALUE_ACCEPTED:invoke(self.value)
    return self
@@ -175,6 +181,7 @@ function textInput:updateValueDisplay()
       else
          self.input_display:setVisible(true)
       end
+      self.input_container.Sprite:setColor(0.6,0.6,0.6)
    else
       self.label:setVisible(#tostring(self.value) == 0)
       if #tostring(self.value) == 0 then
@@ -184,6 +191,7 @@ function textInput:updateValueDisplay()
       end
       value = tostring(self.value)
       text = (self.prefix or "")..value..(self.suffix or "")
+      self.input_container.Sprite:setColor(1,1,1)
    end
    if tonumber(value) then
       self.input_display:setText({text=text,color=self.value_color or "white"}):setAlign(1,0.5)

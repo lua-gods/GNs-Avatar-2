@@ -104,10 +104,7 @@ for key, script in pairs(listFiles("host",true)) do
    require(script)
 end
 
+--- initialize default page
 local sidebar = require("host.sidebar")
--- sidebar pages initializer
-for _, paths in pairs(listFiles("pages",true)) do
-   require(paths)
-end
-
+require("pages.main")
 sidebar:setPage("main")

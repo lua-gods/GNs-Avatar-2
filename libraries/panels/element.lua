@@ -73,6 +73,17 @@ function element.new(preset)
    return new
 end
 
+---@generic self
+---@param self self
+---@return self
+---@param custom_height number?
+function element:forceHeight(custom_height)
+   ---@cast self panels.element
+   self.custom_height = custom_height or 12
+   self.display:setDimensions(0,0,0,self.custom_height)
+   return self
+end
+
 function element:press()
    if not self.is_pressed then
       self.is_pressed = true
@@ -143,6 +154,7 @@ function element:setIconBlock(icon)
 end
 
 ---@param text string
+---@param is_emoji boolean
 ---@generic self
 ---@param self self
 ---@return self

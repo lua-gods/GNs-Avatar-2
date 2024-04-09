@@ -45,9 +45,11 @@ function display:setPage(p,no_history)
          self.page_history[#self.page_history+1] = self.page
       end
       if self.page then
+         self.page.PRESSENCE_CHANGED:invoke(false)
          self.page.display = nil
          self:detachDisplays()
       end
+      p.PRESSENCE_CHANGED:invoke(true)
       self.page = p
       self:updateDisplays()
       self.page.display = self
