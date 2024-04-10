@@ -20,7 +20,7 @@ return function ()
    
    local e = {}
    
-   for _, p in pairs(pages) do
+   for i, p in pairs(pages) do
       --local name = value:gsub("_", " ")
       --name = name:sub(1,1):upper()..name:sub(2,-1)
       local btn = panels.newButton():setText(p.name)
@@ -39,9 +39,10 @@ return function ()
       btn.PRESSED:register(function ()
          local new
          if not p.instance then
-            new = p.instance
-         else
             new = p.page()
+            pages[i].instance = new
+         else
+            new = p.instance
          end
          sidebar:setPage(new)
       end)
