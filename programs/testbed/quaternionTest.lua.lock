@@ -1,0 +1,41 @@
+local lineLib = require("libraries.GNlineLib")
+local quat = require("libraries.quaternion")
+local model = models:newPart("quattest","WORLD"):setPos(0,0,0)
+
+local object = model:newPart("object")
+object:newBlock("block"):setBlock("minecraft:crafting_table"):pos(-8,-8,-8)
+local q = quat.new()
+local dir = vectors.vec3(1,1,0)
+
+
+local line = lineLib.new():setColor(1,0.5,0)
+line:setAB(-dir * 100,dir * 100):setWidth(0.05)
+
+
+events.WORLD_RENDER:register(function ()
+   q:setFromAxisAngle(dir:normalized(),math.sin(client:getSystemTime() / 1000))
+   q:normalize()
+   object:setMatrix(q:getMatrix())
+end)
+
+
+if not host:isHost() then return end
+
+local panels = require("libraries.panels")
+local sidebar = require("host.sidebar")
+
+
+local page = panels.newPage()
+
+
+local vec3button = panels.newVector3Button()
+vec3button:setVector(dir * 10)
+vec3button.VECTOR_CHANGED:register(function ()
+   dir = vec3button.Vector / 10
+   line:setAB(-dir * 10,dir * 10)
+end)
+
+page:addElement(vec3button)
+
+page:addElement(sidebar.newReturnButton())
+return page

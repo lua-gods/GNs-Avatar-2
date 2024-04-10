@@ -1,3 +1,4 @@
+---@diagnostic disable: duplicate-set-field
 
 --[[
 do
@@ -36,13 +37,25 @@ local function sound(x,y,z,sond,pitch)
    end
 end
 
+--figuraMetatables.HostAPI.__index.isHost = function ()
+--   return false
+--end
+
 if host:isHost() then
+   local _require = require
+   function require(path)
+      local start = client.getSystemTime()
+      local result = {_require(path)}
+      local elapsed = client.getSystemTime() - start
+      --print(path, "took", elapsed, "ms")
+      return table.unpack(result)
+   end
+
    -- only send when player has permission to do so
    local og = figuraMetatables.HostAPI.__index.sendChatCommand
    
    local queued_commands = {} ---@type string[] 
    
-   ---@diagnostic disable-next-line: duplicate-set-field
    figuraMetatables.HostAPI.__index.sendChatCommand = function (self, command)
       queued_commands[#queued_commands+1] = command
    end

@@ -56,7 +56,7 @@ function line.new(preset)
    new.width = preset.width or 0.125
    new.color = preset.color or vectors.vec3(1,1,1)
    new.depth = preset.depth or 1
-   new.model = default_model:newSprite("line"..next_free):setTexture(default_texture,1,1):setRenderType("EMISSIVE_SOLID")
+   new.model = default_model:newSprite("line"..next_free):setTexture(default_texture,1,1):setRenderType("EMISSIVE_SOLID"):setScale(0,0,0)
    new.id = next_free
    lines[next_free] = new
    return new
@@ -72,11 +72,11 @@ end
 ---@param z2 number
 ---@return line
 function line:setAB(x1,y1,z1,x2,y2,z2)
-   if type(x1) == "Vector3" and type(x2) == "Vector3" then
+   if type(x1) == "Vector3" and type(y1) == "Vector3" then
       self.a = x1:copy()
-      self.b = x2:copy()
+      self.b = y1:copy()
       self.a = x1:copy()
-      self.b = x2:copy()
+      self.b = y1:copy()
    else
       self.a = vectors.vec3(x1,y1,z1)
       self.b = vectors.vec3(x2,y2,z2)

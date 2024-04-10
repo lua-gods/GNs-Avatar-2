@@ -6,11 +6,11 @@ math.epsilon = 0.00001
 ---@field y number
 ---@field z number
 ---@field w number
-Quat = {}
-Quat.__index = Quat
+quaternion = {}
+quaternion.__index = quaternion
 
-function Quat.new(x, y, z, w)
-   local self = setmetatable({}, Quat)
+function quaternion.new(x, y, z, w)
+   local self = setmetatable({}, quaternion)
    self.x = x or 0
    self.y = y or 0
    self.z = z or 0
@@ -18,7 +18,7 @@ function Quat.new(x, y, z, w)
    return self
 end
 
-function Quat:set(x, y, z, w)
+function quaternion:set(x, y, z, w)
    self.x = x
    self.y = y
    self.z = z
@@ -26,7 +26,7 @@ function Quat:set(x, y, z, w)
    return self
 end
 
-function Quat:addTime(v, t)
+function quaternion:addTime(v, t)
    local ax = v.x
    local ay = v.y
    local az = v.z
@@ -43,7 +43,7 @@ function Quat:addTime(v, t)
    return self
 end
 
-function Quat:multiply(q, p)
+function quaternion:multiply(q, p)
    if p then
       return self:multiplyQuaternions(q, p)
    else
@@ -51,7 +51,7 @@ function Quat:multiply(q, p)
    end
 end
 
-function Quat:multiplyQuaternions(a, b)
+function quaternion:multiplyQuaternions(a, b)
    local qax = a.x
    local qay = a.y
    local qaz = a.z
@@ -67,7 +67,7 @@ function Quat:multiplyQuaternions(a, b)
    return self
 end
 
-function Quat:setFromUnitVectors(v1, v2)
+function quaternion:setFromUnitVectors(v1, v2)
    local vx = vectors.vec3()
    local r = v1:dot(v2) + 1
    if r < math.epsilon then
@@ -87,7 +87,7 @@ function Quat:setFromUnitVectors(v1, v2)
    return self:normalize()
 end
 
-function Quat:arc(v1, v2)
+function quaternion:arc(v1, v2)
    local x1 = v1.x
    local y1 = v1.y
    local z1 = v1.z
@@ -117,7 +117,7 @@ function Quat:arc(v1, v2)
    return self
 end
 
-function Quat:normalize()
+function quaternion:normalize()
    local l = self:length()
    if l == 0 then
       self:set(0, 0, 0, 1)
@@ -131,11 +131,11 @@ function Quat:normalize()
    return self
 end
 
-function Quat:inverse()
+function quaternion:inverse()
    return self:conjugate():normalize()
 end
 
-function Quat:invert(q)
+function quaternion:invert(q)
    self.x = q.x
    self.y = q.y
    self.z = q.z
@@ -144,22 +144,22 @@ function Quat:invert(q)
    return self
 end
 
-function Quat:conjugate()
+function quaternion:conjugate()
    self.x = -self.x
    self.y = -self.y
    self.z = -self.z
    return self
 end
 
-function Quat:length()
+function quaternion:length()
    return math.sqrt(self.x * self.x + self.y * self.y + self.z * self.z + self.w * self.w)
 end
 
-function Quat:lengthSq()
+function quaternion:lengthSq()
    return self.x * self.x + self.y * self.y + self.z * self.z + self.w * self.w
 end
 
-function Quat:copy(q)
+function quaternion:copy(q)
    self.x = q.x
    self.y = q.y
    self.z = q.z
@@ -167,19 +167,19 @@ function Quat:copy(q)
    return self
 end
 
-function Quat:clone(q)
-   return Quat.new(self.x, self.y, self.z, self.w)
+function quaternion:clone(q)
+   return quaternion.new(self.x, self.y, self.z, self.w)
 end
 
-function Quat:testDiff(q)
+function quaternion:testDiff(q)
    return self:equals(q) and false or true
 end
 
-function Quat:equals(q)
+function quaternion:equals(q)
    return self.x == q.x and self.y == q.y and self.z == q.z and self.w == q.w
 end
 
-function Quat:toString()
+function quaternion:toString()
    return "Quat[" ..
    string.format("%.4f", self.x) ..
    ", (" ..
@@ -187,7 +187,7 @@ function Quat:toString()
    ", " .. string.format("%.4f", self.z) .. ", " .. string.format("%.4f", self.w) .. ")]"
 end
 
-function Quat:setFromEuler(x, y, z)
+function quaternion:setFromEuler(x, y, z)
    local c1 = math.cos(x * 0.5)
    local c2 = math.cos(y * 0.5)
    local c3 = math.cos(z * 0.5)
@@ -201,7 +201,7 @@ function Quat:setFromEuler(x, y, z)
    return self
 end
 
-function Quat:setFromAxis(axis, rad)
+function quaternion:setFromAxis(axis, rad)
    axis:normalize()
    rad = rad * 0.5
    local s = math.sin(rad)
@@ -212,7 +212,7 @@ function Quat:setFromAxis(axis, rad)
    return self
 end
 
-function Quat:setFromMat33(m)
+function quaternion:setFromMat33(m)
    local trace = m[1] + m[5] + m[9]
    local s
    if trace > 0 then
@@ -246,7 +246,7 @@ function Quat:setFromMat33(m)
    return self
 end
 
-function Quat:toArray(array, offset)
+function quaternion:toArray(array, offset)
    offset = offset or 0
    array[offset] = self.x
    array[offset + 1] = self.y
@@ -254,13 +254,13 @@ function Quat:toArray(array, offset)
    array[offset + 3] = self.w
 end
 
-function Quat:fromArray(array, offset)
+function quaternion:fromArray(array, offset)
    offset = offset or 0
    self:set(array[offset], array[offset + 1], array[offset + 2], array[offset + 3])
    return self
 end
 
-function Quat:getMatrix()
+function quaternion:getMatrix()
    local mat = matrices.mat4()
    local x,y,z,w = self.x,self.y,self.z,self.w
    local x2,y2,z2 = x+x, y+y, z+z
@@ -290,7 +290,7 @@ function Quat:getMatrix()
    return mat
 end
 
-function Quat:getEular()
+function quaternion:getEular()
    local mat = self:getMatrix()
 
    local x = math.asin(math.clamp(mat.v23, -1,1))
@@ -308,4 +308,4 @@ function Quat:getEular()
    return vectors.vec3(math.deg(x), math.deg(y), math.deg(z))
 end
 
-return Quat
+return quaternion

@@ -3,11 +3,12 @@ local panels = require("libraries.panels")
 
 return function ()
    local page = panels.newPage()
-   for key, value in pairs(panels) do
-      if key ~= "newPage" and key ~= "newDisplay" then
-         page:addElement(value():setText(key))   
-      end
-   end
+   local e = {
+      panels.newButton():setText("button")
+   }
+   
+   e[1].PRESSED:register(function () print("ligma") end)
+   page:addElement(table.unpack(e))
    page:addElement(sidebar.newReturnButton())
    return page
 end

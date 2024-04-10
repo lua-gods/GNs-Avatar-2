@@ -4,18 +4,30 @@ local page = elements.newPage()
 
 local pages = {
 
-   utilities = {
+   {
       page = require("pages.utilities"),
       name = "Utilities"
    },
-   showAllElements = {
+   {
       page = require("pages.showAllElements"),
       name = "Show All Elements"
    },
-   commandUtilities = {
+   {
       page = require("pages.commandUtilities"),
       name = "Command Utilities"
    },
+   --{
+   --   page = require("programs.testbed.quaternionTest"),
+   --   name = "Quaternion"
+   --},
+   {
+      page = require("pages.settings"),
+      name = "Settings",
+      icon = {
+         value = ":tool:",
+         type = "emoji"
+      }
+   }
 }
 
 --local folder_path = "pages"
@@ -30,13 +42,31 @@ local pages = {
 
 local e = {}
 
-for key, p in pairs(pages) do
+for _, p in pairs(pages) do
    --local name = value:gsub("_", " ")
    --name = name:sub(1,1):upper()..name:sub(2,-1)
    local btn = elements.newButton():setText(p.name)
+   if p.icon then
+      if p.icon.type == "emoji" then
+         btn:setIconText(p.icon.value,true)
+      elseif p.icon.type == "text" then
+         btn:setIconText(p.icon.value,false)
+      elseif p.icon.type == "item" then
+         btn:setIconItem(p.icon.value)
+      elseif p.icon.type == "block" then
+         btn:setIconBlock(p.icon.value)
+      end
+   end
    e[#e+1] = btn
    btn.PRESSED:register(function ()
-      sidebar:setPage(p.page)
+      local new
+      if not p.instance then
+         p.instance = p.page()
+         new = p.instance
+      else
+         new = p.page()
+      end
+      sidebar:setPage(new)
    end)
 end
 
