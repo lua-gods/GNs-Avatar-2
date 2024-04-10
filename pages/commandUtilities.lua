@@ -39,7 +39,6 @@ return function ()
       btn.PRESSED:register(function ()
          local new
          if not p.instance then
-            p.instance = p.page()
             new = p.instance
          else
             new = p.page()

@@ -61,8 +61,8 @@ for _, p in pairs(pages) do
    btn.PRESSED:register(function ()
       local new
       if not p.instance then
-         p.instance = p.page()
          new = p.instance
+         print("new")
       else
          new = p.page()
       end
