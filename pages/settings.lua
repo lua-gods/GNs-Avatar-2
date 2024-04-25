@@ -3,10 +3,11 @@ local panels = require("libraries.panels")
 
 return function ()
    local page = panels.newPage()
-   local e = {
-      panels.newButton():setText("button")
-   }
+   local e = {}
    
+   for i = 1, 50, 1 do
+      e[#e+1] = panels.newButton():setText("button")
+   end
    e[1].PRESSED:register(function () print("ligma") end)
    page:addElement(table.unpack(e))
    page:addElement(sidebar.newReturnButton())

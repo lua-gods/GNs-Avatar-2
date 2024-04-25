@@ -12,7 +12,7 @@ return function ()
       local t = e[1].value 
       ---@cast t string
 
-      local file = require("libraries.File")
+      local file = require("libraries.file")
       local base64 = require("libraries.base64")
       local f = file.new("images/"..t..".png")
       local ok,result = pcall(f.readByteArray,f,t)

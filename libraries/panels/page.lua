@@ -80,22 +80,19 @@ end
 ---@param relative boolean?
 ---@return self
 function page:setSelected(x, relative)
-   if x == 0 and relative == false then
-      self.selected:unhover()
-      self.selected.HOVER_CHANGED:invoke()
-
-      self.selected = self.elements[1]
-      self.selected_index = 1
-      return self
-   end
-   if self.proxy then
+   if self.proxy then -- process proxy instead of default if one exists
       self.proxy:setSelected(x,relative)
       return self
    end
-   if #self.elements == 0 then return self end
-   self.last_selected = self.selected
+
+   if #self.elements == 0 then return self end -- no elements
    
-   local new_pos = math.clamp((relative and self.selected_index or 0) - x, 1, #self.elements)
+   self.last_selected = self.selected
+   local new_pos
+   if relative then new_pos = self.selected_index - x
+   else new_pos = x end
+   new_pos = math.clamp(new_pos, 1, #self.elements) -- clamp
+   
    if not (self.selected and self.selected._capture_cursor) then -- only move when the cursor is not captured
       self.selected_index = new_pos
       self.selected = self.elements[self.selected_index]

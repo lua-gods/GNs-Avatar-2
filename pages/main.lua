@@ -63,16 +63,16 @@ for i, p in pairs(pages) do
       if not p.instance then
          new = p.page()
          pages[i].instance = new
-         print("new")
       else
          new = p.instance
       end
       sidebar:setPage(new)
+      new:setSelected(#new.elements)
    end)
 end
 
 page:addElement(elements.newElement():setText({text="Just GN v5",color = "#4dd966"}):setIconText(":@gn:",true))
 page:addElement(elements.newElement():forceHeight(8))
 page:addElement(table.unpack(e))
-
+page:setSelected(#page.elements)
 sidebar:newPage(page,"main")

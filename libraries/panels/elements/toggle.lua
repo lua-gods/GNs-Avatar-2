@@ -44,7 +44,7 @@ function toggle.new(preset)
 
    new.PRESSED:register(function ()
       new.toggle = not new.toggle
-      new.TOGGLED:invoke()
+      new.TOGGLED:invoke(new.toggle)
    end,"_toggle")
 
    

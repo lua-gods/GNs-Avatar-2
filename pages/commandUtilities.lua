@@ -8,7 +8,7 @@ return function ()
    local folder_path = "pages.commands"
    for key, value in pairs(listFiles(folder_path,false)) do
       if value ~= folder_path..".main" then
-         local name = value:sub(#folder_path+2,-1):gsub("%u", " %1"):lower()
+         local name =(" "..value:sub(#folder_path+2,-1):gsub("%u", " %1"):lower()):gsub('%A%a', string.upper):sub(2, -1)
          local p = require(value)
          pages[#pages+1] = {
             name = name,

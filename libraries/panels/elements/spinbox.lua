@@ -74,15 +74,19 @@ function spinbox:setAcceptedValue(number)
 end
 
 ---@param high number
+---@return self
 function spinbox:setMaximumValue(high)
    self.max_value = high
    self:updateValueDisplay()
+   return self
 end
 
 ---@param low number
+---@return self
 function spinbox:setMinimumValue(low)
    self.min_value = low
    self:updateValueDisplay()
+   return self
 end
 
 function spinbox:validateValue(value)

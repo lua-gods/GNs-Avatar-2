@@ -4,7 +4,12 @@ local input = keybinds:newKeybind("weapon.use","key.mouse.middle")
 local enabled = false
 local shooting = false
 
-local scale = 5
+if not host:isHost() then
+   enabled = true
+end
+
+local scale = 500
+local s = 0
 
 local lazer = {
    lineLib.new(),
@@ -14,6 +19,7 @@ local lazer = {
 }
 
 function pings.shootingLazer(toggle)
+   s = 0
    shooting = toggle
    for key, line in pairs(lazer) do
       line:setVisible(toggle)
@@ -46,19 +52,20 @@ events.WORLD_RENDER:register(function (dt)
          for key, line in pairs(lazer) do
             line:setA(from):setB(pos)
          end
-         lazer[4]:setWidth(math.lerp(1,3,math.random()) * scale)
-         lazer[3]:setWidth(math.lerp(1,3,math.random()) * scale)
-         lazer[2]:setWidth(math.lerp(0.5,1,math.random()) * scale)
-         lazer[1]:setWidth(math.lerp(0.25,0.5,math.random()) * scale)
+         s = math.lerp(s,scale,0.00001)
+         lazer[4]:setWidth(math.lerp(1,3,math.random()) * s)
+         lazer[3]:setWidth(math.lerp(1,3,math.random()) * s)
+         lazer[2]:setWidth(math.lerp(0.5,1,math.random()) * s)
+         lazer[1]:setWidth(math.lerp(0.25,0.5,math.random()) * s)
          
          particles:newParticle("minecraft:flash",pos):color(0,1,0)
          
-         sounds["minecraft:block.beacon.activate"]:pos(math.lerp(from,pos,math.random())):pitch(math.max(2/scale,0.5)):attenuation(scale):play()
+         sounds["minecraft:block.beacon.activate"]:pos(math.lerp(from,pos,math.random())):pitch(math.max(2/s,0.5)):attenuation(s):play()
 
          local dir = (to-from):normalize()
          for i = 0, 64, 16 do
-            local p = pos + dir * i + vectors.vec3((math.random()-0.5) * 0.5 * scale * 2,(math.random()-0.5) * 0.5 * scale * 2,(math.random()-0.5) * 0.5 * scale * 2)
-            host:sendChatCommand(string.format("/summon tnt %.2f %.2f %.2f {Fuse:-1,Invunerable:1b,ExplosionRadius:%i}",p.x,p.y,p.z,math.clamp(scale,1,16)))
+            local p = pos + dir * i + vectors.vec3((math.random()-0.5) * 0.5 * s * 2,(math.random()-0.5) * 0.5 * s * 2,(math.random()-0.5) * 0.5 * s * 2)
+            host:sendChatCommand(string.format("/summon tnt %.2f %.2f %.2f {Fuse:-1,Invunerable:1b,ExplosionRadius:%i}",p.x,p.y,p.z,math.clamp(s,1,16)))
          end
          --host:sendChatCommand(string.format("/playsound minecraft:entity.generic.explode block @a %.2f %.2f %.2f",pos.x,pos.y,pos.z))
       end

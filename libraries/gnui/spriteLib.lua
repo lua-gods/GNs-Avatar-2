@@ -4,6 +4,7 @@ local eventLib = require("libraries.eventLib")
 local utils = require("libraries.gnui.utils")
 local core = require("libraries.gnui.core")
 
+local update = {}
 
 ---@class Sprite
 ---@field Texture Texture
@@ -24,6 +25,7 @@ local core = require("libraries.gnui.core")
 ---@field ExcludeMiddle boolean
 ---@field Visible boolean
 ---@field id integer
+---@field package _queue_update boolean
 local sprite = {}
 sprite.__index = sprite
 
@@ -55,20 +57,19 @@ function sprite.new(obj)
    sprite_next_free = sprite_next_free + 1
    
    new.TEXTURE_CHANGED:register(function ()
-      new:_deleteRenderTasks()
-      new:_buildRenderTasks()
-      new:_updateRenderTasks()
+      new:deleteRenderTasks()
+      new:buildRenderTasks()
+      new:update()
    end,core.internal_events_name)
 
    new.BORDER_THICKNESS_CHANGED:register(function ()
-      new:_deleteRenderTasks()
-      new:_buildRenderTasks()
+      new:deleteRenderTasks()
+      new:buildRenderTasks()
    end,core.internal_events_name)
    
    new.DIMENSIONS_CHANGED:register(function ()
-      new:_updateRenderTasks()
+      new:update()
    end,core.internal_events_name)
-
    return new
 end
 
@@ -77,10 +78,10 @@ end
 ---@return Sprite
 function sprite:setModelpart(part)
    if self.Modelpart then
-      self:_deleteRenderTasks()
+      self:deleteRenderTasks()
    end
    self.Modelpart = part
-   self:_buildRenderTasks()
+   self:buildRenderTasks()
    self.MODELPART_CHANGED:invoke(self.Modelpart)
    return self
 end
@@ -220,8 +221,8 @@ end
 ---@return Sprite
 function sprite:setRenderType(renderType)
    self.RenderType = renderType
-   self:_deleteRenderTasks()
-   self:_buildRenderTasks()
+   self:deleteRenderTasks()
+   self:buildRenderTasks()
    return self
 end
 
@@ -245,19 +246,26 @@ function sprite:copy()
 end
 
 function sprite:setVisible(visibility)
-   self:_updateRenderTasks()
    self.Visible = visibility
+   self:update()
    return self
 end
 
-function sprite:_deleteRenderTasks()
+function sprite:update()
+   if not self._queue_update then
+      self._queue_update = true
+      update[#update+1] = self
+   end
+end
+
+function sprite:deleteRenderTasks()
    for _, task in pairs(self.RenderTasks) do
       self.Modelpart:removeTask(task:getName())
    end
    return self
 end
 
-function sprite:_buildRenderTasks()
+function sprite:buildRenderTasks()
    if not self.Modelpart then return self end
    local b = self.BorderThickness
    local d = self.Texture:getDimensions()
@@ -277,10 +285,10 @@ function sprite:_buildRenderTasks()
          self.Modelpart:newSprite(self.id.."patch_br" ):setTexture(self.Texture,d.x,d.y),
       }
    end
-   self:_updateRenderTasks()
+   self:update()
 end
 
-function sprite:_updateRenderTasks()
+function sprite:updateRenderTasks()
    if not self.Modelpart then return self end
    local res = self.Texture:getDimensions()
    local uv = self.UV:copy():add(0,0,1,1)
@@ -457,5 +465,22 @@ function sprite:_updateRenderTasks()
       ):setVisible(self.Visible)
    end
 end
+
+local t = 19
+events.WORLD_TICK:register(function ()
+   t = t + 1
+   if t > 20 then
+      events.WORLD_RENDER:remove("priority-last")
+      events.WORLD_RENDER:register(function ()
+         if #update > 0 then
+            for i = 1, #update, 1 do
+               update[i]:updateRenderTasks()
+               update[i]._queue_update = nil
+            end
+            update = {}
+         end
+      end,"priority-last")
+   end
+end)
 
 return sprite

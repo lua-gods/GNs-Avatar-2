@@ -214,7 +214,7 @@ function line:immediateUpdate()
       p:augmented(0),
       (a + c * 0.5):augmented(1)
    )
-   self.model:setMatrix(mat)
+   self.model:setMatrix(mat * self.depth)
    return self
 end
 

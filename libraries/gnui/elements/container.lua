@@ -217,7 +217,7 @@ end
 function container:setSprite(sprite_obj)
    ---@cast self self
    if self.Sprite then
-      self.Sprite:_deleteRenderTasks()
+      self.Sprite:deleteRenderTasks()
       self.Sprite = nil
    end
    if sprite_obj then

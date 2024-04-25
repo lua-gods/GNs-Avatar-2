@@ -168,7 +168,7 @@ function textInput:_updateDisplayType()
    end
 end
 
----@package
+
 function textInput:updateValueDisplay()
    local text
    local value

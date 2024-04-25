@@ -91,7 +91,6 @@ end)
 events.MOUSE_SCROLL:register(function (dir)
    if display.focused then
       if display.page then
-
          display.page:setSelected(math.floor(dir + 0.5),true)
       end
       return true
