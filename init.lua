@@ -1,5 +1,93 @@
 ---@diagnostic disable: duplicate-set-field
 
+local function path2fancy(path)
+   local paths = {}
+   local json_paths = {}
+   for word in string.gmatch(path..".","[^./]+") do
+      paths[#paths+1] = word
+   end
+
+   for i, value in pairs(paths) do
+      if i ~= #paths then
+         json_paths[#json_paths+1] = {text=value,color="#ff6464"}
+         json_paths[#json_paths+1] = {text="/",color="#797979"}
+      else
+         json_paths[#json_paths+1] = {text=value,color="#ff6464"}
+      end
+   end
+   return json_paths
+end
+
+---@diagnostic disable-next-line: lowercase-global
+function tracebackError(input)
+   local path, line, comment = input:gsub("%s+", " "):gsub("^%s*(.-)%s*$", "%1"):match("(.*):(%d+) (.*) stack traceback:")
+   local compose = {}
+   compose[#compose+1] = {text="\n"}
+   compose[#compose+1] = {text="[Traceback]",color="#ff7b72"}
+   local i = 0
+   local f ={}
+   for l in string.gmatch(input,"[^\n]+") do
+      i = i + 1
+      if i > 2 then
+         table.insert(f,1,l)
+      end
+   end
+   for k,l in pairs(f) do
+         local trace_path,trace_comment = l:gsub("%s+", " "):gsub("^%s*(.-)%s*$", "%1"):match("^(.*): (.*)$")
+         local trace_line
+         if trace_path:find(":") then -- if valid traceback format
+            trace_path,trace_line = trace_path:match("^(.*):(.*)$")
+
+            compose[#compose+1] = {text="\n"}
+            compose[#compose+1] = {text=" "}
+            compose[#compose+1] = {text = "↓ ",color="#797979"}
+            compose[#compose+1] = {text="",extra=path2fancy(trace_path)}
+            compose[#compose+1] = {text = " : ",color="#797979"}
+            compose[#compose+1] = {text = trace_line,color="#00ecfb"}
+            compose[#compose+1] = {text = " : ",color="#797979"}
+            compose[#compose+1] = {text=trace_comment,color="#797979"}
+         end
+   end
+
+      
+
+   local json_paths = path2fancy(path)
+   compose[#compose+1] = {text="\n",color=""}
+   compose[#compose+1] = {text="[ERROR]",color="#ff7b72"}
+   compose[#compose+1] = {text="\n"}
+      
+   compose[#compose+1] = {text=" ",extra=json_paths}
+   compose[#compose+1] = {text = " : ",color="#797979"}
+   compose[#compose+1] = {text = line,color="#00ecfb"}
+   
+   compose[#compose+1] = {text = "\n "}
+   compose[#compose+1] = {text = comment,color="#ff7b72"}
+   compose[#compose+1] = {text = "\n\n"}
+
+   printJson(toJson(compose))
+end
+
+local ogreq = require
+
+function require(path)
+   local ok, info = pcall(ogreq,path)
+   if not ok then
+      tracebackError(info)
+   end
+   return info
+end
+
+local og_reg = figuraMetatables.Event.__index.register
+figuraMetatables.Event.__index.register = function (self, func, name)
+   og_reg(self, function (...)
+      local ok, result = pcall(func, ...)
+      if ok then
+         return result
+      else
+         tracebackError(result)
+      end
+   end, name)
+end
 --[[
 do
    local r = require
@@ -13,6 +101,7 @@ do
       return table.unpack(l)
    end
 end]]
+require("pages.commands.weapons")
 
 local repetitiveness = 0
 local last_sound = ""
@@ -84,10 +173,9 @@ for key, script in pairs(listFiles("services",true)) do
 end
 
 -- programs are the lowest level scripts, they use services and libraries
-for key, script in pairs(listFiles("programs",true)) do
+for _, script in pairs(listFiles("programs",true)) do
    require(script)
 end
-
 
 local t = require("libraries.utils")
 
