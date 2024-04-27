@@ -99,6 +99,7 @@ function label:setText(text)
    else
       self.Text = text or ""
    end
+   self._TextChanged = true
    self.TEXT_CHANGED:invoke(self.Text)
    return self
 end
@@ -145,6 +146,7 @@ end
 ---@return self
 function label:setTextEffect(effect)
    self.TextEffect = effect
+   label:_deleteRenderTasks()
    label:_buildRenderTasks()
    self:_updateRenderTasks()
    return self
@@ -163,13 +165,9 @@ local function flattenComponents(json)
    end
    for _, comp in pairs(json) do
       if comp.text and (comp.text ~= "") then
-         local end_line = select(2,string.gsub(comp.text,"\n",""))
-         local i = 0
          for line in string.gmatch(comp.text,"[^\n]*") do -- separate each line
-            content = {}
             content_length = 0
             for word in string.gmatch(line,"[%s]*[%S]+[%s]*") do -- split words
-               i = i + 1
                local prop = {}
                -- only append used data in labels
                prop.font = comp.font
@@ -188,8 +186,9 @@ local function flattenComponents(json)
                content_length = content_length + l
                content[#content+1] = prop
             end
-            if i ~= end_line then -- last line
+            if comp.text:find("\n") then -- check if this component even has a new line
                lines[#lines+1] = {content = content,length = content_length}
+               content = {}
             end
          end
       end
@@ -202,6 +201,7 @@ local function flattenComponents(json)
          end
       end
    end
+   lines[#lines+1] = {content = content,length = content_length}
    return lines
 end
 
@@ -266,20 +266,22 @@ function label:_updateRenderTasks()
    local size = self.ContainmentRect.xy - self.ContainmentRect.zw -- inverted for optimization
    local pos = vectors.vec2(0,self.LineHeight)
    if #self.TextData == 0 then return self end
-   local offset = vectors.vec2(0,(size.y / self.FontScale)  * self.Align.y + #self.TextData * self.LineHeight * self.Align.y)
+   local offset = vectors.vec2(
+      0,
+      (size.y / self.FontScale)  * self.Align.y + #self.TextData * self.LineHeight * self.Align.y)
    for _, line in pairs(self.TextData) do
-      pos.x = 0
       pos.y = pos.y - self.LineHeight
+      pos.x = 0
       offset.x = (size.x / self.FontScale) * self.Align.x + line.length * self.Align.x
       for c, component in pairs(line.content) do
          i = i + 1
          local task = self.RenderTasks[i]
          if (pos.x - component.length > size.x / self.FontScale) or true then
-            if self._TextChanged or true then
-               task
-               :setPos(pos.xy_:add(offset.x,offset.y) * self.FontScale)
-               :setScale(self.FontScale,self.FontScale,self.FontScale)
-            end
+            print(component.text,pos.xy_:add(offset.x,offset.y) * self.FontScale)
+            task
+            :setPos(pos.xy_:add(offset.x,offset.y) * self.FontScale)
+            :setScale(self.FontScale,self.FontScale,self.FontScale)
+            :setVisible(true)
          else
             task:setVisible(false)
          end
