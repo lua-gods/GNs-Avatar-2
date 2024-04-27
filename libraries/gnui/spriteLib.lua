@@ -50,8 +50,6 @@ function sprite.new(obj)
    new.BorderThickness = obj.BorderThickness or vectors.vec4(0,0,0,0)
    new.BORDER_THICKNESS_CHANGED = eventLib.new()
    new.ExcludeMiddle = obj.ExcludeMiddle or false
-   new.Cursor = vectors.vec2()
-   new.CURSOR_CHANGED = eventLib.new()
    new.Visible = true
    new.id = sprite_next_free
    sprite_next_free = sprite_next_free + 1
