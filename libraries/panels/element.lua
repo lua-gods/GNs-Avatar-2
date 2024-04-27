@@ -43,7 +43,7 @@ function element.new(preset)
    new.is_pressed =  preset.is_pressed or false
    new._capture_cursor = preset._capture_cursor or false
    new.cache = {}
-   
+
    new.cache.normal_sprite = config.default_element_sprite:copy()
    new.cache.hover_sprite = config.default_element_hover_sprite:copy()
    new.cache.pressed_sprite = config.default_element_pressed_sprite:copy()

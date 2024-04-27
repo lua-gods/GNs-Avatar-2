@@ -125,7 +125,7 @@ function container.new(preset,force_debug)
          size_changed = true
       end
 
-      local visible = new.isVisible
+      local visible = new.cache.final_visible
       if new.ClipOnParent and visible then
          if clipping then
             visible = false

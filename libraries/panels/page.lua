@@ -16,6 +16,8 @@ local next_free = 0
 ---@field selected_index integer
 ---@field last_selected panels.element?
 ---@field PRESSENCE_CHANGED eventLib
+---@field TICK eventLib
+---@field FRAME eventLib
 ---@field proxy panels.page?
 ---@field proxied_from panels.page?
 local page = {}
@@ -171,7 +173,7 @@ function page:addElement(...)
       e.index = nf
       self.elements[nf] = e
    end
-   if self.display and self.display.container.isVisible then
+   if self.display and self.display.container.Visible then
       self.display:updateDisplays()
    end
    return self

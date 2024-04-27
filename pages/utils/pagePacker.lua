@@ -27,14 +27,14 @@ tool.makePage = function(ctx_menu,path,page)
    for i, p in pairs(pages) do
       local btn = panels.newButton():setText(p.name)
       if p.icon then
-         if p.icon.type == "emoji" then
-            btn:setIconText(p.icon.value,true)
-         elseif p.icon.type == "text" then
-            btn:setIconText(p.icon.value,false)
-         elseif p.icon.type == "item" then
-            btn:setIconItem(p.icon.value)
-         elseif p.icon.type == "block" then
-            btn:setIconBlock(p.icon.value)
+         if p.icon_type == "emoji" then
+            btn:setIconText(p.icon,true)
+         elseif p.icon_type == "text" then
+            btn:setIconText(p.icon,false)
+         elseif p.icon_type == "item" then
+            btn:setIconItem(p.icon)
+         elseif p.icon_type == "block" then
+            btn:setIconBlock(p.icon)
          end
       end
       e[#e+1] = btn

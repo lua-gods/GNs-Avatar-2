@@ -67,27 +67,29 @@ function tracebackError(input)
    printJson(toJson(compose))
 end
 
-local ogreq = require
+--local ogreq = require
+--
+--function require(path)
+--   local ok, info = pcall(ogreq,path)
+--   if not ok then
+--      tracebackError(info)
+--   end
+--   return info
+--end
 
-function require(path)
-   local ok, info = pcall(ogreq,path)
-   if not ok then
-      tracebackError(info)
-   end
-   return info
-end
+--local og_reg = figuraMetatables.Event.__index.register
+--figuraMetatables.Event.__index.register = function (self, func, name)
+--   og_reg(self, function (...)
+--      local ok, result = pcall(func, ...)
+--      if ok then
+--         return result
+--      else
+--         tracebackError(result)
+--      end
+--   end, name)
+--end
 
-local og_reg = figuraMetatables.Event.__index.register
-figuraMetatables.Event.__index.register = function (self, func, name)
-   og_reg(self, function (...)
-      local ok, result = pcall(func, ...)
-      if ok then
-         return result
-      else
-         tracebackError(result)
-      end
-   end, name)
-end
+
 --[[
 do
    local r = require

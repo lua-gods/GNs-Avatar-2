@@ -7,7 +7,7 @@ local element_next_free = 0
 ---@class GNUI.element
 ---@field name string
 ---@field id integer          # A unique integer for this element. (next-free based)
----@field isVisible boolean   # `true` to see
+---@field Visible boolean   # `true` to see
 ---@field Parent GNUI.any           
 ---@field Children table<any,GNUI.any>  
 ---@field ChildIndex integer          # the element's place order on its parent
@@ -15,6 +15,7 @@ local element_next_free = 0
 ---@field CHILDREN_CHANGED table      # when the order of the children changes.
 ---@field PARENT_CHANGED table        # when the parent changes
 ---@field ON_FREE eventLib            # when the element is wiped from history.
+---@field cache table
 local element = {}
 element.__index = element
 element.__type = "GNUI.element"
@@ -26,7 +27,8 @@ element.__type = "GNUI.element"
 function element.new(preset)
    local new = preset or {}
    new.id = element_next_free
-   new.isVisible          = true
+   new.Visible          = true
+   new.cache              = {final_visible = true}
    new.VISIBILITY_CHANGED = eventLib.new()
    new.Children           = {}
    new.ChildIndex         = 0
@@ -45,9 +47,24 @@ end
 ---@return self
 function element:setVisible(visible)
    ---@cast self GNUI.element
-   if self.isVisible ~= visible then
-      self.isVisible = visible
+   if self.Visible ~= visible then
+      self.Visible = visible
       self.VISIBILITY_CHANGED:invoke(visible)
+      for key, child in pairs(self.Children) do
+         child:_updateVisibility()
+      end
+      if not self.Parent then
+         self:_updateVisibility()
+      end
+   end
+   return self
+end
+
+function element:_updateVisibility()
+   if self.Parent then
+      self.cache.final_visible = self.Parent.Visible and self.Visible
+   else
+      self.cache.final_visible = self.Visible
    end
    return self
 end
