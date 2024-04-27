@@ -27,7 +27,7 @@ element.__type = "GNUI.element"
 function element.new(preset)
    local new = preset or {}
    new.id = element_next_free
-   new.Visible          = true
+   new.Visible            = true
    new.cache              = {final_visible = true}
    new.VISIBILITY_CHANGED = eventLib.new()
    new.Children           = {}
