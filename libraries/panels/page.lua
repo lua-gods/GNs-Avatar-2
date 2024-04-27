@@ -2,14 +2,19 @@
 local eventLib = require("libraries.eventLib")
 
 
+local next_free = 0
 ---@class panels.page
+---@field id integer
+---@field name string
+---@field icon string
+---@field icon_type string
 ---@field display panels.display
 ---@field elements panels.any
 ---@field pressed boolean
 ---@field mouse_mode boolean
+---@field selected panels.element?
 ---@field selected_index integer
 ---@field last_selected panels.element?
----@field selected panels.element?
 ---@field PRESSENCE_CHANGED eventLib
 ---@field proxy panels.page?
 ---@field proxied_from panels.page?
@@ -20,12 +25,29 @@ end
 
 ---@return panels.page
 function page.new()
+   next_free = next_free + 1
    local new = setmetatable({},page)
    new.elements = {}
+   new.id = next_free
    new.mouse_mode = false
    new.pressed = false
    new.selected_index = 0
    new.PRESSENCE_CHANGED = eventLib.new()
+   new.TICK = eventLib.new()
+   new.FRAME = eventLib.new()
+   new.PRESSENCE_CHANGED:register(function (opened)
+      if opened then
+         events.WORLD_TICK:register(function ()
+            new.TICK:invoke()
+         end,"gnui.panels.page." .. new.id)
+         events.WORLD_RENDER:register(function ()
+            new.FRAME:invoke()
+         end,"gnui.panels.page." .. new.id)
+      else
+         events.WORLD_TICK:remove("gnui.panels.page." .. new.id)
+         events.WORLD_RENDER:remove("gnui.panels.page." .. new.id)
+      end
+   end,"_internal")
    return new
 end
 
@@ -144,12 +166,12 @@ function page:addElement(...)
       if not (type(e)):find("panels.") then
          error("bad argument #1 to 'addElement' (panels.any expected, got "..type(e)..")",2)
       end
-      local next_free = #self.elements + 1
+      local nf = #self.elements + 1
       e.parent = self
-      e.index = next_free
-      self.elements[next_free] = e
+      e.index = nf
+      self.elements[nf] = e
    end
-   if self.display then
+   if self.display and self.display.container.isVisible then
       self.display:updateDisplays()
    end
    return self
@@ -169,6 +191,20 @@ end
 function page:removeElement(i)
    table.remove(self.elements,i)
    self:recalculateChildrenIndexes()
+   return self
+end
+
+function page:setName(name)
+   self.name = name
+   return self
+end
+
+---@param icon string
+---@param type panels.icon_type
+---@return panels.page
+function page:setIcon(icon,type)
+   self.icon = icon
+   self.icon_type = type
    return self
 end
 

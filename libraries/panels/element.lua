@@ -122,6 +122,12 @@ function element:setText(text)
    return self
 end
 
+--- returns the GNUI label of the element.
+---@return GNUI.Label
+function element:getLabel()
+   return self.label
+end
+
 ---@param icon Minecraft.itemID
 ---@generic self
 ---@param self self

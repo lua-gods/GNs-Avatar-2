@@ -81,7 +81,6 @@ function display:detachDisplays()
    end
 end
 
----@package
 function display:updateDisplays()
    if self.page then
       if self.direction == "VERTICAL" then

@@ -74,21 +74,19 @@ end)
 
 if not host:isHost() then return end
 
-local sidebar = require("host.sidebar")
+local sidebar = require("host.contextMenu")
 local elements = require("libraries.panels")
 
-return function ()
-   local page = elements.newPage()
-   
-   local e = {
-      elements.newElement():setText({text="Lazer Test",color = "red"}),
-      elements.newToggle():setText("Lazer Cannon"),
-      sidebar.newReturnButton(),
-   }
-   e[2].TOGGLED:register(function ()
-      enabled = e[2].toggle
-   end)
+local page = elements.newPage()
+local e = {
+   elements.newElement():setText({text="Lazer Test",color = "red"}),
+   elements.newToggle():setText("Lazer Cannon"),
+   sidebar.newReturnButton(),
+}
+e[2].TOGGLED:register(function ()
+   enabled = e[2].toggle
+end)
 
-   page:addElement(table.unpack(e))
-   return page
-end
+page:addElement(table.unpack(e))
+page:setIcon(":knife:","emoji")
+return page

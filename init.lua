@@ -206,6 +206,6 @@ for key, script in pairs(listFiles("host",true)) do
 end
 
 --- initialize default page
-local sidebar = require("host.sidebar")
+local sidebar = require("host.contextMenu")
 require("pages.main")
 sidebar:setPage("main")
