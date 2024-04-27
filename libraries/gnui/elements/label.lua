@@ -277,7 +277,6 @@ function label:_updateRenderTasks()
          i = i + 1
          local task = self.RenderTasks[i]
          if (pos.x - component.length > size.x / self.FontScale) or true then
-            print(component.text,pos.xy_:add(offset.x,offset.y) * self.FontScale)
             task
             :setPos(pos.xy_:add(offset.x,offset.y) * self.FontScale)
             :setScale(self.FontScale,self.FontScale,self.FontScale)
