@@ -101,23 +101,24 @@ screen:addChild(display_offset)
 
 
 
+---@class contextMenu
+local contextMenu = {}
 
-local sidebar = {}
 ---@param page panels.page
 ---@param name string
 ---@return table
-function sidebar:newPage(page,name)
+function contextMenu:newPage(page,name)
    pages[name] = page
    return self
 end
 
 ---@param page panels.page|string
-function sidebar:setPage(page)
+function contextMenu:setPage(page)
 ---@diagnostic disable-next-line: param-type-mismatch
    display:setPage(pages[page] or page)
 end
 
-function sidebar.newReturnButton()
+function contextMenu.newReturnButton()
    local btn = panels.newButton():setText({text="Return",color="#fd4343"})
    btn.PRESSED:register(function ()
       display:returnPage()
@@ -126,4 +127,4 @@ function sidebar.newReturnButton()
 end
 
 
-return sidebar
+return contextMenu
