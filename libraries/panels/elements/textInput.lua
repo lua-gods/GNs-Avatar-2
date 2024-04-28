@@ -15,6 +15,7 @@ local key2string = require("libraries.key2string")
 ---@field input_container GNUI.container
 ---@field input_display GNUI.Label
 ---@field is_editing boolean
+---@field package was_editing boolean
 ---@field value_color string?
 ---@field VALUE_CHANGED eventLib
 ---@field VALUE_ACCEPTED eventLib
@@ -52,31 +53,37 @@ function textInput.new(preset)
    new.PRESS_CHANGED:register(function ()
       new:updateValueDisplay()
    end)
+   events.CHAR_TYPED:register(function (char, modifiers, codepoint)
+      if new.is_editing and new.parent then
+         if new.was_editing == new.is_editing then
+            local value = tostring(new.editing_value)
+            value = value..char
+            new.editing_value = value
+            new:updateValueDisplay()
+            new.VALUE_CHANGED:invoke()
+         end
+         new.was_editing = new.is_editing -- used to make sure that we dont place a character when pressing the button
+      end
+   end)
    events.KEY_PRESS:register(function (key, state, modifiers)
-      local k = key2string(key,modifiers)
-      if new.is_editing and new.parent and k then
+      if new.is_editing and new.parent then
          if state == 1 then
             local t = type(new.editing_value)
             local value = tostring(new.editing_value)
-            if #k == 1 then
-               value = value..k
-            elseif k == "backspace" then
+            if key == 259 then -- erase
                value = value:sub(1,-2)
-            elseif k == "enter" then -- accepted
+            elseif key == 257 then -- accepted
                if t == "number" then
                   value = tonumber(value) or 0
                end
                new.parent:press()
                new:setAcceptedValue(value)
-            elseif k == "escape" then
+            elseif key == 256 then
                new.parent:press()
                new:updateValueDisplay()
                new:setAcceptedValue(new.value)
                new.VALUE_CHANGED:invoke()
                return true
-            end
-            if t == "number" then
-               value = tonumber(value) or 0
             end
             new.editing_value = value
             new:updateValueDisplay()
@@ -106,6 +113,7 @@ function textInput:press()
    self.is_pressed = not self.is_pressed
    self._capture_cursor = self.is_pressed
    self.is_editing = self.is_pressed
+   self.was_editing = false
    self:_updateDisplayType()
    return self
 end
@@ -118,6 +126,7 @@ function textInput:setAcceptedValue(value)
    self.is_editing = false
    self.editing_value = tostring(value)
    self.value = value
+   self.was_editing = false
    self:updateValueDisplay()
    self.VALUE_ACCEPTED:invoke(self.value)
    return self
