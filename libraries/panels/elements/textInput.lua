@@ -183,7 +183,7 @@ function textInput:updateValueDisplay()
       end
       self.input_container.Sprite:setColor(0.6,0.6,0.6)
    else
-      self.label:setVisible(#tostring(self.value) == 0)
+      self.label:setVisible(not self.force_full)
       if #tostring(self.value) == 0 then
          self.input_display:setVisible(false)
       else

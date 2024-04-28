@@ -131,7 +131,7 @@ function container.new(preset,force_debug)
             visible = false
          end
       end
-      new.ModelPart:setVisible(visible)
+      new.ModelPart:setVisible(new.Visible)
       if visible then
          new.ModelPart
          :setPos(

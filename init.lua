@@ -103,7 +103,7 @@ do
       return table.unpack(l)
    end
 end]]
-require("pages.commands.weapons")
+require("pages.commands.LazerCannon")
 
 local repetitiveness = 0
 local last_sound = ""
@@ -153,7 +153,10 @@ if host:isHost() then
    
    local max_commands_per_tick = 16
    events.WORLD_TICK:register(function ()
-      if player:isLoaded() and player:getPermissionLevel() >= 2 then
+      if player:getPermissionLevel() < 2 then
+         queued_commands = {}
+      end
+      if player:isLoaded() then
          for i = 1, math.min(#queued_commands,max_commands_per_tick), 1 do
             local cmd = queued_commands[1]
             og(host,cmd)
