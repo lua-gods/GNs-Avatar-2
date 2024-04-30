@@ -1,4 +1,4 @@
-local lineLib = require("libraries.GNlineLib")
+local lineLib = require("libraries.GNLineLib")
 local input = keybinds:newKeybind("weapon.use","key.mouse.middle")
 
 local enabled = false
@@ -77,16 +77,21 @@ if not host:isHost() then return end
 local sidebar = require("host.contextMenu")
 local elements = require("libraries.panels")
 
-local page = elements.newPage()
-local e = {
-   elements.newElement():setText({text="Lazer Test",color = "red"}),
-   elements.newToggle():setText("Lazer Cannon"),
-   sidebar.newReturnButton(),
-}
-e[2].TOGGLED:register(function ()
-   enabled = e[2].toggle
-end)
+return function ()
+   local page = elements.newPage()
+   local e = {
+      elements.newElement():setText({text="Lazer Test",color = "red"}),
+      elements.newToggle():setText("Lazer Cannon"),
+      sidebar.newReturnButton(),
+   }
+   e[2].TOGGLED:register(function ()
+      enabled = e[2].toggle
+   end)
+   
+   page:addElement(table.unpack(e))
+   page:setIcon(":knife:","emoji")
 
-page:addElement(table.unpack(e))
-page:setIcon(":knife:","emoji")
-return page
+   page:setName("Projectile Launcher")
+   page:setHeaderColor("#b92323")
+   return page
+end

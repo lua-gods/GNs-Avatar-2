@@ -1,6 +1,7 @@
 local sidebar = require("host.contextMenu")
 local elements = require("libraries.panels")
 
+return function ()
 local page = elements.newPage()
 local output
 
@@ -10,7 +11,7 @@ local e = {
    elements.newVector3Button(),
    elements.newButton():setText("Source to Selected"):setIconText(":pencil:",true),
    
-   elements.newElement():forceHeight(8),
+   elements.newElement():setForcedHeight(8),
    
    elements.newElement():setText("Clone From / To"),
    elements.newVector3Button(),
@@ -18,13 +19,13 @@ local e = {
    elements.newButton():setText("set From to Selected"):setIconText(":pencil:",true),
    elements.newButton():setText("set To to Selected"):setIconText(":pencil:",true),
    
-   elements.newElement():forceHeight(8),
+   elements.newElement():setForcedHeight(8),
    
    elements.newElement():setText("Paste To"),
    elements.newVector3Button(),
    elements.newButton():setText("set Paste to Selected"):setIconText(":pencil:",true),
    
-   elements.newElement():forceHeight(8),
+   elements.newElement():setForcedHeight(8),
    elements.newElement():setText({text="Output goes here...",color="gray"}):setIconText(":mag:",true),
    elements.newButton():setText("Apply to Clipboard"):setIconText(":scroll:",true),
    sidebar.newReturnButton(),
@@ -112,6 +113,8 @@ end)
 page:addElement(table.unpack(e))
 
 page:setIcon(":scissors:","emoji")
-page:setName("Clone Command Helper")
+page:setName("Command Utilities")
+   page:setHeaderColor("#b92323")
 
 return page
+end

@@ -1,14 +1,41 @@
-local panels = require("libraries.panels")
+local panelLements = require("libraries.panels")
 local screen = require("host.screenui")
 local tween = require("libraries.GNTweenLib")
 local slide = 1
-local gnui = require("libraries.gnui")
+local config = require("libraries.panels.config")
+local gnui = require("libraries.GNUI")
 
 
 local pages = {}
 
 local display_offset = gnui.newContainer():setAnchor(1,1,1,1)
-local display = panels.newDisplay()
+local display = panelLements.newDisplay()
+
+local header = panelLements.newElement()
+
+display.display:addChild(header.display)
+header.display:setAnchor(0,0,1,0):setDimensions(0,-12,0,1):setSprite(config.generic_ninepatch_srite_border:copy())
+header.display:getChild("label"):setAlign(0,0.5)
+
+display.PAGE_CHANGED:register(function (new)
+   header:setText(new.name)
+   header.display.Sprite:setColor(new.color or vectors.vec3(0.5,0.5,0.5))
+   if new.icon then
+      if new.icon_type == "emoji" then
+         header:setIconText(new.icon,true)
+      elseif new.icon_type == "text" then
+         header:setIconText(new.icon,false)
+      elseif new.icon_type == "item" then
+         header:setIconItem(new.icon)
+      elseif new.icon_type == "block" then
+         header:setIconBlock(new.icon)
+      else
+         header:removeIcon()
+      end
+   else
+      header:removeIcon()
+   end
+end)
 
 local levitate = 0
 local function slideDisplay(x,y)
@@ -114,14 +141,15 @@ end
 
 ---@param page panels.page|string
 function contextMenu:setPage(page)
----@diagnostic disable-next-line: param-type-mismatch
-   display:setPage(pages[page] or page)
+   local p = pages[page] or page
+   ---@diagnostic disable-next-line: param-type-mismatch
+   display:setPage(p)
 end
 
 function contextMenu.newReturnButton()
-   local btn = panels.newButton():setText({text="Return",color="#fd4343"})
+   local btn = panelLements.newButton():setText({text="Return",color="#fd4343"})
    btn.PRESSED:register(function ()
-      display:returnPage()
+      display:setPage(display:getLastPage(true))
    end)
    return btn
 end

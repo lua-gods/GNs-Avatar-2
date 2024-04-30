@@ -34,7 +34,11 @@ function button.new(preset)
          if new.flat then
             new.display:setSprite()
          else
-            new.display:setSprite(new.cache.normal_sprite)
+            if new.cache.borders then
+               new.display:setSprite(new.cache.border_sprite)
+            else
+               new.display:setSprite(new.cache.normal_sprite)
+            end
          end
       end
    end

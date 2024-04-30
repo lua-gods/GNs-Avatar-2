@@ -9,7 +9,7 @@ This service aims to aid the creation of custom commands in chat
 
 if not host:isHost() then return end
 
-local gnui = require("libraries.gnui")
+local gnui = require("libraries.GNUI")
 local PREFIX = "$" -- every message with this at the start will get canceled from being sent in chat reguardless if one exists or not
 local ANNOUNCE_LAYOUT = '[{"text":"[cmd] ","color":"dark_gray"},{"text":"%s\n","color":"gray"}]'-- replaces %s with the message
 

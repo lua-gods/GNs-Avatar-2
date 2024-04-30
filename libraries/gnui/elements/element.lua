@@ -1,7 +1,7 @@
 local eventLib = require("libraries.eventLib")
 local utils = require("libraries.gnui.utils")
 
----@alias GNUI.any GNUI.element|GNUI.container|GNUI.Label
+---@alias GNUI.any GNUI.element|GNUI.container|GNUI.Label|GNUI.anchorPoint
 
 local element_next_free = 0
 ---@class GNUI.element
@@ -69,6 +69,7 @@ function element:_updateVisibility()
    return self
 end
 
+---Sets the name of the element. this is used to make it easier to find elements with getChild
 ---@param name string
 ---@generic self
 ---@param self self
@@ -84,6 +85,7 @@ function element:getName()
    return self.name
 end
 
+---Gets a child by username
 ---@param name string
 ---@return GNUI.any
 function element:getChild(name)
@@ -159,7 +161,7 @@ function element:updateChildrenIndex()
    ---@cast self GNUI.element
    for i, child in pairs(self.Children) do
       child.ChildIndex = i
-      child.DIMENSIONS_CHANGED:invoke()
+      child.PARENT_CHANGED:invoke()
    end
    return self
 end

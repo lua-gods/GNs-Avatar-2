@@ -1,6 +1,7 @@
 local sidebar = require("host.contextMenu")
 local panels = require("libraries.panels")
-local page = panels.newPage()
+return function ()
+   local page = panels.newPage()
 
 local scale = 5
 local final = 1
@@ -8,10 +9,6 @@ local final_goal = 1
 local active = false
 
 local e = {
-   panels.newElement():setText({
-      text = "Zoom",
-      color = "red"
-   }),
    panels.newToggle():setText("Enable"),
    panels.newToggle():setText("Auto Zoom"),
    panels.newSpinbox():setMaximumValue(100):setMinimumValue(1):setAcceptedValue(scale),
@@ -21,16 +18,16 @@ local e = {
    }),
 }
 
-e[5].label:setAlign(1,0)
+e[4].label:setAlign(1,0)
 
-e[4].VALUE_CHANGED:register(function (v)
+e[3].VALUE_CHANGED:register(function (v)
    scale = v or scale
 end)
-e[4].VALUE_ACCEPTED:register(function (v)
+e[3].VALUE_ACCEPTED:register(function (v)
    scale = v or scale
 end)
 
-e[2].TOGGLED:register(function (t)
+e[1].TOGGLED:register(function (t)
    if t and not active then
       active = true
       events.TICK:register(function ()
@@ -44,8 +41,8 @@ e[2].TOGGLED:register(function (t)
          if entity then
             pos = epos
          end
-         if e[2].toggle then
-            if e[3].toggle then
+         if e[1].toggle then
+            if e[2].toggle then
                final_goal = math.min((20/scale)/math.max((pos-o):length(),0.01),1)
             else
                final_goal = 1/scale
@@ -56,7 +53,7 @@ e[2].TOGGLED:register(function (t)
          local speed = 0.1 * final
          final = final + math.clamp((final_goal - final),-speed,speed)
          renderer:setFOV(final)
-         if not e[2].toggle then
+         if not e[1].toggle then
             if final_goal == final then
                active = false
                events.TICK:remove("utilities.dynamicZoom")
@@ -71,12 +68,15 @@ page:addElement(table.unpack(e))
 page:addElement(sidebar.newReturnButton())
 
 page.TICK:register(function ()
-   if not e[2].toggle then return end
-   e[5]:setText({
+   if not e[1].toggle then return end
+   e[4]:setText({
       text = "x"..(math.floor((1 / final) * 10 + 0.5) / 10),
       color = "gray"
    })
 end)
 
 page:setIcon(":mag:","emoji")
+page:setName("Camera Zoom")
+page:setHeaderColor("#3777b3")
 return page
+end

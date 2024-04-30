@@ -1,4 +1,4 @@
-local gnui = require("libraries.gnui")
+local gnui = require("libraries.GNUI")
 local screen = require("host.screenui")
 
 local config = {

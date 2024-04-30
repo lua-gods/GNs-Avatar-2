@@ -1,4 +1,4 @@
-local gnui = require("libraries.gnui")
+local gnui = require("libraries.GNUI")
 local eventLib = require("libraries.eventLib")
 local config = require("libraries.panels.config")
 
@@ -30,6 +30,8 @@ local next_free_element = 0
 ---@return panels.element
 function element.new(preset)
    preset = preset or {}
+   ---@type panels.element
+---@diagnostic disable-next-line: missing-fields
    local new = {}
    new.flat = false
    new.PRESS_CHANGED = eventLib.new()
@@ -44,21 +46,27 @@ function element.new(preset)
    new._capture_cursor = preset._capture_cursor or false
    new.cache = {}
 
+   new.cache.border_sprite = config.default_display_sprite:copy()
    new.cache.normal_sprite = config.default_element_sprite:copy()
    new.cache.hover_sprite = config.default_element_hover_sprite:copy()
    new.cache.pressed_sprite = config.default_element_pressed_sprite:copy()
-   local container = gnui.newContainer():setSprite(not new.flat and new.cache.normal_sprite or nil)
+   local container = gnui.newContainer()
    new.HOVER_CHANGED:register(function ()
-      if new.is_hovering then
-         container:setSprite(new.cache.hover_sprite)
+      if new.cache.borders then
+         container:setSprite(config.border_sprite)
       else
-         if new.flat then
-            container:setSprite()
+         if new.is_hovering then
+            container:setSprite(config.border_sprite)
          else
-            container:setSprite(new.cache.normal_sprite)
+            if new.flat then
+               container:setSprite()
+            else
+               container:setSprite(new.cache.normal_sprite)
+            end
          end
       end
    end,"_display")
+   new.HOVER_CHANGED:invoke()
    new.display = container
    container:setDimensions(0,0,0,12)
 
@@ -77,10 +85,20 @@ end
 ---@param self self
 ---@return self
 ---@param custom_height number?
-function element:forceHeight(custom_height)
+function element:setForcedHeight(custom_height)
    ---@cast self panels.element
    self.custom_height = custom_height or 12
    self.display:setDimensions(0,0,0,self.custom_height)
+   return self
+end
+
+---@generic self
+---@param self self
+---@return self
+---@param custom_width number?
+function element:setForcedWidth(custom_width)
+   ---@cast self panels.element
+   self.custom_width = custom_width or 12
    return self
 end
 
@@ -135,11 +153,12 @@ end
 function element:setIconItem(icon)
    ---@cast self panels.element
    if not self.has_icon then
+      self.cache.icon_anchor = self.display:addChild(gnui.newContainer():setAnchor(0,0.5))
       self.label:setDimensions(12,2,-2,-2)
       self.has_icon = true
    end
-   self.display.ModelPart:removeTask("icon")
-   self.display.ModelPart:newItem("icon"):item(icon):scale(0.5,0.5,1):pos(-6,-6,-3):displayMode("GUI")
+   self.cache.icon_anchor.ModelPart:removeTask("icon")
+   self.cache.icon_anchor.ModelPart:newItem("icon"):item(icon):scale(0.5,0.5,1):pos(-6,-6,-3):displayMode("GUI")
    return self
 end
 
@@ -151,11 +170,12 @@ end
 function element:setIconBlock(icon)
    ---@cast self panels.element
    if not self.has_icon then
+      self.cache.icon_anchor = self.display:addChild(gnui.newContainer():setAnchor(0,0.5))
       self.label:setDimensions(12,2,-2,-2)
       self.has_icon = true
    end
-   self.display.ModelPart:removeTask("icon")
-   self.display.ModelPart:newBlock("icon"):block(icon):scale(0.5,0.5,1):pos(-10.5,-10,0)
+   self.cache.icon_anchor.ModelPart:removeTask("icon")
+   self.cache.icon_anchor.ModelPart:newBlock("icon"):block(icon):scale(0.5,0.5,1):pos(-10.5,-10,0)
    return self
 end
 
@@ -167,12 +187,14 @@ end
 function element:setIconText(text,is_emoji)
    ---@cast self panels.element
    if not self.has_icon then
+      self.cache.icon_anchor = gnui.newPointAnchor():setAnchor(0,0.5):setOffset(0,2)
+      self.display:addChild(self.cache.icon_anchor)
       self.label:setDimensions(12,2,-2,-2)
       self.has_icon = true
    end
-   self.display.ModelPart:removeTask("icon")
+   self.cache.icon_anchor.ModelPart:removeTask("icon")
    local w = is_emoji and 8 or client.getTextWidth(text)
-   self.display.ModelPart:newText("icon"):text(text):scale(1,1,1):pos(-8+w/2 + 2,-2,0)
+   self.cache.icon_anchor.ModelPart:newText("icon"):text(text):scale(1,1,1):pos(-8+w/2+2,5,0)
    return self
 end
 
@@ -185,7 +207,7 @@ function element:removeIcon()
    if self.has_icon then
       self.label:setDimensions(2,2,-2,-2)
       self.has_icon = false
-      self.display.ModelPart:removeTask("icon")
+      self.cache.icon_anchor.ModelPart:removeTask("icon")
    end
    return self
 end

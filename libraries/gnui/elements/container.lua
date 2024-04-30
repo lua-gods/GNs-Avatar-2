@@ -282,12 +282,13 @@ end
 ---Sets the top left offset from the origin anchor of its parent.
 ---@generic self
 ---@param self self
----@param xpos number|Vector2
----@param y number?
+---@overload fun(self : self, vec2 : Vector4): GNUI.container
+---@param x number
+---@param y number
 ---@return self
-function container:setTopLeft(xpos,y)
+function container:setTopLeft(x,y)
    ---@cast self GNUI.container
-   self.Dimensions.xy = utils.figureOutVec2(xpos,y)
+   self.Dimensions.xy = utils.figureOutVec2(x,y)
    self.DIMENSIONS_CHANGED:invoke(self.Dimensions)
    return self
 end
@@ -295,23 +296,25 @@ end
 ---Sets the bottom right offset from the origin anchor of its parent.
 ---@generic self
 ---@param self self
----@param xsize number|Vector2
----@param y number?
+---@overload fun(self : self, vec2 : Vector4): GNUI.container
+---@param x number
+---@param y number
 ---@return self
-function container:setBottomRight(xsize,y)
+function container:setBottomRight(x,y)
    ---@cast self GNUI.container
-   self.Dimensions.zw = utils.figureOutVec2(xsize,y)
+   self.Dimensions.zw = utils.figureOutVec2(x,y)
    self.DIMENSIONS_CHANGED:invoke(self.Dimensions)
    return self
 end
 
 ---Shifts the container based on the top left.
----@param xpos number|Vector2
----@param y number?
+---@overload fun(self : self, vec2 : Vector4): GNUI.container
+---@param x number
+---@param y number
 ---@return self
-function container:offsetTopLeft(xpos,y)
+function container:offsetTopLeft(x,y)
    ---@cast self GNUI.container
-   local old,new = self.Dimensions.xy,utils.figureOutVec2(xpos,y)
+   local old,new = self.Dimensions.xy,utils.figureOutVec2(x,y)
    local delta = new-old
    self.Dimensions.xy,self.Dimensions.zw = new,self.Dimensions.zw - delta
    self.DIMENSIONS_CHANGED:invoke(self.Dimensions)
@@ -319,12 +322,13 @@ function container:offsetTopLeft(xpos,y)
 end
 
 ---Shifts the container based on the bottom right.
----@param zpos number|Vector2
----@param w number?
+---@overload fun(self : self, vec2 : Vector4): GNUI.container
+---@param z number
+---@param w number
 ---@return self
-function container:offsetBottomRight(zpos,w)
+function container:offsetBottomRight(z,w)
    ---@cast self GNUI.container
-   local old,new = self.Dimensions.xy+self.Dimensions.zw,utils.figureOutVec2(zpos,w)
+   local old,new = self.Dimensions.xy+self.Dimensions.zw,utils.figureOutVec2(z,w)
    local delta = new-old
    self.Dimensions.zw = self.Dimensions.zw + delta
    self.DIMENSIONS_CHANGED:invoke(self.Dimensions)
@@ -332,6 +336,7 @@ function container:offsetBottomRight(zpos,w)
 end
 
 ---Checks if the cursor in local coordinates is inside the bounding box of this container.
+---@overload fun(self : self, vec2 : Vector4): boolean
 ---@param x number|Vector2
 ---@param y number?
 ---@return boolean
@@ -529,7 +534,7 @@ end
 --- x 0 <-> 1 = left <-> right  
 --- y 0 <-> 1 = top <-> bottom  
 ---if right and bottom are not given, they will use left and top instead.
----@overload fun(self : GNUI.container, xz : number, yw : number): GNUI.container
+---@overload fun(self : GNUI.container, xz : Vector2, yw : Vector2): GNUI.container
 ---@overload fun(self : GNUI.container, rect : Vector4): GNUI.container
 ---@param left number
 ---@param top number

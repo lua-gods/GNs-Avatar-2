@@ -2,11 +2,12 @@ local sidebar = require("host.contextMenu")
 local panels = require("libraries.panels")
 local page = panels.newPage()
    
+return function ()
 local e = {
-      panels.newTextEdit():setText("data/images/*.png"):setForceFull(true),
-      panels.newButton():setIconText(":pencil:",true):setText("Give")
-   }
-   
+   panels.newTextEdit():setText("data/images/*.png"):setForceFull(true),
+   panels.newButton():setIconText(":pencil:",true):setText("Give")
+}
+
 e[2].PRESSED:register(function ()
    local t = e[1].value 
    ---@cast t string
@@ -29,4 +30,8 @@ end)
 page:addElement(table.unpack(e))
 page:addElement(sidebar.newReturnButton())
 page:setIcon(":folder:","emoji")
+
+page:setName("Projectile Launcher")
+   page:setHeaderColor("#b92323")
 return page
+end

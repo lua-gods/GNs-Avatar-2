@@ -12,4 +12,4 @@ new = function ()
    page:addElement(sidebar.newReturnButton())
    return page
 end,
-icon = {value = ":folder:",type = "emoji"}}
+}

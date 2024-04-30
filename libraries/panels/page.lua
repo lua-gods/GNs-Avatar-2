@@ -121,13 +121,13 @@ function page:setSelected(x, relative)
       self.selected_index = new_pos
       self.selected = self.elements[self.selected_index]
    end
-   if self.last_selected ~= self.selected then -- moved
-      if self.last_selected then
+   if self.last_selected and self.last_selected ~= self.selected then -- moved
+      if self.last_selected.unhover then
          self.last_selected:unhover()
          self.last_selected.HOVER_CHANGED:invoke(false)
       end
       
-      if self.selected then
+      if self.selected.hover then
          self.selected:hover()
          self.selected.HOVER_CHANGED:invoke(true)
       end
@@ -142,7 +142,7 @@ function page:press()
       return self
    end
    self.pressed = true
-   if self.selected then
+   if self.selected.press then
       self.selected:press()
    end
    return self
@@ -155,7 +155,7 @@ function page:release()
       return self
    end
    self.pressed = false
-   if self.selected then
+   if self.selected and self.selected.release then
       self.selected:release()
    end
    return self
@@ -196,8 +196,24 @@ function page:removeElement(i)
    return self
 end
 
+---Sets the name of the page.
+---@param name string
+---@return panels.page
 function page:setName(name)
    self.name = name
+   return self
+end
+
+---Sets the color of the header for that page.
+---@param clr string|Vector3
+---@return panels.page
+function page:setHeaderColor(clr)
+   local t = type(clr)
+   if t == "string" then
+      self.color = vectors.hexToRGB(clr)
+   elseif t:match("Vector.") then
+      self.color = clr.xyz
+   end
    return self
 end
 

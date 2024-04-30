@@ -4,7 +4,7 @@ local eventLib = require("libraries.eventLib")
 local config = require("libraries.panels.config")
 local element = require("libraries.panels.element")
 local button = require("libraries.panels.elements.button")
-local gnui = require("libraries.gnui")
+local gnui = require("libraries.GNUI")
 local tween = require("libraries.GNTweenLib")
 local key2string = require("libraries.key2string")
 
@@ -192,7 +192,6 @@ function textInput:updateValueDisplay()
       end
       self.input_container.Sprite:setColor(0.6,0.6,0.6)
    else
-      self.label:setVisible(not self.force_full)
       if #tostring(self.value) == 0 then
          self.input_display:setVisible(false)
       else

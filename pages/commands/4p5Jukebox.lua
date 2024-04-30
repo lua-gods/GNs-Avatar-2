@@ -1,0 +1,37 @@
+local sidebar = require("host.contextMenu")
+local panels = require("libraries.panels")
+local page = panels.newPage()
+   
+return function ()
+local e = {
+   panels.newTextEdit():setText("data/sounds/*.ogg"):setForceFull(true),
+   panels.newButton():setIconText(":pencil:",true):setText("Give")
+}
+
+e[2].PRESSED:register(function ()
+   local t = e[1].value 
+   ---@cast t string
+
+   local file = require("libraries.file")
+   local base64 = require("libraries.base64")
+   local f = file.new("audio/"..t..".ogg")
+   local ok,result = pcall(f.readByteArray,f,t)
+   if ok then
+      local data = base64.encode("jukebox;"..(result))
+      local text = 'minecraft:player_head{SkullOwner:{Id:[I;1481619325,1543653003,-1514517150,-829510686],Properties:{textures:[{Value:"'..data..'"}]}}}'
+      if #text < 65536 then
+         host:setSlot("hotbar.0",text)
+         print("Generated ("..#text.." < 65536)")
+      else
+         print("Exceeded byte limit ("..#text.." > 65536)")
+      end
+   end
+end)
+page:addElement(table.unpack(e))
+page:addElement(sidebar.newReturnButton())
+page:setIcon(":folder:","emoji")
+
+page:setName("Projectile Launcher")
+   page:setHeaderColor("#b92323")
+return page
+end

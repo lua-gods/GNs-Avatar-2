@@ -1,5 +1,5 @@
 if not host:isHost() then return end
-local gnui = require("libraries.gnui")
+local gnui = require("libraries.GNUI")
 
 local screen = gnui.newContainer()
 models:addChild(screen.ModelPart)

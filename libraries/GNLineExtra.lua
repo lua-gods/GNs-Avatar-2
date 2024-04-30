@@ -1,5 +1,5 @@
 local utils = require("libraries.utils")
-local line = require("libraries.GNlineLib")
+local line = require("libraries.GNLineLib")
 
 ---@class line.cube
 ---@field from Vector3

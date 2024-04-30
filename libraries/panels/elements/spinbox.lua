@@ -2,7 +2,7 @@
 
 local eventLib = require("libraries.eventLib")
 local config = require("libraries.panels.config")
-local gnui = require("libraries.gnui")
+local gnui = require("libraries.GNUI")
 local tween = require("libraries.GNTweenLib")
 
 local element = require("libraries.panels.element")

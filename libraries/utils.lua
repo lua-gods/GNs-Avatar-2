@@ -25,6 +25,7 @@ function utils.vec4SetPos(vec4,x,y)
    return vec4
 end
 
+
 ---Sets the other position`(x,z)` while translating the position`(x,y)`
 ---@param vec4 Vector4
 ---@param z number
@@ -117,7 +118,6 @@ end
 local t = {}
 
 ---Creates a proxy table for the given table, the proxy table is read only.  
----2nd parameter is a metatable.
 ---@param tbl table
 ---@return table
 function utils.makeTableReadOnly(tbl)

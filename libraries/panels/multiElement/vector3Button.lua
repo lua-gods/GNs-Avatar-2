@@ -27,7 +27,7 @@ vector3Button.__type = "panels.vector3Button"
 ---@return panels.vector3Button
 function vector3Button.new(button_preset,display_preset,spinbox_preset)
    display_preset = display_preset or {}
-   display_preset.direction = "HORIZONTAL"
+   display_preset.style = "HORIZONTAL"
    ---@type panels.vector3Button
    local btn = elements.newDisplayButton(button_preset)
    local dis = elements.newDisplay(display_preset)
