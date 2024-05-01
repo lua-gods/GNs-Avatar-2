@@ -62,10 +62,10 @@ e[1].TOGGLED:register(function (enabled)
          local fov = client:getFOV()
          local F = fov*(1-(-(math.cos(math.pi * ortho) - 1) / 2) * 0.99)
          local cmat = matrices.mat4(
-            vec(1,        0,        0,        0),
-            vec(0,        1,        0,        0),
-            vec(0,        0,        F/fov,    (F/fov)-1),
-            vec(0,        0,        0,        1)
+            vec(1,0,0,0),
+            vec(0,1,0,0),
+            vec(0,0,F/fov, (F/fov)-1),
+            vec(0,0,0,1)
          ):transpose()
          renderer:setCameraMatrix(matrices.translate4(0,0,-zoom) * cmat * matrices.translate4(0,0,zoom))
       end,"utilities.topView")

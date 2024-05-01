@@ -45,6 +45,7 @@ tool.makePage = function(ctx_menu,path,page)
          local instance = pages.instance or p.new()
          sidebar:setPage(instance)
          instance:setSelected(#instance.elements)
+         pages.instance = instance
       end)
    end
    
