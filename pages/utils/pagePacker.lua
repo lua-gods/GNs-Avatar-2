@@ -42,10 +42,10 @@ tool.makePage = function(ctx_menu,path,page)
       --end
       e[#e+1] = btn
       btn.PRESSED:register(function ()
-         local instance = pages.instance or p.new()
+         local instance = pages[i].instance or p.new()
          sidebar:setPage(instance)
          instance:setSelected(#instance.elements)
-         pages.instance = instance
+         pages[i].instance = instance
       end)
    end
    
