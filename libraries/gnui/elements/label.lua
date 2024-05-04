@@ -5,6 +5,10 @@ local container = require("libraries.gnui.elements.container")
 local element = require("libraries.gnui.elements.element")
 local core = require("libraries.gnui.core")
 
+
+
+local dot = "."
+local dot_length = client.getTextWidth(dot)
 ---Calculates text length along with its spaces as well.  
 ---accepts raw json component as well, if the given text is a table.
 ---This is a workaround for keeping the whitespace while getting the length because Minecraft trims them off.
@@ -13,7 +17,7 @@ local core = require("libraries.gnui.core")
 local function getlen(text)
    local t = type(text)
    if t == "string" then
-      return client.getTextWidth(text:gsub(" ","|"))
+      return client.getTextWidth(dot..text..dot) - dot_length * 2
    else
       local og = text.text
       text.text = text.text:gsub(" ","||")
@@ -186,7 +190,7 @@ local function flattenComponents(json)
                content_length = content_length + l
                content[#content+1] = prop
             end
-            if comp.text:find("\n") then -- check if this component even has a new line
+            if tostring(comp.text):find("\n") then -- check if this component even has a new line
                lines[#lines+1] = {content = content,length = content_length}
                content = {}
             end
@@ -265,21 +269,22 @@ function label:_updateRenderTasks()
    local i = 0
    local size = self.ContainmentRect.xy - self.ContainmentRect.zw -- inverted for optimization
    local pos = vectors.vec2(0,self.LineHeight)
+   local scale = self.FontScale * self.AccumulatedScaleFactor
    if #self.TextData == 0 then return self end
    local offset = vectors.vec2(
       0,
-      (size.y / self.FontScale)  * self.Align.y + #self.TextData * self.LineHeight * self.Align.y)
+      (size.y / scale)  * self.Align.y + #self.TextData * self.LineHeight * self.Align.y)
    for _, line in pairs(self.TextData) do
       pos.y = pos.y - self.LineHeight
       pos.x = 0
-      offset.x = (size.x / self.FontScale) * self.Align.x + line.length * self.Align.x
+      offset.x = (size.x / scale) * self.Align.x + line.length * self.Align.x
       for c, component in pairs(line.content) do
          i = i + 1
          local task = self.RenderTasks[i]
-         if (pos.x - component.length > size.x / self.FontScale) or true then
+         if (pos.x - component.length > size.x / scale) or true then
             task
-            :setPos(pos.xy_:add(offset.x,offset.y) * self.FontScale)
-            :setScale(self.FontScale,self.FontScale,self.FontScale)
+            :setPos(pos.xy_:add(offset.x,offset.y) * scale)
+            :setScale(scale,scale,scale)
             :setVisible(true)
          else
             task:setVisible(false)
@@ -292,8 +297,10 @@ end
 
 ---@return self
 function label:_deleteRenderTasks()
-   for key, task in pairs(self.RenderTasks) do
-      self.ModelPart:removeTask(task:getName())
+   if self.RenderTasks then
+      for key, task in pairs(self.RenderTasks) do
+         self.ModelPart:removeTask(task:getName())
+      end
    end
    return self
 end
