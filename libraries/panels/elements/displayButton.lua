@@ -39,7 +39,7 @@ function displayButton:setDisplay(d)
       d.display:setAnchor(0,1,1,1)
       self.display_page = d
       self:updateByPage()
-      d.display.SIZE_CHANGED:register(function () self:updateByPage()end,"_button_display")
+      d.display.SIZE_CHANGED:register(function () self:updateByPage() end,"_button_display")
    end
    return self
 end
@@ -53,8 +53,9 @@ end
 function displayButton:updateByPage()
    local d = self.display_page
    local s = d.display.ContainmentRect.w-d.display.ContainmentRect.y
-      local c = self.display.Dimensions
-      self.display:setDimensions(c.x,c.y,c.z,c.y+s)
+   local c = self.display.Dimensions
+   self.display:setDimensions(c.x,c.y,c.z,c.y+s)
+   self.custom_height = s
 end
 
 -----@param d panels.display

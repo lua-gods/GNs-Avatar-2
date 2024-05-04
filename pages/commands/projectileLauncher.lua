@@ -4,10 +4,6 @@ local panels = require("libraries.panels")
 return function ()
    local page = panels.newPage()
    local e = {
-      panels.newElement():setText({
-         text = "Sniper",
-         color = "red"
-      }),
          panels.newButton():setIconText(":gun:",true):setText("Shoot"),
          panels.newTextEdit():setText("Entity"):setAcceptedValue("arrow"),
          panels.newSpinbox():setText("Power"):setAcceptedValue(10),

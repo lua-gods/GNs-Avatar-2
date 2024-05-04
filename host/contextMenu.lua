@@ -139,6 +139,7 @@ function contextMenu:newPage(page,name)
    return self
 end
 
+
 ---@param page panels.page|string
 function contextMenu:setPage(page)
    local p = pages[page] or page
@@ -146,13 +147,19 @@ function contextMenu:setPage(page)
    display:setPage(p)
 end
 
+function contextMenu:returnPage()
+   display:returnPage()
+end
+
+local ret = function () display:returnPage() end
+
 function contextMenu.newReturnButton()
    local btn = panelLements.newButton():setText({text="Return",color="#fd4343"})
-   btn.PRESSED:register(function ()
-      display:setPage(display:getLastPage(true))
-   end)
+   btn.PRESSED:register(ret)
    return btn
 end
+
+function contextMenu.getReturnFunction() return ret end
 
 
 return contextMenu

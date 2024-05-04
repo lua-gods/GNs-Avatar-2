@@ -21,7 +21,9 @@ for i = 1, 4, 1 do
 end
 toolbar_page:addElement(elements.newButton():setIconText(":folder:+",true):setForcedWidth(15))
 footer_page:addElement(elements.newButton():setText("Open"))
-footer_page:addElement(elements.newButton():setText("Cancel"))
+local cancel = elements.newButton():setText("Cancel")
+footer_page:addElement(cancel)
+cancel.PRESSED:register(sidebar.getReturnFunction())
 
 
 local function make()

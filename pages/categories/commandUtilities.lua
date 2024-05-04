@@ -4,10 +4,6 @@ local pagePacker = require("pages.utils.pagePacker")
 
 return function ()
    local page = panels.newPage()
-   page:addElement(panels.newElement():setText({
-      text = "COMMAND UTILITIES",
-      color = "red"
-   }))
    pagePacker.makePage(sidebar,"pages.commands",page)
    page:addElement(sidebar.newReturnButton())
 

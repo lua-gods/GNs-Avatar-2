@@ -25,6 +25,10 @@ page.__index = function (t,i)
    return rawget(t,i) or page[i]
 end
 
+page.__tostring = function ()
+   return ": )"
+end
+
 ---@return panels.page
 function page.new()
    next_free = next_free + 1
@@ -121,8 +125,8 @@ function page:setSelected(x, relative)
       self.selected_index = new_pos
       self.selected = self.elements[self.selected_index]
    end
-   if self.last_selected and self.last_selected ~= self.selected then -- moved
-      if self.last_selected.unhover then
+   if self.last_selected ~= self.selected then -- moved
+      if self.last_selected and self.last_selected.unhover then
          self.last_selected:unhover()
          self.last_selected.HOVER_CHANGED:invoke(false)
       end

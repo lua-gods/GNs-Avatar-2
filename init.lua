@@ -212,5 +212,5 @@ end
 
 --- initialize default page
 local sidebar = require("host.contextMenu")
-require("pages.main")
-sidebar:setPage("main")
+local main = require("pages.main")
+sidebar:setPage(main)

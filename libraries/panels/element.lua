@@ -92,16 +92,6 @@ function element:setForcedHeight(custom_height)
    return self
 end
 
----@generic self
----@param self self
----@return self
----@param custom_width number?
-function element:setForcedWidth(custom_width)
-   ---@cast self panels.element
-   self.custom_width = custom_width or 12
-   return self
-end
-
 function element:press()
    if not self.is_pressed then
       self.is_pressed = true

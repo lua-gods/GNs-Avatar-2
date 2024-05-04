@@ -4,13 +4,8 @@ return function ()
    local page = panels.newPage()
    
    local e = {
-      panels.newElement():setText({
-         text = "Vehicle",
-         color = "red"
-      }),
          panels.newButton():setText("Ride Selected"),
       }
-      
       
    e[2].PRESSED:register(function ()
       local selected = player:getTargetedEntity(5)

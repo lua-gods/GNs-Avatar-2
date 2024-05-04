@@ -4,6 +4,8 @@ local tween = require("libraries.GNTweenLib")
 return function ()
 local page = panels.newPage()
 
+local momentum_lock = false
+local velocity = vectors.vec2()
 local pos = vectors.vec3()
 local zoom = 30
 local e = {
@@ -30,6 +32,12 @@ e[2].TOGGLED:register(function (enabled)
 end)
 
 local mouse_primary = keybinds:newKeybind("mouse.left","key.mouse.left")
+mouse_primary.press = function ()
+   momentum_lock = true
+end
+mouse_primary.release = function ()
+   momentum_lock = false
+end
 
 local function getHeight(x,z)
    local h = 0
@@ -48,8 +56,13 @@ e[1].TOGGLED:register(function (enabled)
    if enabled then
 ---@diagnostic disable-next-line: assign-type-mismatch
       pos = player:getPos().xyz ---@type Vector3
-      local lst = client:getSystemTime()
+      local last_system_time = client:getSystemTime()
+      local delta = 0
       events.WORLD_RENDER:register(function ()
+         local system_time = client:getSystemTime()
+         delta = (system_time - last_system_time) / 1000
+         print(delta)
+         last_system_time = system_time
          pos.y = math.lerp(pos.y,getHeight(pos.x,pos.z) + zoom,0.1)
          renderer
          :setCameraPivot(pos)
@@ -68,13 +81,22 @@ e[1].TOGGLED:register(function (enabled)
             vec(0,0,0,1)
          ):transpose()
          renderer:setCameraMatrix(matrices.translate4(0,0,-zoom) * cmat * matrices.translate4(0,0,zoom))
+         if not momentum_lock then
+            pos.x = pos.x + velocity.x * delta
+            pos.z = pos.z + velocity.y * delta
+         end
       end,"utilities.topView")
       events.MOUSE_MOVE:register(function (x, y)
          if mouse_primary:isPressed() then
             local r = zoom * 0.1
             pos.x = pos.x + x * 0.1
             pos.z = pos.z + y * 0.1
+            velocity.x = x / delta * 0.1
+            velocity.y = y / delta * 0.1
          end
+      end,"utilities.topView")
+      events.WORLD_TICK:register(function ()
+         velocity:mul(0.8,0.8)
       end,"utilities.topView")
    else
       events.WORLD_RENDER:remove("utilities.topView")

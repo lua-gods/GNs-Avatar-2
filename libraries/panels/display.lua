@@ -45,22 +45,23 @@ end
 ---@param p panels.page
 function display:setPage(p)
    if self.page ~= p then
-      if #self.page_history > 1 and self.page_history[#self.page_history-1] == p then -- if the last last page is the one being set, remove the current page from history, aka undo setPage
-         self.page_history[#self.page_history] = nil
-      else
+      if self.page_history[#self.page_history] ~= p then
          self.page_history[#self.page_history+1] = p
       end
       if self.page then
+         self.page:release()
          self.page.PRESSENCE_CHANGED:invoke(false)
          self.page.display = nil
-         self:detachDisplays()
       end
-      p.PRESSENCE_CHANGED:invoke(true)
+      self:detachDisplays()
       self.page = p
-      self:updateDisplays()
       self.page.display = self
       self.PAGE_CHANGED:invoke(p)
+      p.PRESSENCE_CHANGED:invoke(true)
+      self.page:setSelected(#p.elements)
+      self:updateDisplays()
    end
+   --print("+ ",self.page_history)
    return self
 end
 
@@ -73,6 +74,13 @@ function display:getLastPage(remove_from_history)
       end
       return self.page_history[#self.page_history]
    end
+end
+
+
+function display:returnPage()
+   --print("- ",self.page_history)
+   self:setPage(self:getLastPage(true))
+   return self
 end
 
 ---@param d panels.display.style
@@ -107,44 +115,19 @@ function display:updateDisplays()
          local offset = self.container.Dimensions.y-self.container.Dimensions.w
          l = l + offset - 1
          self.display:setDimensions(d.x,d.w-l,d.z,d.w):setSprite(config.default_display_sprite:copy())
-
-      elseif false then -- unused inverted vertical
-         local l = 0
-         for _, e in pairs(self.page.elements) do
-            self.container:addChild(e.display)
-            e.display:setAnchor(0,1,1,1)
-            local size = (e.display.ContainmentRect.w-e.display.ContainmentRect.y)
-            local d = e.display.Dimensions
-            l = l + (e.display.ContainmentRect.w-e.display.ContainmentRect.y)
-            e.cache.borders = nil
-            e.display:setDimensions(d.x,-l,d.z,-l+size)
-         end
-         local d = self.display.Dimensions
-         local offset = self.container.Dimensions.y-self.container.Dimensions.w
-         l = l + offset - 1
-         self.display:setDimensions(d.x,d.w-l,d.z,d.w)
-         
       elseif self.direction == "HORIZONTAL" or self.direction == "HORIZONTAL_INDIVIDUAL" then
-         local l = 1
          local c = #self.page.elements
-         local size = (self.display.ContainmentRect.z-self.display.ContainmentRect.x)
-         local _i = -2/size
          for a, e in ipairs(self.page.elements) do
-            local i = e.custom_width and (((e.custom_width + 2) / size)) or 1/c
-            _i = _i + i
+            local p = a / c
+            local i = 1 / c
             self.container:addChild(e.display)
-            e.display:setAnchor(_i-i,0,_i ,1)
-            e.display:setDimensions(0,-1,0,1)
+            e.display:setAnchor(p-i,0,p ,1)
             e.label:setAlign(0.5,0.5)
+            e.display:setDimensions(0,0,0,0)
             e.cache.borders = true
             e.HOVER_CHANGED:invoke() -- TODO: unprofessional patch
-            l = math.max(l,e.display.ContainmentRect.w-1)
          end
-         if self.direction == "HORIZONTAL_INDIVIDUAL" then
-            self.display:setDimensions(0,-14,0,0):setSprite()
-         else
-            self.display:setDimensions(0,-14,0,0):setSprite(config.default_display_sprite:copy())
-         end
+         self.display:setDimensions(0,0,0,14):setAnchor(0,0,1,0)
       end
    end
 end

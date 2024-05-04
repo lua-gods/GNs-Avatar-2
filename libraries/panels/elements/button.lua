@@ -1,8 +1,6 @@
 
 local eventLib = require("libraries.eventLib")
-local config = require("libraries.panels.config")
 local element = require("libraries.panels.element")
-local overflowPrint = require("libraries.debug.overflowPrint")
 
 ---@class panels.button : panels.element
 ---@field PRESSED eventLib
@@ -34,17 +32,14 @@ function button.new(preset)
          if new.flat then
             new.display:setSprite()
          else
-            if new.cache.borders then
-               new.display:setSprite(new.cache.border_sprite)
-            else
-               new.display:setSprite(new.cache.normal_sprite)
-            end
+            new.display:setSprite(new.cache.normal_sprite)
          end
       end
    end
 
    new.HOVER_CHANGED:register(display_changed,"_display")
    new.PRESS_CHANGED:register(display_changed,"_display")
+
    new.PRESS_CHANGED:register(function ()
       if new.is_pressed then
          new.PRESSED:invoke()
