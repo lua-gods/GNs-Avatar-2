@@ -161,5 +161,4 @@ end
 
 function contextMenu.getReturnFunction() return ret end
 
-
 return contextMenu

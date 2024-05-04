@@ -8,6 +8,7 @@ This service aims to optimize the rendering of skull and adds new events to aid 
 The technique I used was the idea of 4P5, making only one skull render all of them 
 instead of individually rendering each one,saving performance.
 ]]
+if avatar:getPermissionLevel() ~= "MAX" then return end
 
 ---@class WorldSkull
 ---@field is_wall boolean
@@ -39,7 +40,6 @@ local api = {
    EXIT = eventLib.new(),
 }
 
-local half = vectors.vec3(.5, .5, .5)
 local lookup = {
    dir = {
       wall = {

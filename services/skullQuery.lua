@@ -1,3 +1,4 @@
+if avatar:getPermissionLevel() ~= "MAX" then models.plushie:setVisible(false) return end
 local skull_handler = require("services.skullHandler")
 local eventLib = require("libraries.eventLib")
 
