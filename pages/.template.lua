@@ -2,8 +2,7 @@ local sidebar = require("host.contextMenu")
 local panels = require("libraries.panels")
 local page = panels.newPage()
 
-return {
-new = function ()
+return function ()
    local e = {
       panels.newButton()
    }
@@ -11,5 +10,4 @@ new = function ()
    page:addElement(table.unpack(e))
    page:addElement(sidebar.newReturnButton())
    return page
-end,
-}
+end

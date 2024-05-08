@@ -1,4 +1,4 @@
-if avatar:getPermissionLevel() ~= "MAX" then models.sword:setVisible(false) return end
+if avatar:getPermissionLevel() ~= "MAX" or true then models.sword:setVisible(false) return end
 
 local is_holding_sword = false
 local was_holding_sword
