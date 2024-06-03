@@ -49,4 +49,15 @@ function button.new(preset)
    end,"_internal")
    return setmetatable(new,button)
 end
+
+---@param func function
+---@generic self
+---@param self self
+---@return self
+function button:pressed(func)
+   ---@cast self panels.button
+   self.PRESSED:register(func)
+   return self
+end
+
 return button

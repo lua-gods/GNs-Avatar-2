@@ -1,4 +1,6 @@
-if avatar:getPermissionLevel() ~= "MAX" or true then models.sword:setVisible(false) return end
+if avatar:getPermissionLevel() ~= "MAX" then models.sword:setVisible(false) return end
+
+models.sword:setPrimaryRenderType("CUTOUT_CULL")
 
 local is_holding_sword = false
 local was_holding_sword
@@ -24,6 +26,7 @@ sword:setParentType("WORLD")
 local sword_trail = trail:newTwoLeadTrail(textures["textures.trail"])
 sword_trail:setDivergeness(0)
 sword_trail:setDuration(10)
+sword_trail:setRenderType("EMISSIVE_SOLID")
 
 events.ENTITY_INIT:register(function ()
    pos = player:getPos()
@@ -70,7 +73,7 @@ events.WORLD_RENDER:register(function (dt)
    if player:isLoaded() then
       local meta = models.sword.metadata:getAnimPos()
       local mat = models.sword.Roll.Pole.Handle:partToWorldMatrix()
-      sword_trail:setLeads (mat:apply(0,0,1),mat:apply(0,0,-25),meta.x) r = player:getBodyYaw(dt)
+      sword_trail:setLeads (mat:apply(0,0,1),mat:apply(0,0,-25),meta.x * 2) r = player:getBodyYaw(dt)
       local sneak = player:isSneaking() and player:isOnGround()
       local dir = vectors.rotateAroundAxis(-r,vectors.vec3(0,.25,1),vectors.vec3(0,1,0))
       sword:pos(math.lerp(player:getPos(dt),math.lerp(lpos,pos,dt),weary) * 16 + (sneak and dir*-10 or vectors.vec3(0,0,0)))

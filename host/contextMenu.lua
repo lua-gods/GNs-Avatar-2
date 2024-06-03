@@ -142,7 +142,17 @@ end
 
 ---@param page panels.page|string
 function contextMenu:setPage(page)
-   local p = pages[page] or page
+   local p
+   if type(page) == "string" then
+      if not pages[page] then
+         p = require(page)()
+         pages[page] = p
+      else
+         p = pages[page]
+      end
+   else
+      p = page
+   end
    ---@diagnostic disable-next-line: param-type-mismatch
    display:setPage(p)
 end

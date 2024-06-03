@@ -9,7 +9,7 @@ local core = require("libraries.gnui.core")
 ---@class GNUI.container : GNUI.element
 ---@field Dimensions Vector4           # Determins the offset of each side from the final output
 ---@field Z number                     # Offsets the container forward(+) or backward(-) if Z fighting is occuring, also affects its children.
----@field ContainmentRect Vector4      # The final output dimensions.
+---@field ContainmentRect Vector4      # The final output dimensions with anchors applied. incredibly handy piece of data.
 ---@field DIMENSIONS_CHANGED eventLib  # Triggered when the final container dimensions has changed.
 ---@field SIZE_CHANGED eventLib        # Triggered when the size of the final container dimensions is different from the last tick.
 ---@field Anchor Vector4               # Determins where to attach to its parent, (`0`-`1`, left-right, up-down)

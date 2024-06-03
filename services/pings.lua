@@ -23,15 +23,15 @@ local soundFont = {
    "block.note_block.pling",
    "block.note_block.pling",
    "block.note_block.pling",
-   "block.note_block.pling",
-   "block.note_block.harp",
-   "block.note_block.harp",
+   "minecraft:block.note_block.guitar",
+   "minecraft:block.note_block.guitar",
+   "minecraft:block.note_block.guitar",
    "block.note_block.snare",
-   "block.note_block.pling",
-   "block.note_block.pling",
-   "block.note_block.pling",
+   "minecraft:block.note_block.guitar",
+   "minecraft:block.note_block.guitar",
+   "minecraft:block.note_block.guitar",
    "block.note_block.bass",
-   "block.note_block.pling",
+   "minecraft:block.note_block.guitar",
    "block.note_block.pling",
    "block.note_block.bass",
    "block.note_block.pling",
@@ -176,19 +176,24 @@ nil,nil,nil,nil,nil,
    "block.wood.break",
 }
 
-function pings.midi(note,isntrument,perc)
+function pings.midi(note,isntrument,velocity,perc)
    if player:isLoaded() then
       local pos = player:getPos():add(0,2.4,0)
+      local pitch = 1
+      if soundFont[(isntrument or 0) + 1] == "minecraft:block.note_block.guitar" then
+         pitch = 2
+      end
       pos:add(vectors.rotateAroundAxis(90,client:getCameraDir():mul(1,0,1):normalize()* (note % 24 / 12 - 1),vectors.vec3(0,1,0)))
-      local vol = math.clamp(math.map((pos-client:getCameraPos()):length(),0,16,1,0),0,1)
+      local vol = math.clamp(math.map((pos-client:getCameraPos()):length(),0,16,1,0),0,1) * velocity
       particles:newParticle("minecraft:note",pos,vectors.vec3(note/24,0,0))
-      particles:newParticle("minecraft:end_rod",pos):scale(1):lifetime(20):gravity(0):velocity(0,-0.2,0):color(vectors.hsvToRGB(note/-24+0.24,1,1))
+      --particles:newParticle("minecraft:end_rod",pos):scale(1):lifetime(20):gravity(0):velocity(0,-0.2,0):color(vectors.hsvToRGB(note/-24+0.24,1,1))
       if perc then
          if percussionFont[note] then
             sounds[percussionFont[note]]:pos(client:getCameraPos() + client:getCameraDir()):volume(vol):play()
          end
       else
-         sounds[soundFont[(isntrument or 0) + 1]]:pitch(2 ^ (((note) - (12 * 6 - 3)) / 12)):pos(client:getCameraPos() + client:getCameraDir()):volume(vol):play()
+         pitch = pitch * 2 ^ (((note) - (12 * 6 - 3)) / 12)
+         sounds[soundFont[(isntrument or 0) + 1]]:pitch(pitch):pos(client:getCameraPos() + client:getCameraDir()):volume(vol):play()
       end
    end
 end

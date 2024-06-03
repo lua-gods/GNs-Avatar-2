@@ -6,16 +6,16 @@ local element = require("libraries.gnui.elements.element")
 local sprite = require("libraries.gnui.spriteLib")
 local core = require("libraries.gnui.core")
 
----@class GNUI.anchorPoint : GNUI.element
----@field Offset Vector2              # Determins the offset of each side from the final output
----@field FinalPosition Vector2       # Determins the offset of each side from the final output
----@field OFFSET_CHANGED eventLib     # Triggered when the final container Offset has changed.
----@field Z number                    # Offsets the container forward(+) or backward(-) if Z fighting is occuring, also affects its children.
----@field Anchor Vector2              # Determins where to attach to its parent, (`0`-`1`, left-right, up-down)
----@field ANCHOR_CHANGED eventLib     # Triggered when the anchors applied to the container is changed.
----@field ClipOnParent boolean        # when `true`, the container will go invisible once touching outside the parent container.
----@field isClipping boolean          # `true` when the container is touching outside the parent's container.
----@field ModelPart ModelPart         # The `ModelPart` used to handle where to display debug features and the sprite.
+---@class GNUI.anchorPoint : GNUI.element # A point version of a container, used to anchor ModelParts into the container.
+---@field Offset Vector2                  # Determins the offset of each side from the final output
+---@field FinalPosition Vector2           # Determins the offset of each side from the final output
+---@field OFFSET_CHANGED eventLib         # Triggered when the final container Offset has changed.
+---@field Z number                        # Offsets the container forward(+) or backward(-) if Z fighting is occuring, also affects its children.
+---@field Anchor Vector2                  # Determins where to attach to its parent, (`0`-`1`, left-right, up-down)
+---@field ANCHOR_CHANGED eventLib         # Triggered when the anchors applied to the container is changed.
+---@field ClipOnParent boolean            # when `true`, the container will go invisible once touching outside the parent container.
+---@field isClipping boolean              # `true` when the container is touching outside the parent's container.
+---@field ModelPart ModelPart             # The `ModelPart` used to handle where to display debug features and the sprite.
 local container = {}
 container.__index = function (t,i)
    return rawget(t,i) or container[i] or element[i]

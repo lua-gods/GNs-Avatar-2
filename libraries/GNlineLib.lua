@@ -31,6 +31,7 @@ end
 ---@field a Vector3? # First end of the line
 ---@field b Vector3? # Second end of the line
 ---@field dir Vector3? # The difference between the first and second ends position
+---@field dir_override Vector3? # Overrides the dir of the line, useful for non world parent parts
 ---@field length number # The distance between the first and second ends
 ---@field width number # The width of the line in meters
 ---@field color Vector4 # The color of the line in RGBA

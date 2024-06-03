@@ -98,7 +98,7 @@ end
 ---@return twoLeadTrail
 function twoLeadTrail:setRenderType(render_type)
    self.render_type = render_type
-   twoLeadTrail:rebuildSpriteTasks()
+   self:rebuildSpriteTasks()
    return self
 end
 

@@ -1,4 +1,4 @@
-if avatar:getPermissionLevel() ~= "MAX" then models.plushie:setVisible(false) return end
+if avatar:getPermissionLevel() ~= "MAX" and client:getVersion() ~= "1.20.4" then models.plushie:setVisible(false) return end
 local skull_handler = require("services.skullHandler")
 local eventLib = require("libraries.eventLib")
 
@@ -39,8 +39,12 @@ end)
 
 ---@param skull WorldSkull
 skull_handler.EXIT:register(function (skull)
-   skulls[skull.pos].api.EXIT:invoke()
-   skulls[skull.pos] = nil
+   if skulls[skull.pos].api then
+      if skulls[skull.pos].api.EXIT then
+         skulls[skull.pos].api.EXIT:invoke()
+      end
+      skulls[skull.pos] = nil
+   end
 end)
 
 

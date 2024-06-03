@@ -4,12 +4,12 @@ local utils = require("libraries.gnui.utils")
 ---@alias GNUI.any GNUI.element|GNUI.container|GNUI.Label|GNUI.anchorPoint
 
 local element_next_free = 0
----@class GNUI.element
----@field name string
----@field id integer          # A unique integer for this element. (next-free based)
----@field Visible boolean   # `true` to see
----@field Parent GNUI.any           
----@field Children table<any,GNUI.any>  
+---@class GNUI.element # The base element of every GNUI element
+---@field name string                 # An optional property used to get the element by a name
+---@field id integer                  # A unique integer for this element. (next-free based)
+---@field Visible boolean             # `true` to see
+---@field Parent GNUI.any             # the element's parents
+---@field Children table<any,GNUI.any># A list of the element's children
 ---@field ChildIndex integer          # the element's place order on its parent
 ---@field VISIBILITY_CHANGED eventLib # on change of visibility
 ---@field CHILDREN_CHANGED table      # when the order of the children changes.

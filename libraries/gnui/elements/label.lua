@@ -1,11 +1,9 @@
+
 ---@diagnostic disable: assign-type-mismatch, undefined-field
 local eventLib = require("libraries.eventLib")
 
 local container = require("libraries.gnui.elements.container")
 local element = require("libraries.gnui.elements.element")
-local core = require("libraries.gnui.core")
-
-
 
 local dot = "."
 local dot_length = client.getTextWidth(dot)
@@ -32,7 +30,7 @@ end
 ---| "OUTLINE"
 ---| "SHADOW"
 
----@class GNUI.Label : GNUI.container
+---@class GNUI.Label : GNUI.container # A special type of container that can do text rendering, separated into its own class to avoid massive lag spikes when making too many contaiers.
 ---@field Text string|table               # The text that will be displayed on the label, for raw json, pass a table instead of a string json.
 ---@field TextData table                  # Baked data of the text.
 ---@field TextEffect TextEffect           # Determins the effects applied to the label.

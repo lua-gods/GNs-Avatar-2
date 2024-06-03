@@ -53,12 +53,14 @@ function display:setPage(p)
          self.page.PRESSENCE_CHANGED:invoke(false)
          self.page.display = nil
       end
-      self:detachDisplays()
-      self.page = p
-      self.page.display = self
-      self.PAGE_CHANGED:invoke(p)
-      p.PRESSENCE_CHANGED:invoke(true)
-      self.page:setSelected(#p.elements)
+      if p then
+         self:detachDisplays()
+         self.page = p
+         self.page.display = self
+      end
+      self.PAGE_CHANGED:invoke(self.page)
+      self.page.PRESSENCE_CHANGED:invoke(true)
+      self.page:setSelected(#self.page.elements)
       self:updateDisplays()
    end
    --print("+ ",self.page_history)

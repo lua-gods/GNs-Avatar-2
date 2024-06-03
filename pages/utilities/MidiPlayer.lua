@@ -7,7 +7,7 @@
 local midi
 local midi_name
 local bpm = 120
-local bpm_override = nil
+local bpm_multiplier = 1
 
 local time = 0
 local playing = false
@@ -45,7 +45,7 @@ local function load(name)
    return false
 end
 
-load("rickroll")
+load("22")
 
 require("services.pings")
 
@@ -55,7 +55,7 @@ events.WORLD_RENDER:register(function ()
    local dt = (syst - lsyst) / 1000
    lsyst = syst
    if midi and playing then
-      time = time + dt * (bpm_override or (bpm / 120))
+      time = time + dt * (bpm_multiplier or (bpm / 120))
 
       --tempo
       if midi.tempo and midi.tempo[next_tempo_id] and midi.tempo[next_tempo_id].seconds < time then
@@ -81,7 +81,7 @@ events.WORLD_RENDER:register(function ()
             if note.time < time then
                data.next_note_id = data.next_note_id + 1
                if data.last_note_id ~= data.next_note_id then
-                  pings.midi(note.midi,track.instrumentNumber,track.isPercussion)
+                  pings.midi(note.midi,track.instrumentNumber,note.velocity or 1,track.isPercussion)
                   --if track.isPercussion or false then
                   --   if percussionFont[note.midi] then
                   --      sounds[percussionFont[note.midi]]:pos(client:getCameraDir()+client:getCameraPos()):play()
@@ -141,9 +141,9 @@ return function ()
    end)
    e[2].VALUE_ACCEPTED:register(function (value)
       if tonumber(value) then
-         bpm_override = value
+         bpm_multiplier = value
       else
-         bpm_override = nil
+         bpm_multiplier = 1
       end
    end)
    

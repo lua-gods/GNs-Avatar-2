@@ -123,7 +123,9 @@ local t = {}
 function utils.makeTableReadOnly(tbl)
    local proxy = {}
    local mt = {
-   __index = tbl,
+   __index = function (i)
+      return tbl[i]
+   end,
    __metatable = function ()
       error("Attempt to modify read-only table", 2)
    end,
