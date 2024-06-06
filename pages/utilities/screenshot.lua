@@ -30,9 +30,6 @@ return function ()
       panels.newButton():setForcedHeight(40),
       panels.newButton():setForcedHeight(40),
       panels.newButton():setForcedHeight(40),
-      panels.newButton():setText("Skybox"),
-      panels.newButton():setForcedHeight(40),
-      panels.newButton():setForcedHeight(40),
       panels.newButton():setText("Final Output"),
       panels.newButton():setForcedHeight(60),
       panels.newButton():setText("Start"),	
@@ -49,24 +46,12 @@ return function ()
       end
    end
 
-   for y = 6, 7, 1 do
-      for x = 0, 2, 1 do
-         local left = gnui.newContainer()
-         :setAnchor(x*0.3333,0,x*0.3333+0.3333,1):setDimensions(1,1,-1,-1)
-         local gallery_frame = gnui.newSprite()
-         left:setSprite(gallery_frame)
-         gallery[#gallery+1] = gallery_frame
-         e[y].display:addChild(left)
-      end
-   end
-
-
    local frame = gnui.newContainer():setAnchor(0,0,1,1):setDimensions(1,1,-1,-1)
    local output_sprite = gnui.newSprite()
    frame:setSprite(output_sprite)
    gallery[#gallery+1] = output_sprite
-   e[9].display:addChild(frame)
-   e[10].PRESSED:register(function ()
+   e[6].display:addChild(frame)
+   e[7].PRESSED:register(function ()
       events.WORLD_RENDER:remove("gopro")
       local t = 0
       local phase = 0
@@ -95,49 +80,23 @@ return function ()
                   elseif t == 10 then samples[5] = host:screenshot("top"); gallery[5]:setTexture(samples[5]) 
                   elseif t == 11 then renderer:setCameraRot(-90,0,0)
                   elseif t == 12 then samples[6] = host:screenshot("bottom"); gallery[6]:setTexture(samples[6]) 
-                  elseif t == 13 then renderer:setCameraRot() models:setVisible() renderer:setFOV()phase = 1 t = 0 w = 1 
+                  elseif t == 13 then
+                     renderer:setCameraRot()
+                     models:setVisible()
+                     renderer:setFOV()
+                     t = 0
+                     w = 1
+                     dx = samples[1]:getDimensions().x
+                     dy = samples[1]:getDimensions().y 
+                     z = dx*0.5-dy*0.5
+                     phase = 1
                   end
                end
             elseif phase == 1 then
                t = t + 1
                if t == 1 then
-                  dx = samples[w]:getDimensions().x
-                  dy = samples[w]:getDimensions().y
-                  z = dx*0.5-dy*0.5
-                  samples[w+6] = textures:newTexture(w.."square",dy,dy)
-                  gallery[w+6]:setTexture(samples[w+6])
-                  x,y = 0,0
-               end
-               for i = 1, 10000, 1 do
-                  if avatar:getCurrentInstructions() > 200000 then
-                     break
-                  end
-                  x = x + 1
-                  if x >= dy then
-                     x = 0
-                     y = y + 1
-                     if y >= dy then
-                        t = 0
-                        samples[w+6]:update()
-                        w = w + 1
-                        if w > 6 then
-                           phase = 2
-                           t = 0
-                           return
-                        end
-                        break
-                     end
-                  end
-                  samples[w+6]:setPixel(x,y,samples[w]:getPixel(x+z,y))
-               end
-               if samples[w+6] then
-                  samples[w+6]:update()
-               end
-            elseif phase == 2 then
-               t = t + 1
-               if t == 1 then
-                  samples[13] = textures:newTexture("gopro_outut",resolution.x,resolution.y)
-                  gallery[13]:setTexture(samples[13])
+                  samples[7] = textures:newTexture("gopro_outut",resolution.x,resolution.y)
+                  gallery[7]:setTexture(samples[7])
                   x,y = 0,0
                end
                for i = 1, 40000, 1 do
@@ -150,13 +109,13 @@ return function ()
                      y = y + 1
                      if y >= resolution.y then
                         t = 0
-                        samples[13]:update()
+                        samples[7]:update()
                         phase = 3
                         t = 0
                         return
                      end
                   end
-                  local dir = vectors.angleToDir(y/resolution.y*180-90,x/resolution.x*-380+180)
+                  local dir = vectors.angleToDir(y/resolution.y*180-90,x/resolution.x*-360+180)
                   local sign_dir = vectors.vec3()
                   local axis = {x = math.abs(dir.x), y = math.abs(dir.y), z = math.abs(dir.z)}
                   local maxAxis = math.max(axis.x, axis.y, axis.z)
@@ -172,27 +131,28 @@ return function ()
                   -- dir to equirectangular projection
                   if sign_dir.x == 1 and sign_dir.y == 0 and sign_dir.z == 0 then
                      local uv = ray2plane(dir,vectors.vec3(1,0,0))
-                     samples[13]:setPixel(x,y,samples[2+6]:getPixel(math.map(uv.z,1,-1,0,(dy-1)),math.map(uv.y,1,-1,0,(dy-1))))
+                     U = uv
+                     samples[7]:setPixel(x,y,samples[2]:getPixel(math.map(uv.z,1,-1,0,(dy-1)) + z,math.map(uv.y,1,-1,0,(dy-1))))
                   elseif sign_dir.x == 0 and sign_dir.y == 0 and sign_dir.z == 1 then
                      local uv = ray2plane(dir,vectors.vec3(0,0,1))
-                     samples[13]:setPixel(x,y,samples[1+6]:getPixel(math.map(uv.x,-1,1,0,(dy-1)),math.map(uv.y,1,-1,0,(dy-1))))
+                     samples[7]:setPixel(x,y,samples[1]:getPixel(math.map(uv.x,-1,1,0,(dy-1)) + z,math.map(uv.y,1,-1,0,(dy-1))))
                   elseif sign_dir.x == -1 and sign_dir.y == 0 and sign_dir.z == 0 then
                      local uv = ray2plane(dir,vectors.vec3(-1,0,0))
-                     samples[13]:setPixel(x,y,samples[4+6]:getPixel(math.map(uv.z,-1,1,0,(dy-1)),math.map(uv.y,1,-1,0,(dy-1))))
+                     samples[7]:setPixel(x,y,samples[4]:getPixel(math.map(uv.z,-1,1,0,(dy-1)) + z,math.map(uv.y,1,-1,0,(dy-1))))
                   elseif sign_dir.x == 0 and sign_dir.y == 0 and sign_dir.z == -1 then
                      local uv = ray2plane(dir,vectors.vec3(0,0,-1))
-                     samples[13]:setPixel(x,y,samples[3+6]:getPixel(math.map(uv.x,1,-1,0,(dy-1)),math.map(uv.y,1,-1,0,(dy-1))))
+                     samples[7]:setPixel(x,y,samples[3]:getPixel(math.map(uv.x,1,-1,0,(dy-1)) + z,math.map(uv.y,1,-1,0,(dy-1))))
                   elseif sign_dir.x == 0 and sign_dir.y == 1 and sign_dir.z == 0 then
                      local uv = ray2plane(dir,vectors.vec3(0,1,0))
-                     samples[13]:setPixel(x,y,samples[6+6]:getPixel(math.map(-uv.x,1,-1,0,(dy-1)),math.map(-uv.z,1,-1,0,(dy-1))))
+                     samples[7]:setPixel(x,y,samples[6]:getPixel(math.map(-uv.x,1,-1,0,(dy-1)) + z,math.map(-uv.z,1,-1,0,(dy-1))))
                   elseif sign_dir.x == 0 and sign_dir.y == -1 and sign_dir.z == 0 then
                      local uv = ray2plane(dir,vectors.vec3(0,-1,0))
-                     samples[13]:setPixel(x,y,samples[5+6]:getPixel(math.map(-uv.x,1,-1,0,(dy-1)),math.map(uv.z,1,-1,0,(dy-1))))
+                     samples[7]:setPixel(x,y,samples[5]:getPixel(math.map(-uv.x,1,-1,0,(dy-1)) + z,math.map(uv.z,1,-1,0,(dy-1))))
                   end
                end
-               samples[13]:update()
+               samples[7]:update()
             elseif phase == 3 then
-               local base = samples[13]:save()
+               local base = samples[7]:save()
                local stream = file:openWriteStream("images/panorama.png")
                local buff = data:createBuffer(#base)
                buff:writeBase64(base)
