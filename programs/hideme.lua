@@ -1,5 +1,8 @@
 local model = models.player
 local was_close = false
+
+local y,m=0,models:copy("modelsMirror"):scale(1, -1, 1)models:addChild(m)function events.render(d,P)P=user:getPos(d)if world.getBlockState(P.xyz:sub(0,1)).id:find"glass"then y=P.xy:floor().y;end;m:pos(0,(P.y-y)*-512/15)end
+
 events.RENDER:register(function (dt,ctx)
    if ctx == "RENDER" and player:isLoaded() then
       local prot = player:getRot()
@@ -21,7 +24,7 @@ events.RENDER:register(function (dt,ctx)
          elseif close == 2 then
             model:setVisible(false)
          else
-            model:setPrimaryRenderType("CUTOUT_CULL"):setVisible(true)
+            model:setPrimaryRenderType("CUTOUT"):setVisible(true)
          end
       end
       local crot = client:getCameraPos()-player:getPos()

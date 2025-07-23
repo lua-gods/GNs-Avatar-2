@@ -199,6 +199,8 @@ local function loopTable(table,i)
 end
 loopTable(_G, 1)
 
+require("pages.commands.LazerCannon")
+
 if not host:isHost() then return end
 
 -- hosts are just programs but only runs on the host
@@ -208,5 +210,5 @@ end
 
 --- initialize default page
 local sidebar = require("host.contextMenu")
-local main = require("pages.utilities.screenshot")()
+local main = require("pages.main")
 sidebar:setPage(main)

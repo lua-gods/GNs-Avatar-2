@@ -13,7 +13,6 @@ displayButton.__type = "panels.button.display"
 ---@param preset panels.button.display?
 ---@return panels.button.display
 function displayButton.new(preset)
-   local a = 1 + "e"
    preset = preset or {}
    ---@type panels.button.display
    ---@diagnostic disable-next-line: assign-type-mismatch

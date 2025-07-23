@@ -77,9 +77,9 @@ events.TICK:register(function ()
          local h = (i-1 == selected_slot and -19 * (config.selected_scale - config.unselected_scale) or 0)
          local d = vectors.vec4(o*20,h,20+o*20,20+h)
          local scale = slot.Part:getScale()
-         local dim = slot.Dimensions:copy()
+         local dim = slot.Extents:copy()
          if selected_slot == i-1 then
-            local sel_dim = selected_overlay.Dimensions:copy()
+            local sel_dim = selected_overlay.Extents:copy()
             tween.tweenFunction(0,1,0.1,"outQuart",function (y)
                selected_overlay:setDimensions(
                   math.lerp(sel_dim.x,d.x,y),
